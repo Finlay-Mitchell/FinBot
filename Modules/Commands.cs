@@ -1272,7 +1272,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke") Alias("badjoke")]
+        [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
         public async Task test()
         {
             var client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
