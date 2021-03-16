@@ -50,7 +50,7 @@ namespace FinBot.Handlers
             while (reader.Read())
             {
                 string msg = arg1.Value.ToString();
-                msg = Regex.Replace(msg, "'", "\"");
+                msg = Regex.Replace(msg, "'", "\""); //This line of code runs when as an exe but not in the IDE, scary!
                 IsEmpty = false;
                 cmd.CommandText = $"UPDATE SnipeLogs SET timestamp = {Now}, message = '{msg}' WHERE guildId = '{sGC.Guild.Id}'";
                 cmd.ExecuteNonQuery();

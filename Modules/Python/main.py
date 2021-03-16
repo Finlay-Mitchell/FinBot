@@ -1,206 +1,154 @@
 import discord
-from discord.ext import commands
+import asyncio
+import sys
 import json
-from typing import Optional
+import os
 import datetime
+import time
+import subprocess
+from discord.ext import commands
+from Data import config
+from Handlers.storageHandler import DataHelper
+from traceback import format_exc, print_tb
 
-jsondata = open("../../bin/Debug/netcoreapp3.1/Data/config.json")
-data = json.load(jsondata)
-jsondata.close()
-bot = commands.Bot(command_prefix = data['prefix'], case_insensitive=True, intents=discord.Intents.all())
+class FinBot(commands.Bot):
+    def __init__(self):
+        # Initialises the actual commands.Bot class
+        intents = discord.Intents.all()
+        intents.members = True
+        super().__init__(command_prefix=config.prefix, description=config.description, loop=asyncio.new_event_loop(), intents=intents, case_insensitive=True, help_command=None)
+        self.guild = None
+        self.error_channel = None
+        self.data = DataHelper()
+        self.database_handler = None
+        self.latest_joins = {}
 
-@bot.command()
-async def audit(self, ctx, command, member: Optional[discord.Member], channel: Optional[discord.TextChannel], *, other_info=""):
+    async def get_latest_joins(self):
+        for guild in self.guilds:
+            members = await self.get_sorted_members(guild)
+            self.latest_joins[guild.id] = members
 
-    if not is_staff_backend(ctx.author):
-        raise commands.CheckFailure
+    async def get_sorted_members(self, guild):
+        members = await guild.fetch_members(limit=None).flatten()
+        members = [member for member in members if not member.bot]
+        sorting_members = {member: (member, member.joined_at) for member in members}
+        member_ids = [user.id for user in members]
+        all_guilds = self.data.get("og_messages", {})
+        og_messages = all_guilds.get(str(guild.id), {})
+        for user_id in og_messages.keys():
+            try:
+                member_object = members[member_ids.index(int(user_id))]
+                first_join = datetime.datetime.utcfromtimestamp(og_messages[user_id])
+                if first_join < member_object.joined_at:
+                    sorting_members[member_object] = (member_object, first_join)
+                    member_object.joined_at = first_join
+                    members[member_ids.index(int(user_id))] = member_object
+            except (ValueError, IndexError):
+                pass
+        members = list(sorting_members.values())
+        members.sort(key=lambda x: x[1])
+        members = [member[0] for member in members]
+        members = [user for user in members if user.joined_at is not None]
+        members.sort(key=lambda x: x.joined_at)
+        return members
 
-    if command.lower() == "roles":
-        await self.audit_roles(ctx, member)
-        return
-    elif command.lower() == "overwrites":
-        await self.audit_overwrites(ctx, channel)
-    elif other_info == "something":
-        # TODO: Write rest of audit commands...
-        pass
-
-    async def audit_overwrites(self, ctx, channel: Optional[discord.TextChannel]):
-        if channel is None:
-            await ctx.send(self.bot.create_error_embed("No channel mentioned!"))
-            return
-        sent_message = await ctx.send("Searching... check this message for updates when completed.")
-        embed = await self.create_channel_updates_embed(channel)
-
-    async def create_channel_updates_embed(self, channel: discord.TextChannel):
-        embed = discord.Embed(timestamp=datetime.datetime.utcnow())
-        embed.colour = discord.Colour.blue()
-        embed.title = "Channel updates for {} - {}".format(channel.id, channel.name)
-
-    async def audit_roles(self, ctx, member: Optional[discord.Member]):
-        if member is None:
-            await ctx.send(self.bot.create_error_embed("No member mentioned!"))
-            return
-        sent_message = await ctx.send("Searching... check this message for updates when completed.")
-        # noinspection PyTypeChecker
-        embed = await self.create_role_changes_embed(member)
-        embed.set_author(name=ctx.message.author.id)
-        await sent_message.edit(content=None, embed=embed)
-        await sent_message.add_reaction("⏩")
-
-    async def create_role_changes_embed(self, member, before=None, start_index=0, after=None):
-        embed = discord.Embed(timestamp=datetime.datetime.utcnow())
-        embed.colour = discord.Colour.blue()
-        embed.title = "Role changes for {} - {}".format(member.id, member.name)
-        role_changes, last_time, first_time = await self.get_role_updates(member, before=before, after=after)
-        role_changes.sort(key=lambda x: x.split("\n")[1], reverse=True)
-        for i in range(len(role_changes)):
-            update_string, human_time = role_changes[i].split("\n")
-            name = "{}. {} - {}".format(start_index + i + 1, update_string.split(" ")[0], human_time)
-            embed.add_field(name=name,
-                            value=update_string,
-                            inline=False)
-        if len(role_changes) == 0:
-            embed.description = "Nothing was found."
-        if last_time is None:
-            last_time_string = None
-        else:
-            last_time_string = str(last_time.timestamp())
-        if first_time is None:
-            first_time_string = None
-        else:
-            first_time_string = str(first_time.timestamp())
-        embed.set_footer(text="{}\n{}".format(first_time_string, last_time_string))
+    # The following embeds are just to create embeds with the correct colour in fewer words.
+    @staticmethod
+    def create_error_embed(text):
+        embed = discord.Embed(title="Error", description=text, colour=discord.Colour.red(),
+                              timestamp=datetime.datetime.utcnow())
         return embed
 
+    @staticmethod
+    def create_processing_embed(title, text):
+        embed = discord.Embed(title=title, description=text, colour=discord.Colour.dark_orange(),
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
     @staticmethod
-    async def get_channel_overwrites(channel: discord.TextChannel, before=None, after=None):
-        guild = channel.guild
-        action = discord.AuditLogAction.overwrite_update
-        entries = []
-        if before is None and after is None:
-            audit_search = guild.audit_logs(action=action, limit=None)
-        elif after is None:
-            audit_search = guild.audit_logs(action=action, limit=None, before=before)
-        elif before is None:
-            audit_search = guild.audit_logs(action=action, limit=None, after=after)
-        else:
-            return [], None
-        last_time = None
-        first_time = None
-
+    def create_completed_embed(title, text):
+        embed = discord.Embed(title=title, description=text, colour=discord.Colour.green(),
+                              timestamp=datetime.datetime.utcnow())
+        return embed
 
     @staticmethod
-    async def get_role_updates(member: discord.Member, before=None, after=None):
-        guild = member.guild
-        action = discord.AuditLogAction.member_role_update
-        entries = []
-        if before is None and after is None:
-            audit_search = guild.audit_logs(action=action, limit=None)
-        elif after is None:
-            audit_search = guild.audit_logs(action=action, limit=None, before=before)
-        elif before is None:
-            audit_search = guild.audit_logs(action=action, limit=None, after=after)
-        else:
-            return [], None
-        last_time = None
-        first_time = None
-        async for audit_log_entry in audit_search:
-            if audit_log_entry.target == member:
-                before_roles = audit_log_entry.changes.before.roles
-                after_roles = audit_log_entry.changes.after.roles
-                taken_roles = set(before_roles) - set(after_roles)
-                added_roles = set(after_roles) - set(before_roles)
-                human_date = audit_log_entry.created_at.strftime("%Y/%m/%d %H:%M:%S")
-                if len(taken_roles) > 0 and len(added_roles) > 0:
-                    update_text = "{} took {} and added {}\n{}".format(audit_log_entry.user.name,
-                                                                       ', '.join([role.name for role in taken_roles]),
-                                                                       ', '.join([role.name for role in added_roles]),
-                                                                       human_date)
-                elif len(taken_roles) > 0:
-                    update_text = "{} took {}.\n{}".format(audit_log_entry.user.name,
-                                                           ', '.join([role.name for role in taken_roles]),
-                                                           human_date)
-                elif len(added_roles) > 0:
-                    update_text = "{} added {}.\n{}".format(audit_log_entry.user.name,
-                                                            ', '.join([role.name for role in added_roles]),
-                                                            human_date)
-                else:
-                    continue
-                entries.append(update_text)
-                last_time = audit_log_entry.created_at
-                if first_time is None:
-                    first_time = audit_log_entry.created_at
-                if len(entries) == 10:
-                    break
-        return entries, last_time, first_time
+    def restart():
+        sys.exit(1)
+
+    @staticmethod
+    def completed_restart_write(channel_id, message_id, title, text):
+        with open("restart_info.json", 'w') as file:
+            file.write(json.dumps([channel_id, message_id, title, text, config.version]))
 
 
-@commands.Cog.listener()
-async def on_reaction_add(self, reaction, user):
-    if user == self.bot.user or reaction.message.author != self.bot.user:
-        return
-    message = reaction.message
-    message_embeds = message.embeds
-    if len(message_embeds) == 0:
-        return
-    embed = message_embeds[0]
-    if embed.title is None:
-        return
-    if "Role changes" in embed.title:
-        if user.id != int(embed.author.name):
-            await reaction.remove(user)
+def get_bot():
+    bot = FinBot()
+    data = DataHelper()
+
+    @bot.event
+    async def on_ready():
+        print("Ready!")
+        bot.guild = bot.get_guild(config.monkey_guild_id)
+        bot.error_channel = bot.get_channel(config.error_channel_id)
+        for extension_name in config.extensions:
+            print("Loading Cog named {}...".format(extension_name))
+            bot.load_extension("Cogs.{}".format(extension_name))
+            print("Loaded cog {}!".format(extension_name))
+        if os.path.exists("restart_info.json"):
+            with open("restart_info.json", 'r') as file:
+                channel_id, message_id, title, text, old_version_num = json.loads(file.read())
+            original_msg = await bot.get_channel(channel_id).fetch_message(message_id)
+            embed = bot.create_completed_embed(title, text)
+            embed.add_field(name="New Version: {}".format(config.version),
+                            value="Previous Version: {}".format(old_version_num))
+            last_commit_message = subprocess.check_output(["git", "log", "-1", "--pretty=%s"]).decode("utf-8").strip()
+            embed.set_footer(text=last_commit_message)
+            await original_msg.edit(embed=embed)
+            os.remove("restart_info.json")
+        await bot.get_latest_joins()
+
+    # noinspection PyUnusedLocal
+    @bot.event
+    async def on_error(method, *args, **kwargs):
+        try:
+            embed = discord.Embed(title= f" {FinBot.user}  experienced an error when running.", colour=discord.Colour.red())
+            embed.description = format_exc()[:2000]
+            print(format_exc())
+            await bot.error_channel.send(embed=embed)
+            # bot.restart()
+        except Exception as e:
+            print("Error in sending error to discord. Error was {}".format(format_exc()))
+            print("Error sending to discord was {}".format(e))
+
+    @bot.event
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.CommandNotFound) or isinstance(error, commands.DisabledCommand):
             return
-        if reaction.emoji == config.fast_forward_emoji:
-            if embed.footer is discord.Embed.Empty:
-                return
-            time_object = datetime.datetime.fromtimestamp(float(embed.footer.text.split("\n")[1]))
-            last_num = int(embed.fields[-1].name.split(".")[0])
-            target_id = int(embed.title.split(" ")[3])
-            member = message.guild.get_member(target_id)
-            new_embed = await self.create_role_changes_embed(member, before=time_object, start_index=last_num)
-            new_embed.set_author(name=user.id)
-            add_forward = True
-            if new_embed.description is not discord.Embed.Empty and "Nothing was found." in new_embed.description:
-                new_embed.add_field(name="{}. None".format(last_num + 1), value="Nothing to see here.")
-                new_embed.set_footer(text="{}\nNone".format(
-                    (time_object + datetime.timedelta(seconds=1)).timestamp()))
-                add_forward = False
-            await message.edit(content=None, embed=new_embed)
-            await reaction.remove(user)
-            if config.rewind_emoji not in message.reactions:
-                await message.add_reaction(u"\u23EA")
-                if add_forward:
-                    await message.remove_reaction( u"\u23E9", self.bot.user)
-                    await message.add_reaction( u"\u23E9")
-            if not add_forward:
-                await message.remove_reaction( u"\u23E9", self.bot.user)
-        elif reaction.emoji == u"\u23EA":
-            embed_fields = embed.fields
-            if len(embed_fields) == 0:
-                return
-            if embed.footer is discord.Embed.Empty:
-                return
-            time_object = datetime.datetime.fromtimestamp(float(embed.footer.text.split("\n")[0]))
-            last_num = int(embed_fields[0].name.partition(".")[0])
-            add_back = True
-            if last_num == 1:
-                return
-            if last_num == 11:
-                add_back = False
-            target_id = int(embed.title.split(" ")[3])
-            member = message.guild.get_member(target_id)
-            new_embed = await self.create_role_changes_embed(member, after=time_object, start_index=last_num - 11)
-            new_embed.set_author(name=user.id)
-            await message.edit(content=None, embed=new_embed)
-            await reaction.remove(user)
-            if not add_back:
-                await reaction.remove(self.bot.user)
+        if isinstance(error, commands.CheckFailure):
+            await ctx.send(embed=bot.create_error_embed("You don't have permission to do that, {}.".
+                                                        format(ctx.message.author.mention)))
+            return
+        try:
+            embed = discord.Embed(title=f"{FinBot.user} experienced an error in a command.", colour=discord.Colour.red())
+            embed.description = format_exc()[:2000]
+            embed.add_field(name="Command passed error", value=error)
+            embed.add_field(name="Context", value=ctx.message.content)
+            print_tb(error.__traceback__)
+            guild_error_channel_id = data.get("guild_error_channels", {}).get(str(ctx.guild.id), 795057163768037376)
+            error_channel = bot.get_channel(guild_error_channel_id)
+            await error_channel.send(embed=embed)
+            await ctx.reply(embed=embed)
+            # bot.restart()
+        except Exception as e:
+            print("Error in sending error to discord. Error was {}".format(error))
+            print("Error sending to discord was {}".format(e))
+
+    return bot
 
 
-def is_staff_backend(member):
-    return (member.guild_permissions.administrator or member.guild_permissions.manage_guild or member.guild_permissions.manage_roles or member.guild_permissions.manage_channels)
-
-
-
-bot.run(data['Token'])
+if __name__ == '__main__':
+    FinBot_bot = get_bot()
+    try:
+        FinBot_bot.run(config.token)
+    except discord.errors.LoginFailure:
+        time.sleep(18000)

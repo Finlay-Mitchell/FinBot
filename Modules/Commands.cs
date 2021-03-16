@@ -1192,7 +1192,7 @@ namespace FinBot.Modules
             await Context.Message.Channel.SendMessageAsync("", false, b.Build());
         }
 
-        [Command("stats")]
+        [Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
         public async Task stats(params string[] graph)
         {
             if (graph.Length == 0)
@@ -1272,16 +1272,19 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("dadjoke"), Alias("badjoke")]
+        [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke") Alias("badjoke")]
         public async Task test()
         {
             var client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
             string dadJoke = await client.GetRandomJokeStringAsync();
             await Context.Message.Channel.SendMessageAsync(dadJoke);
+        }
 
-
-
-
+        //This is just boilerplate code so my bot A.) doesn't complain when I execute functions from the Python module and b.) to include it in the help command
+        [Command("audit"), Summary("Gets audit log info on user/channel/guild"), Remarks("(PREFIX)audit [roles] <user> | (PREFIX)audit [overrides] <channel>")]
+        public async Task audit(params string[] args)
+        {
+            return;
         }
     }
 }
