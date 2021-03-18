@@ -7,7 +7,7 @@ namespace FinBot.Services
 {
 	public static class ReminderService
 	{
-		public static async Task RemindAsyncSeconds(SocketUser guild, int time, string msg, ISocketMessageChannel chan)
+		public static async Task RemindAsyncSeconds(SocketUser guild, int time, string msg, SocketUserMessage DiscMessage)
 		{
 			int convert = (int)TimeSpan.FromSeconds(time).TotalMilliseconds;
 			string timenow = TimeNow();
@@ -16,8 +16,8 @@ namespace FinBot.Services
 			embed.WithTitle("Reminder");
 			embed.WithDescription(msg);
 			embed.WithFooter($"Reminder was set at {timenow}", guild.GetAvatarUrl());
-			await chan.TriggerTypingAsync();
-			await chan.SendMessageAsync("", false, embed.Build());
+			await DiscMessage.Channel.TriggerTypingAsync();
+			await DiscMessage.ReplyAsync("", false, embed.Build());
 		}
 
 		public static string TimeNow()

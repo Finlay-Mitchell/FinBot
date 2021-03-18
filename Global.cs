@@ -39,7 +39,6 @@ namespace FinBot
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static string SnipeLogs = $"{Environment.CurrentDirectory}/Data/Logs/SnipedMessage.db";
 
-
         public static void ReadConfig()
         {
             JsonItems data = JsonConvert.DeserializeObject<JsonItems>(File.ReadAllText(ConfigPath));
@@ -93,7 +92,7 @@ namespace FinBot
                 SQLiteConnection conn = new SQLiteConnection($"data source = {SnipeLogs}");
                 using var cmd = new SQLiteCommand(conn);
                 conn.Open();
-                cmd.CommandText = "CREATE TABLE SnipeLogs(message TEXT, timestamp INTEGER, guildId TEXT)";
+                cmd.CommandText = "CREATE TABLE SnipeLogs(message TEXT, timestamp INTEGER, guildId TEXT, author TEXT)";
                 cmd.ExecuteNonQuery();
                 conn.Close();
             }

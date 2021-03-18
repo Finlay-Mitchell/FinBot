@@ -82,7 +82,7 @@ namespace FinBot.Modules
                     if (val > 21600)
                     {
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                        await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                         {
                             Color = Color.LightOrange,
                             Title = "Slowmode interval to large!",
@@ -102,7 +102,7 @@ namespace FinBot.Modules
                         x.SlowModeInterval = val;
                     });
                     await Context.Channel.TriggerTypingAsync();
-                    RestUserMessage t = await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.Green,
                         Title = $"Set the slowmode to {value}!",
@@ -126,7 +126,7 @@ namespace FinBot.Modules
             else
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
@@ -149,7 +149,7 @@ namespace FinBot.Modules
             if (!GuildUser.GuildPermissions.BanMembers)
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
@@ -168,7 +168,7 @@ namespace FinBot.Modules
                 if (user == Context.User)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
@@ -187,7 +187,7 @@ namespace FinBot.Modules
                 if (user.GuildPermissions.Administrator)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
@@ -227,7 +227,7 @@ namespace FinBot.Modules
                         IconUrl = arg.GetAvatarUrl(),
                         Text = $"{arg.Username}#{arg.Discriminator}"
                     },
-                    Description = $"{user} has been banned by {GuildUser} at {DateTime.Now}\n Reason: {reason}.",
+                    Description = $"{user} has been banned at {DateTime.Now}\n Reason: {reason}.",
                     ThumbnailUrl = Global.BanMessageURL,
                     Color = Color.DarkRed
                 };
@@ -283,7 +283,7 @@ namespace FinBot.Modules
                 if (user.GuildPermissions.Administrator)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
@@ -344,7 +344,7 @@ namespace FinBot.Modules
                 if (user == Context.User)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
@@ -363,7 +363,7 @@ namespace FinBot.Modules
                 if (User.GuildPermissions.Administrator)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
@@ -382,7 +382,7 @@ namespace FinBot.Modules
                 if (vc == null)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "User not in voice channel!",
@@ -401,7 +401,7 @@ namespace FinBot.Modules
                     if (vc.GetUser(user.Id).IsMuted)
                     {
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                        await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                         {
                             Color = Color.LightOrange,
                             Title = "User already muted!",
@@ -433,7 +433,7 @@ namespace FinBot.Modules
                         };
                         eb.WithCurrentTimestamp();
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Channel.SendMessageAsync("", false, eb.Build());
+                        await Context.Message.ReplyAsync("", false, eb.Build());
                     }
                 }
             }
@@ -441,7 +441,7 @@ namespace FinBot.Modules
             else
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
@@ -470,7 +470,7 @@ namespace FinBot.Modules
                     if (vc == null)
                     {
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                        await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                         {
                             Color = Color.LightOrange,
                             Title = "User not in voice channel!",
@@ -526,7 +526,7 @@ namespace FinBot.Modules
             else
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
@@ -552,7 +552,7 @@ namespace FinBot.Modules
                 if (user == Context.User)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
@@ -571,7 +571,7 @@ namespace FinBot.Modules
                 else if (User.GuildPermissions.Administrator)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
@@ -611,7 +611,7 @@ namespace FinBot.Modules
             else
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
@@ -687,7 +687,7 @@ namespace FinBot.Modules
 
             if (!user.GuildPermissions.ManageMessages)
             {
-                await Context.Channel.SendMessageAsync("", false, new Discord.EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
                     Author = new EmbedAuthorBuilder()
                     {
@@ -708,7 +708,7 @@ namespace FinBot.Modules
                 noUser.WithDescription("Please mention a user!");
                 noUser.WithColor(Color.Red);
                 noUser.WithAuthor(Context.Message.Author);
-                await Context.Channel.SendMessageAsync("", false, noUser.Build());
+                await Context.Message.ReplyAsync("", false, noUser.Build());
 
                 return;
             }
@@ -731,7 +731,7 @@ namespace FinBot.Modules
                 Description = $"Log for {u.Username} cleared.",
                 Fields = new List<EmbedFieldBuilder>()
             };
-            await Context.Channel.SendMessageAsync("", false, b.Build());
+            await Context.Message.ReplyAsync("", false, b.Build());
         }
 
         [Command("ClearAllModLogs"), Summary("Clears all logs for a user"), Remarks("(PREFIX)ClearAllModLogs <user>"), Alias("clearalllogs", "cal", "caml")]
@@ -742,7 +742,7 @@ namespace FinBot.Modules
 
             if (!user.GuildPermissions.ManageMessages)
             {
-                await Context.Channel.SendMessageAsync("", false, new Discord.EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
                     Author = new EmbedAuthorBuilder()
                     {
@@ -763,7 +763,7 @@ namespace FinBot.Modules
                 noUser.WithDescription("Please mention a user!");
                 noUser.WithColor(Color.Red);
                 noUser.WithAuthor(Context.Message.Author);
-                await Context.Channel.SendMessageAsync("", false, noUser.Build());
+                await Context.Message.ReplyAsync("", false, noUser.Build());
 
                 return;
             }
@@ -786,7 +786,7 @@ namespace FinBot.Modules
                 Description = $"Modlogs for {u.Username} have been cleared",
                 Fields = new List<EmbedFieldBuilder>()
             };
-            await Context.Channel.SendMessageAsync("", false, b.Build());
+            await Context.Message.ReplyAsync("", false, b.Build());
         }
 
         [Command("modlogs"), Summary("Shows infractions of a user"), Remarks("(PREFIX)modlogs <user>"), Alias("logs", "modlog", "mod-logs")]
@@ -797,7 +797,7 @@ namespace FinBot.Modules
 
             if (!user.GuildPermissions.ManageMessages)
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Author = new EmbedAuthorBuilder()
                     {
@@ -819,7 +819,7 @@ namespace FinBot.Modules
                 noUser.WithDescription("Please mention a user!");
                 noUser.WithColor(Color.Red);
                 noUser.WithAuthor(Context.Message.Author);
-                await Context.Channel.SendMessageAsync("", false, noUser.Build());
+                await Context.Message.ReplyAsync("", false, noUser.Build());
 
                 return;
             }
@@ -861,7 +861,7 @@ namespace FinBot.Modules
 
             else
             {
-                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Author = new EmbedAuthorBuilder()
                     {
@@ -880,7 +880,7 @@ namespace FinBot.Modules
         public async Task SendToLogger(EmbedBuilder b, ulong GuildId)
         {
             InfractionMessageHandler infractionMessageHandler = new InfractionMessageHandler(Global.Client, GuildId, b.Build());
-            var msg = await Context.Channel.SendMessageAsync("", false, infractionMessageHandler.InfractionEmbedBuilder(1, InfractionMessageHandler.CalcInfractionPage(Context.Guild.GetUser(Context.Message.Author.Id))));
+            var msg = await Context.Message.ReplyAsync("", false, infractionMessageHandler.InfractionEmbedBuilder(1, InfractionMessageHandler.CalcInfractionPage(Context.Guild.GetUser(Context.Message.Author.Id))));
             var emote1 = new Emoji("\U000027A1");
             var emote2 = new Emoji("\U00002B05");
             await msg.AddReactionAsync(emote2);
@@ -1186,6 +1186,14 @@ namespace FinBot.Modules
         //        }.Build());
         //    }
         //}
+
+
+        //This is just boilerplate code so my bot A.) doesn't complain when I execute functions from the Python module and b.) to include it in the help command
+        [Command("audit"), Summary("Gets audit log info on user/channel/guild"), Remarks("(PREFIX)audit [roles] <user> | (PREFIX)audit [overrides] <channel>")]
+        public Task audit(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
     }
 }
 //✅❌

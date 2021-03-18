@@ -49,7 +49,7 @@ namespace FinBot
                 .BuildServiceProvider();
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                LogLevel = LogSeverity.Debug,
+                LogLevel = LogSeverity.Verbose,
                 AlwaysDownloadUsers = true,
                 MessageCacheSize = 99999,
             });

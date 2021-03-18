@@ -35,9 +35,10 @@ namespace FinBot.Handlers
             Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] - " + "Services loaded");
         }
 
-        private Task AddToSnipe(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
+        private async Task AddToSnipe(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
         {
             SocketGuildChannel sGC = (SocketGuildChannel)arg2;
+            SocketUserMessage msg = (SocketUserMessage)await arg1.GetOrDownloadAsync();
             SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
             conn.Open();
             using var cmd = new SQLiteCommand(conn);
@@ -46,24 +47,29 @@ namespace FinBot.Handlers
             cmd1.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{sGC.Guild.Id}'";
             using SQLiteDataReader reader = cmd1.ExecuteReader();
             bool IsEmpty = true;
+            string finalmsg = "";
 
             while (reader.Read())
             {
-                string msg = arg1.Value.ToString();
-                msg = Regex.Replace(msg, "'", "\""); //This line of code runs when as an exe but not in the IDE, scary!
+                finalmsg = msg.Content;
+
+                if (msg.Content.Contains("\""))
+                {
+                    finalmsg = Regex.Replace(msg.Content, "'", "\"");
+                }
+
                 IsEmpty = false;
-                cmd.CommandText = $"UPDATE SnipeLogs SET timestamp = {Now}, message = '{msg}' WHERE guildId = '{sGC.Guild.Id}'";
+                cmd.CommandText = $"UPDATE SnipeLogs SET timestamp = {Now}, message = '{finalmsg}', author = '{msg.Author.Id}' WHERE guildId = '{sGC.Guild.Id}'";
                 cmd.ExecuteNonQuery();
             }
 
             if (IsEmpty)
             {
-                cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId) VALUES ('{arg1.Value}', {Now}, '{sGC.Guild.Id}')";
+                cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId, author) VALUES ('{finalmsg}', {Now}, '{sGC.Guild.Id}', '{msg.Author.Username}#{msg.Author.Discriminator}')";
                 cmd.ExecuteNonQuery();
             }
 
             conn.Close();
-            return Task.CompletedTask;
         }
 
         private Task LogMessage(SocketMessage arg)

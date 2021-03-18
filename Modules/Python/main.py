@@ -145,7 +145,6 @@ def get_bot():
 
     return bot
 
-
 if __name__ == '__main__':
     FinBot_bot = get_bot()
     try:

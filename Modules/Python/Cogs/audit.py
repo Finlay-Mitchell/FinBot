@@ -27,9 +27,9 @@ class Audit(commands.Cog):
 
     async def audit_overwrites(self, ctx, channel: Optional[discord.TextChannel]):
         if channel is None:
-            await ctx.send(self.bot.create_error_embed("No channel mentioned!"))
+            await ctx.reply(self.bot.create_error_embed("No channel mentioned!"))
             return
-        sent_message = await ctx.send("Searching... check this message for updates when completed.")
+        sent_message = await ctx.reply("Searching... check this message for updates when completed.")
         embed = await self.create_channel_updates_embed(channel)
         embed.set_author(name=ctx.message.author.id)
         await sent_message.edit(content=None, embed=embed)
@@ -44,9 +44,9 @@ class Audit(commands.Cog):
 
     async def audit_roles(self, ctx, member: Optional[discord.Member]):
         if member is None:
-            await ctx.send(self.bot.create_error_embed("No member mentioned!"))
+            await ctx.reply(self.bot.create_error_embed("No member mentioned!"))
             return
-        sent_message = await ctx.send("Searching... check this message for updates when completed.")
+        sent_message = await ctx.reply("Searching... check this message for updates when completed.")
         # noinspection PyTypeChecker
         embed = await self.create_role_changes_embed(member)
         embed.set_author(name=ctx.message.author.id)

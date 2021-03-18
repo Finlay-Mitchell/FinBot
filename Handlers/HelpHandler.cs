@@ -26,7 +26,7 @@ namespace FinBot.Handlers
 
             else if (arg.Length > 1)
             {
-                await Context.Message.Channel.SendMessageAsync("Please only enter one parameter");
+                await Context.Message.ReplyAsync("Please only enter one parameter");
             }
 
             else
@@ -64,41 +64,41 @@ namespace FinBot.Handlers
 
                 if (!string.IsNullOrWhiteSpace(description))
                 {
-                    if (module.Name == "ModCommands")
+                    switch (module.Name)
                     {
-                        builder.AddField(x =>
-                        {
-                            x.Name = "Administrative commands";
-                            x.Value = description.Remove(description.LastIndexOf(','));
-                            x.IsInline = false;
-                        });
-                    }
+                        case "ModCommands":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Administrative commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
 
-                    else if (module.Name == "HelpHandler")
-                    {
-                        builder.AddField(x =>
-                        {
-                            x.Name = "Help commands";
-                            x.Value = description.Remove(description.LastIndexOf(','));
-                            x.IsInline = false;
-                        });
-                    }
+                        case "HelpHandler":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Help commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
 
-                    else
-                    {
-                        builder.AddField(x =>
-                        {
-                            x.Name = module.Name;
-                            x.Value = description.Remove(description.LastIndexOf(','));
-                            x.IsInline = false;
-                        });
+                        default:
+                            builder.AddField(x =>
+                            {
+                                x.Name = module.Name;
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
                     }
                 }
             }
 
             builder.WithCurrentTimestamp();
             builder.AddField("Help support me", "[To support the development & hosting fees of building FinBot, please help out by donating!](http://ec2-35-176-187-24.eu-west-2.compute.amazonaws.com/donate.html)");
-            await Context.Message.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Message.ReplyAsync("", false, builder.Build());
         }
 
         public async Task HelpAsync(string command)
@@ -107,7 +107,7 @@ namespace FinBot.Handlers
 
             if (!result.IsSuccess)
             {
-                await Context.Message.Channel.SendMessageAsync($"Sorry, I couldn't find a command like **{command}**.");
+                await Context.Message.ReplyAsync($"Sorry, I couldn't find a command like **{command}**.");
                 return;
             }
 
@@ -123,13 +123,12 @@ namespace FinBot.Handlers
                 builder.AddField(x =>
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
-                    x.Value = $"Summary: {cmd.Summary}" +
-                              $"\nSyntax: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
+                    x.Value = $"Summary: {cmd.Summary}\nSyntax: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
                     x.IsInline = true;
                 });
             }
 
-            await Context.Message.Channel.SendMessageAsync("", false, builder.Build());
+            await Context.Message.ReplyAsync("", false, builder.Build());
         }
     }
 }
