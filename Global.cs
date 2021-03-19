@@ -81,7 +81,7 @@ namespace FinBot
                 SQLiteConnection conn = new SQLiteConnection($"data source = {LevelPath}");
                 using var cmd = new SQLiteCommand(conn);
                 conn.Open();
-                cmd.CommandText = @"CREATE TABLE Levels(userId TEXT, guildId TEXT, timestamp INTEGER, level INTEGER, XP INTEGER)";
+                cmd.CommandText = @"CREATE TABLE Levels(userId TEXT, guildId TEXT, timestamp INTEGER, level INTEGER, XP INTEGER, totalXP INTEGER)";
                 cmd.ExecuteNonQuery();
                 conn.Close();
             }
@@ -182,7 +182,7 @@ namespace FinBot
 
         public static long ConvertToTimestamp(DateTime value)
         {
-            TimeSpan elapsedTime = value - Global.Epoch;
+            TimeSpan elapsedTime = value - Epoch;
             return (long)elapsedTime.TotalSeconds;
         }
 

@@ -8,10 +8,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using FinBot.Handlers.Automod;
-using FinBot.Services;
 using System.Data.SQLite;
 using FinBot.Handlers.AutoMod;
-using System.Collections.Generic;
 
 namespace FinBot.Handlers
 {
@@ -53,7 +51,7 @@ namespace FinBot.Handlers
             {
                 finalmsg = msg.Content;
 
-                if (msg.Content.Contains("\""))
+                if (msg.Content.Contains("'"))
                 {
                     finalmsg = Regex.Replace(msg.Content, "'", "\"");
                 }
@@ -65,7 +63,7 @@ namespace FinBot.Handlers
 
             if (IsEmpty)
             {
-                cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId, author) VALUES ('{finalmsg}', {Now}, '{sGC.Guild.Id}', '{msg.Author.Username}#{msg.Author.Discriminator}')";
+                cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId, author) VALUES ('{finalmsg}', {Now}, '{sGC.Guild.Id}', '{msg.Author.Id}')";
                 cmd.ExecuteNonQuery();
             }
 

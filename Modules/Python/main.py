@@ -21,65 +21,6 @@ class FinBot(commands.Bot):
         self.error_channel = None
         self.data = DataHelper()
         self.database_handler = None
-        self.latest_joins = {}
-
-    async def get_latest_joins(self):
-        for guild in self.guilds:
-            members = await self.get_sorted_members(guild)
-            self.latest_joins[guild.id] = members
-
-    async def get_sorted_members(self, guild):
-        members = await guild.fetch_members(limit=None).flatten()
-        members = [member for member in members if not member.bot]
-        sorting_members = {member: (member, member.joined_at) for member in members}
-        member_ids = [user.id for user in members]
-        all_guilds = self.data.get("og_messages", {})
-        og_messages = all_guilds.get(str(guild.id), {})
-        for user_id in og_messages.keys():
-            try:
-                member_object = members[member_ids.index(int(user_id))]
-                first_join = datetime.datetime.utcfromtimestamp(og_messages[user_id])
-                if first_join < member_object.joined_at:
-                    sorting_members[member_object] = (member_object, first_join)
-                    member_object.joined_at = first_join
-                    members[member_ids.index(int(user_id))] = member_object
-            except (ValueError, IndexError):
-                pass
-        members = list(sorting_members.values())
-        members.sort(key=lambda x: x[1])
-        members = [member[0] for member in members]
-        members = [user for user in members if user.joined_at is not None]
-        members.sort(key=lambda x: x.joined_at)
-        return members
-
-    # The following embeds are just to create embeds with the correct colour in fewer words.
-    @staticmethod
-    def create_error_embed(text):
-        embed = discord.Embed(title="Error", description=text, colour=discord.Colour.red(),
-                              timestamp=datetime.datetime.utcnow())
-        return embed
-
-    @staticmethod
-    def create_processing_embed(title, text):
-        embed = discord.Embed(title=title, description=text, colour=discord.Colour.dark_orange(),
-                              timestamp=datetime.datetime.utcnow())
-        return embed
-
-    @staticmethod
-    def create_completed_embed(title, text):
-        embed = discord.Embed(title=title, description=text, colour=discord.Colour.green(),
-                              timestamp=datetime.datetime.utcnow())
-        return embed
-
-    @staticmethod
-    def restart():
-        sys.exit(1)
-
-    @staticmethod
-    def completed_restart_write(channel_id, message_id, title, text):
-        with open("restart_info.json", 'w') as file:
-            file.write(json.dumps([channel_id, message_id, title, text, config.version]))
-
 
 def get_bot():
     bot = FinBot()
@@ -105,7 +46,6 @@ def get_bot():
             embed.set_footer(text=last_commit_message)
             await original_msg.edit(embed=embed)
             os.remove("restart_info.json")
-        await bot.get_latest_joins()
 
     # noinspection PyUnusedLocal
     @bot.event

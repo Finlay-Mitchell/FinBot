@@ -1055,7 +1055,7 @@ namespace FinBot.Modules
             using SQLiteCommand cmd = new SQLiteCommand(conn);
             conn.Open();
             List<Dictionary<string, dynamic>> scores = new List<Dictionary<string, dynamic>>();
-            cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{Context.Guild.Id}' ORDER BY XP DESC LIMIT 10";
+            cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{Context.Guild.Id}' ORDER BY totalXP DESC LIMIT 10";
             using SQLiteDataReader reader = cmd.ExecuteReader();
             int count = 0;
             EmbedBuilder b = new EmbedBuilder()
@@ -1069,6 +1069,7 @@ namespace FinBot.Modules
                 Color = Color.Green,
             };
             string format = "```";
+            string username = "";
 
             while (reader.Read())
             {
@@ -1077,9 +1078,20 @@ namespace FinBot.Modules
                 if (count <= 10)
                 {
                     Dictionary<string, dynamic> arr = new Dictionary<string, dynamic>();
-                    string username = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))).Username;
+                    SocketGuildUser user = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0)));
+                    
+                    if(user.Nickname != null)
+                    {
+                        username = user.Nickname;
+                    }
+
+                    else
+                    {
+                        username = user.Username;
+                    }  
+                    
                     arr.Add("name", username);
-                    arr.Add("score", reader.GetInt64(4));
+                    arr.Add("score", reader.GetInt64(5));
                     scores.Add(arr);
                     int spaceCount = 32 - username.Length;
                     string spaces = "";
@@ -1110,6 +1122,8 @@ namespace FinBot.Modules
                 var byteContent = new ByteArrayContent(buffer);
                 byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
+                //This next line is so I can test my failover embed in case Thomas's website doesn't want to work with me.
+                //HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/failovertest", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
                 string resp = await HTTPResponse.Content.ReadAsStringAsync();
                 Dictionary<string, string> APIData = JsonConvert.DeserializeObject<Dictionary<string, string>>(resp);
                 b.WithCurrentTimestamp();
@@ -1117,7 +1131,7 @@ namespace FinBot.Modules
                 await Context.Message.ReplyAsync("", false, b.Build());
             }
 
-            catch(Exception ex)
+            catch(Exception)
             {
                 b.WithCurrentTimestamp();
                 b.Description = format + "```";
@@ -1165,7 +1179,7 @@ namespace FinBot.Modules
 
             while (reader.Read())
             {
-                b.Description = $"**{user.Username} - __{reader.GetInt64(4)}__**\nLevel - {reader.GetInt64(3)}";
+                b.Description = $"**{user.Username} - __{reader.GetInt64(5)}__**\nLevel - {reader.GetInt64(3)}";
             }
 
             conn.Close();
@@ -1181,10 +1195,7 @@ namespace FinBot.Modules
             conn.Open();
             cmd.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{Context.Guild.Id}'";
             using SQLiteDataReader reader = cmd.ExecuteReader();
-            EmbedBuilder b = new EmbedBuilder()
-            {
-
-            };
+            EmbedBuilder b = new EmbedBuilder();
 
             while (reader.Read())
             {
@@ -1224,7 +1235,7 @@ namespace FinBot.Modules
                 SQLiteConnection conn = new SQLiteConnection($"data source = {Global.LevelPath}");
                 using SQLiteCommand cmd = new SQLiteCommand(conn);
                 conn.Open();
-                cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{Context.Guild.Id}' ORDER BY XP DESC LIMIT 10";
+                cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{Context.Guild.Id}' ORDER BY totalXP DESC LIMIT 10";
                 using SQLiteDataReader reader = cmd.ExecuteReader();
                 int count = 0;
                 string Username = "labels: [";
@@ -1237,7 +1248,7 @@ namespace FinBot.Modules
                     if (count <= 10)
                     {
                         Username += $"'{Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))).Username}', ";
-                        Data += $"{reader.GetInt64(4)}, ";
+                        Data += $"{reader.GetInt64(5)}, ";
                     }
 
                     else
@@ -1259,34 +1270,37 @@ namespace FinBot.Modules
                 {
                     case "pie":
                         qc.Config = $"{{type: 'pie', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                        await Context.Message.ReplyAsync(qc.GetUrl());
                         break;
 
                     case "bar":
                         qc.Config = $"{{type: 'bar', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                        await Context.Message.ReplyAsync(qc.GetUrl());
                         break;
 
                     case "line":
                         qc.Config = $"{{type: 'line', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                        await Context.Message.ReplyAsync(qc.GetUrl());
                         break;
 
                     case "doughnut":
                         qc.Config = $"{{type: 'doughnut', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                        await Context.Message.ReplyAsync(qc.GetUrl());
                         break;
 
                     case "polararea":
                         qc.Config = $"{{type: 'polarArea', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                        await Context.Message.ReplyAsync(qc.GetUrl());
                         break;
                     default:
                         await ReplyAsync("Please only enter \"pie\", \"bar\", \"line\", \"doughnut\" or \"polararea\"");
                         break;
                 }
-
-                await Context.Message.ReplyAsync(qc.GetUrl());
             }
         }
 
         [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
-        public async Task test()
+        public async Task dadjoke()
         {
             var client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
             string dadJoke = await client.GetRandomJokeStringAsync();
