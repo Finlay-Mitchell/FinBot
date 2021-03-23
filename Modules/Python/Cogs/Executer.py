@@ -1,8 +1,4 @@
-import datetime
-import discord
 from discord.ext import commands
-from Data import config
-from typing import Optional
 from main import FinBot
 
 class Executer(commands.Cog):
@@ -12,8 +8,10 @@ class Executer(commands.Cog):
     @commands.command(pass_context=True)
     async def exec(self, ctx):
         author = ctx.message.author
+
         if author.id != 305797476290527235:
             return
+
         else:
             tmp_dic = {}
             executing_string = """async def temp_func():

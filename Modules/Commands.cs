@@ -1306,5 +1306,129 @@ namespace FinBot.Modules
             string dadJoke = await client.GetRandomJokeStringAsync();
             await Context.Message.ReplyAsync(dadJoke);
         }
+
+        [Command("poll")]
+        public async Task poll([Remainder] string question)
+        {
+            SQLiteConnection conn = new SQLiteConnection($"data source = {Global.Polls}");
+            using SQLiteCommand cmd = new SQLiteCommand(conn);
+            using SQLiteCommand cmd1 = new SQLiteCommand(conn);
+            conn.Open();
+            cmd.CommandText = $"SELECT * FROM Polls WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
+            using SQLiteDataReader reader = cmd.ExecuteReader();
+            bool hasRan = false;
+
+            while(reader.Read())
+            {
+                hasRan = true;
+
+                if (reader.GetString(3) == "Active")
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.Title = "Poll already active";
+                    eb.Description = $"Your poll with ID {reader.GetString(0)} is already active, please close this poll by doing {Global.Prefix}endpoll";
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    eb.Color = Color.Red;
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+                    return;
+                }
+
+                else
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.Title = $"{question}";
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
+                    var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    await msg.AddReactionsAsync(Global.reactions.ToArray());
+                    cmd1.CommandText = $"UPDATE Polls SET message = '{msg.Id}', guildId = '{Context.Guild.Id}', author = '{Context.Message.Author.Id}', state = 'Active', chanId = {Context.Message.Channel.Id} WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
+                    cmd1.ExecuteNonQuery();
+                }
+            }
+
+            if(!hasRan)
+            {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.Title = $"{question}";
+                eb.WithAuthor(Context.Message.Author);
+                eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
+                var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                await msg.AddReactionsAsync(Global.reactions.ToArray());
+                cmd1.CommandText = $"INSERT INTO Polls(message, guildId, author, state, chanId) VALUES ('{msg.Id}', '{Context.Guild.Id}', '{Context.Message.Author.Id}', 'Active', '{Context.Message.Channel.Id}')";
+                cmd1.ExecuteNonQuery();
+            }
+        }
+
+        [Command("endpoll")]
+        public async Task endpoll()
+        {
+            SQLiteConnection conn = new SQLiteConnection($"data source = {Global.Polls}");
+            using SQLiteCommand cmd = new SQLiteCommand(conn);
+            using SQLiteCommand cmd1 = new SQLiteCommand(conn);
+            conn.Open();
+            cmd.CommandText = $"SELECT * FROM Polls WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
+            using SQLiteDataReader reader = cmd.ExecuteReader();
+            bool hasRan = false;
+
+            while (reader.Read())
+            {
+                hasRan = true;
+
+                if (reader.GetString(3) == "Active")
+                {
+                    try
+                    {
+                        ulong mId = Convert.ToUInt64(reader.GetString(0));
+                        ulong chanId = Convert.ToUInt64(reader.GetString(4));
+                        ITextChannel channel = (ITextChannel)Context.Guild.GetChannel(chanId);
+                        var msg = await channel.GetMessageAsync(mId);
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.WithTitle("Getting poll results...");
+                        eb.Color = Color.Orange;
+                        RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("", false, eb.Build());
+                        msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
+                        msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
+                        eb.Title = $"{msg.Embeds.First().Title}";
+                        eb.WithAuthor(Context.Message.Author);
+                        eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
+                        eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
+                        eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
+                        await ModifyMessage(message, eb);
+                        cmd1.CommandText = $"UPDATE Polls SET state = 'Inactive' WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
+                        cmd1.ExecuteNonQuery();
+                    }
+
+                    catch (Exception ex)
+                    {
+                        await Context.Message.ReplyAsync($"Error: {ex.Message}");
+                        cmd1.CommandText = $"UPDATE Polls SET state = 'Inactive' WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
+                        cmd1.ExecuteNonQuery();
+                    }
+                }
+
+                else
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.Title = "Poll not active";
+                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    eb.Color = Color.Red;
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+                }
+            }
+
+            if (!hasRan)
+            {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.Title = "Poll not active";
+                eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
+                eb.WithAuthor(Context.Message.Author);
+                eb.WithCurrentTimestamp();
+                eb.Color = Color.Red;
+                await Context.Message.ReplyAsync("", false, eb.Build());
+            }
+        }
     }
 }

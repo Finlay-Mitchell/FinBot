@@ -17,4 +17,5 @@ discord_emoji = "<:discord:784309400524292117>"
 monkey_guild_id = 725886999646437407
 error_channel_id = 795057163768037376
 data_path = "../../bin/Debug/netcoreapp3.1/Data/config.json"
-extensions = ["audit", "Executer"]
+extensions = ["audit", "Executer", "api", "tts"]
+owner_id = 305797476290527235

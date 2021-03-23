@@ -84,6 +84,15 @@ namespace FinBot.Handlers
                             });
                             break;
 
+                        case "TTSCommands":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "TTS commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
+
                         default:
                             builder.AddField(x =>
                             {

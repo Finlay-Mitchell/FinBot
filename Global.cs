@@ -38,6 +38,12 @@ namespace FinBot
         public static string LevelPath = $"{Environment.CurrentDirectory}/Data/Logs/Levels.db";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static string SnipeLogs = $"{Environment.CurrentDirectory}/Data/Logs/SnipedMessage.db";
+        public static string Polls = $"{Environment.CurrentDirectory}/Data/Logs/Polls.db";
+        public static List<IEmote> reactions = new List<IEmote>()
+                        {
+                            new Emoji("✅"),
+                            new Emoji("❌")
+                        };
 
         public static void ReadConfig()
         {
@@ -93,6 +99,17 @@ namespace FinBot
                 using var cmd = new SQLiteCommand(conn);
                 conn.Open();
                 cmd.CommandText = "CREATE TABLE SnipeLogs(message TEXT, timestamp INTEGER, guildId TEXT, author TEXT)";
+                cmd.ExecuteNonQuery();
+                conn.Close();
+            }
+
+            if (!File.Exists(Polls))
+            {
+                SQLiteConnection.CreateFile($"{Polls}");
+                SQLiteConnection conn = new SQLiteConnection($"data source = {Polls}");
+                using var cmd = new SQLiteCommand(conn);
+                conn.Open();
+                cmd.CommandText = "CREATE TABLE Polls(message TEXT, guildId TEXT, author TEXT, state TEXT, chanId TEXT)";
                 cmd.ExecuteNonQuery();
                 conn.Close();
             }
