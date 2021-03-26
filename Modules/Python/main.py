@@ -10,6 +10,8 @@ from discord.ext import commands
 from Data import config
 from Handlers.storageHandler import DataHelper
 from traceback import format_exc, print_tb
+from Data.config import monkey_guild_id
+from mee6_py_api import API
 
 class FinBot(commands.Bot):
     def __init__(self):
@@ -97,6 +99,26 @@ def get_bot():
         except Exception as e:
             print("Error in sending error to discord. Error was {}".format(error))
             print("Error sending to discord was {}".format(e))
+
+
+
+    @bot.event
+    async def on_member_join(member):
+        mee6API = API(monkey_guild_id)
+        Xp = await mee6API.levels.get_user_level(member.id)
+        Level = await mee6API.levels.get_user_xp(member.id)
+
+        if not Xp == "None" and not Level == "None":
+            data = {}
+            data["Users"] = []
+            data["Users"].append({
+                "UserId": f"{member.id}",
+                "Level": f"{Level}",
+                "Xp": f"{Xp}"
+            })
+
+            with open("../../bin/Debug/netcoreapp3.1/Data/LEVELS.json", "a") as outfile:
+                json.dump(data, outfile, indent=2)
 
     return bot
 

@@ -25,6 +25,10 @@ using System.Web;
 using System.Data.SQLite;
 using QuickChart;
 using ICanHazDadJoke.NET;
+using System.Data;
+
+using MySql.Data;
+using MySql.Data.MySqlClient;
 
 namespace FinBot.Modules
 {
@@ -122,12 +126,7 @@ namespace FinBot.Modules
                         Match mtch = r.Match(resp);
                         string val = mtch.Groups[1].Value;
                         RestUserMessage msg = (RestUserMessage)await Context.Message.ReplyAsync($"Is that {val}?");
-                        List<IEmote> reactions = new List<IEmote>()
-                        {
-                            new Emoji("✅"),
-                            new Emoji("❌")
-                        };
-                        await msg.AddReactionsAsync(reactions.ToArray());
+                        await msg.AddReactionsAsync(Global.reactions.ToArray());
                         tp.Dispose();
                     }
 
@@ -160,12 +159,7 @@ namespace FinBot.Modules
                     Match mtch = r.Match(resp);
                     string val = mtch.Groups[1].Value;
                     RestUserMessage msg = (RestUserMessage)await Context.Message.ReplyAsync($"Is that {val}?");
-                    List<IEmote> reactions = new List<IEmote>()
-                        {
-                            new Emoji("✅"),
-                            new Emoji("❌")
-                        };
-                    await msg.AddReactionsAsync(reactions.ToArray());
+                    await msg.AddReactionsAsync(Global.reactions.ToArray());
                     tp.Dispose();
                 }
 
@@ -186,13 +180,41 @@ namespace FinBot.Modules
         [Command("ping"), Summary("gives you a ping to the Discord API"), Remarks("(PREFIX)ping")]
         public async Task Ping()
         {
+            DateTime before = DateTime.Now;
             await Context.Channel.TriggerTypingAsync();
-            await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+            RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("Pong!");
+            DateTime after = DateTime.Now;
+            ulong snowflake = (ulong)Math.Round((after - before).TotalSeconds * 1000);
+            ulong Heartbeat = (ulong)Math.Round((double)Context.Client.Latency);
+            ulong totalLatency = (ulong)Math.Round((message.CreatedAt - Context.Message.CreatedAt).TotalSeconds * 1000);
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.Title = $"Pong!";
+            eb.AddField("Ping to discord", $"{Math.Floor((double)snowflake / 2)}ms");
+            eb.AddField("Heartbeat(Me -> Discord -> Me)", $"{Heartbeat}ms");
+            eb.AddField("Total time(Your message -> my reply)", $"{totalLatency}ms");
+            eb.WithCurrentTimestamp();
+            eb.WithAuthor(Context.Message.Author);
+
+            if (totalLatency <= 94)
             {
-                Title = $"Pong: {Context.Client.Latency}ms!",
+                eb.Color = Color.Green;
             }
-            .WithColor(255, 105, 180)
-            .Build());
+
+            else if (totalLatency < 250)
+            {
+                eb.Color = Color.Orange;
+            }
+
+            else
+            {
+                eb.Color = Color.Red;
+            }
+
+            await message.ModifyAsync(x =>
+            {
+                x.Content = "";
+                x.Embed = eb.Build();
+            });
         }
 
         [Command("say"), Summary("repeats the text you enter to it"), Remarks("(PREFIX)say <text>"), Alias("echo", "repeat")]
@@ -229,7 +251,7 @@ namespace FinBot.Modules
 
             else
             {
-                await Context.Channel.SendMessageAsync($"What do you want me to say? please do {Global.Prefix}say <msg>.");
+                await Context.Message.ReplyAsync($"What do you want me to say? please do {Global.Prefix}say <msg>.");
                 tp.Dispose();
             }
 
@@ -1429,6 +1451,36 @@ namespace FinBot.Modules
                 eb.Color = Color.Red;
                 await Context.Message.ReplyAsync("", false, eb.Build());
             }
+        }
+
+        [Command("testing")]
+        public async Task testing()
+        {
+            string connStr = "server=localhost;user=root;database=world;port=3306;password=REPLACEPASSWORDHERE";
+
+            MySqlConnection conn = new MySqlConnection(connStr);
+            try
+            {
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
+
+                string sql = "SELECT * FROM test";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+
+                while (rdr.Read())
+                {
+                    await ReplyAsync($"{rdr[0]}");
+                }
+                rdr.Close();
+            }
+            catch (Exception ex)
+            {
+                await ReplyAsync(ex.ToString());
+            }
+
+            conn.Close();
+            Console.WriteLine("Done.");
         }
     }
 }

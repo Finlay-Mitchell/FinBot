@@ -11,6 +11,7 @@
     <PackageReference Include="ICanHazDadJoke.NET" Version="1.0.13" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-preview.1.21102.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.1.21102.12" />
+    <PackageReference Include="MySql.Data" Version="8.0.23" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1-beta1" />
     <PackageReference Include="QuickChart" Version="2.0.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.113.7" />

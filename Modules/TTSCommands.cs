@@ -35,21 +35,17 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        /*
-         * This code is just not being used at the moment as there are bugs within the python script.
-         */
-        
-        //[Command("reset_speakers"), Summary("Resets all users in the TTS list"), Remarks("(PREFIX)reset_speakers")]
-        //public Task reset_speakers(params string[] args)
-        //{
-        //    return Task.CompletedTask;
-        //}
+        [Command("reset_speakers"), Summary("Resets all users in the TTS list"), Remarks("(PREFIX)reset_speakers"), Alias("remove_speakers", "clear_speakers")]
+        public Task reset_speakers(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
 
-        //[Command("speak_perms"), Summary("Gives other members permissions to the (PREFIX)speak command"), Remarks("(PREFIX)speak_perms <member>")]
-        //public async Task speak_perms(params string[] args)
-        //{
-        //    return Task.CompletedTask;
-        //}
+        [Command("speak_perms"), Summary("Gives other members permissions to the (PREFIX)speak command"), Remarks("(PREFIX)speak_perms <member>")]
+        public Task speak_perms(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
 
         /*
          * Some commands are hidden from the public, since they are only accessable to the bot owner(me), for example:

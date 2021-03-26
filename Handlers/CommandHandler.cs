@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using FinBot.Handlers.Automod;
 using System.Data.SQLite;
 using FinBot.Handlers.AutoMod;
+using FinBot.Services;
 
 namespace FinBot.Handlers
 {
@@ -36,7 +37,7 @@ namespace FinBot.Handlers
         private async Task AddToSnipe(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
         {
             SocketGuildChannel sGC = (SocketGuildChannel)arg2;
-            SocketUserMessage msg = (SocketUserMessage)await arg1.GetOrDownloadAsync();
+            IMessage msg = await arg1.GetOrDownloadAsync();
             SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
             conn.Open();
             using var cmd = new SQLiteCommand(conn);
@@ -189,6 +190,7 @@ namespace FinBot.Handlers
                 HelpHandler helpHandler = new HelpHandler(_service);
                 ChatFilter chatFilter = new ChatFilter(_client);
                 LevellingHandler levellingHandler = new LevellingHandler(_client);
+                StatusService statusService = new StatusService(_client);                
                 FirstPass = true;
             }
 

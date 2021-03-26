@@ -132,7 +132,7 @@ namespace FinBot.Handlers
                 builder.AddField(x =>
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
-                    x.Value = $"Summary: {cmd.Summary}\nSyntax: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
+                    x.Value = $"Summary: {cmd.Summary.Replace("(PREFIX)", ($"{Global.Prefix}"))}\nSyntax: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
                     x.IsInline = true;
                 });
             }

@@ -113,13 +113,16 @@ class TTS(commands.Cog):
                     else:
                         right_field_text += "**{}** - {}\n".format(short, long)
                         field_to_add_to = -1
+
                     field_to_add_to += 1
+
                 lang_embed.description = description
                 lang_embed.add_field(name='\u200b', value=left_field_text)
                 lang_embed.add_field(name='\u200b', value=middle_field_text)
                 lang_embed.add_field(name='\u200b', value=right_field_text)
                 await ctx.reply(embed=lang_embed)
                 return
+
         new_lang = in_lang
         server_languages = self.data.get("server_languages", {})
         server_languages[ctx.guild.id] = new_lang
