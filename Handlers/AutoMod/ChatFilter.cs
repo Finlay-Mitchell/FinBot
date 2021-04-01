@@ -8,7 +8,7 @@ using FinBot.Modules;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace FinBot.Handlers.Automod
+namespace FinBot.Handlers.AutoMod
 {
     public class ChatFilter
     {

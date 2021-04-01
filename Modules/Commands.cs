@@ -26,8 +26,6 @@ using System.Data.SQLite;
 using QuickChart;
 using ICanHazDadJoke.NET;
 using System.Data;
-
-using MySql.Data;
 using MySql.Data.MySqlClient;
 
 namespace FinBot.Modules
@@ -653,58 +651,80 @@ namespace FinBot.Modules
             await baseMessage.ModifyAsync(x => { x.Embed = embed.Build(); });
         }
 
-        [Command("time"), Summary("Gets the time of a location"), Remarks("(PREFIX)time <location>")]
-        public async Task Time([Remainder] string loc)
-        {
-            Regex r1 = new Regex(".*");
-            loc = "time " + loc;
+        //[Command("time"), Summary("Gets the time of a location"), Remarks("(PREFIX)time <location>")]
+        //public async Task Time([Remainder] string loc)
+        //{
+        //    //      Regex r1 = new Regex(".*");
+        //    //      loc = "time " + loc;
 
-            if (r1.IsMatch(loc.ToLower()))
-            {
-                HttpClient HTTPClient = new HttpClient();
-                HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync($"https://www.google.com/search?q={loc.ToLower().Replace(' ', '+')}");
-                string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                Regex x = new Regex(@"<div class=""BNeawe iBp4i AP7Wnd""><div><div class=""BNeawe iBp4i AP7Wnd"">(.*?)<\/div><\/div>");
 
-                if (x.IsMatch(resp))
-                {
-                    string time = x.Match(resp).Groups[1].Value;
-                    HTTPClient.Dispose();
+        //    ////         if (r1.IsMatch(loc.ToLower()))
+        //    //      {
+        //    //             //HttpClient HTTPClient = new HttpClient();
+        //    //HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync($"https://www.google.com/search?q={loc.ToLower().Replace(' ', '+')}");
+        //    //string resp = await HTTPResponse.Content.ReadAsStringAsync();
+        //    //Regex x = new Regex(@"<div class=""BNeawe iBp4i AP7Wnd""><div><div class=""BNeawe iBp4i AP7Wnd"">(.*?)<\/div><\/div>");
 
-                    if (!loc.Contains("in"))
-                    {
-                        int index = loc.IndexOf("time");
-                        loc = loc.Insert(index + 4, " in ");
-                    }
+        //    loc = Regex.Replace(loc, "in", "");
+        //    DateTimeOffset nowDateTime = DateTimeOffset.Now;
+        //    DateTimeOffset newDateTime = TimeZoneInfo.ConvertTime(
+        //        nowDateTime,
+        //        TimeZoneInfo.FindSystemTimeZoneById($"Hawaiian Standard Time"));
 
-                    await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                    {
-                        Color = Color.Blue,
-                        Description = $"The current {loc.ToLower()} is {time}",
-                        Author = new EmbedAuthorBuilder()
-                        {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
-                }
+        //    if(newDateTime.Minute > 10)
+        //    {
+        //        newDateTime.Minute = (DateTimeOffset)"";
+        //    }
 
-                else
-                {
-                    HTTPClient.Dispose();
+        //    await ReplyAsync($"Time in {loc} is: {newDateTime.Hour}:{newDateTime.Minute}");
+        //    //        }
 
-                    if (!loc.Contains("in"))
-                    {
-                        int index = loc.IndexOf("time");
-                        loc = loc.Insert(index + 4, " in");
-                    }
+        //}
 
-                    await Context.Message.ReplyAsync($"Sorry buddy but could not get the {loc.ToLower().Replace("what time is it ", "")}");
-                }
-            }
-        }
+
+                //   if (x.IsMatch(resp))
+                //   {
+                ////      string time = x.Match(resp).Groups[1].Value;
+            //    await ReplyAsync(time);
+                ////    HTTPClient.Dispose();
+
+                //    if (!loc.Contains("in"))
+                //    {
+                //        int index = loc.IndexOf("time");
+                //        loc = loc.Insert(index + 4, " in ");
+                //    }
+
+                //    await Context.Channel.TriggerTypingAsync();
+                //    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                //    {
+                //        Color = Color.Blue,
+                //        Description = $"The current {loc.ToLower()} is {time}",
+                //        Author = new EmbedAuthorBuilder()
+                //        {
+                //            Name = Context.Message.Author.ToString(),
+                //            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                //            Url = Context.Message.GetJumpUrl()
+                //        }
+                //    }.Build());
+                //}
+
+                //else
+                //{
+                //    HTTPClient.Dispose();
+
+                //    if (!loc.Contains("in"))
+                //    {
+                //        int index = loc.IndexOf("time");
+                //        loc = loc.Insert(index + 4, " in");
+                //    }
+
+                //    await Context.Message.ReplyAsync($"Sorry buddy but could not get the {loc.ToLower().Replace("what time is it ", "")}");
+              //  }
+////
+//                await ReplyAsync(resp);
+//                Console.WriteLine(resp);
+//            }
+//        }
 
         [Command("Roleinfo"), Summary("Gets information on the parsed role"), Remarks("(PREFIX)roleinfo <role name> or <@role>"), Alias("role", "role-info", "ri")]
         public async Task RoleInfo([Remainder] SocketRole role)
@@ -1100,18 +1120,28 @@ namespace FinBot.Modules
                 if (count <= 10)
                 {
                     Dictionary<string, dynamic> arr = new Dictionary<string, dynamic>();
-                    SocketGuildUser user = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0)));
-                    
-                    if(user.Nickname != null)
+                    SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+
+                    if (Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))) == null)
                     {
-                        username = user.Nickname;
+                        username = $"<@{reader.GetString(0)}>";
                     }
 
                     else
                     {
-                        username = user.Username;
-                    }  
-                    
+                        user = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0)));
+
+                        if (user.Nickname != null)
+                        {
+                            username = user.Nickname;
+                        }
+
+                        else
+                        {
+                            username = user.Username;
+                        }
+                    }
+
                     arr.Add("name", username);
                     arr.Add("score", reader.GetInt64(5));
                     scores.Add(arr);
@@ -1209,34 +1239,34 @@ namespace FinBot.Modules
             return b.Build();
         }
 
-        [Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe")]
-        public async Task Snipe()
-        {
-            SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
-            using var cmd = new SQLiteCommand(conn);
-            conn.Open();
-            cmd.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{Context.Guild.Id}'";
-            using SQLiteDataReader reader = cmd.ExecuteReader();
-            EmbedBuilder b = new EmbedBuilder();
+        //[Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe")]
+        //public async Task Snipe()
+        //{
+        //    SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
+        //    using var cmd = new SQLiteCommand(conn);
+        //    conn.Open();
+        //    cmd.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{Context.Guild.Id}'";
+        //    using SQLiteDataReader reader = cmd.ExecuteReader();
+        //    EmbedBuilder b = new EmbedBuilder();
 
-            while (reader.Read())
-            {
-                ulong uId = Convert.ToUInt64(reader.GetString(3));
-                SocketUser user = Context.Guild.GetUser(uId);
-                b.Title = reader.GetString(0);
-                b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetInt64(1))}");
-                EmbedAuthorBuilder Author = new EmbedAuthorBuilder()
-                {
-                    Name = user.Username,
-                    IconUrl = user.GetAvatarUrl(),
-                };
-                b.WithAuthor(Author);
-                b.Color = Color.Red;
-            }
+        //    while (reader.Read())
+        //    {
+        //        ulong uId = Convert.ToUInt64(reader.GetString(3));
+        //        SocketUser user = Context.Guild.GetUser(uId);
+        //        b.Title = reader.GetString(0);
+        //        b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetInt64(1))}");
+        //        EmbedAuthorBuilder Author = new EmbedAuthorBuilder()
+        //        {
+        //            Name = user.Username,
+        //            IconUrl = user.GetAvatarUrl(),
+        //        };
+        //        b.WithAuthor(Author);
+        //        b.Color = Color.Red;
+        //    }
 
-            conn.Close();
-            await Context.Message.ReplyAsync("", false, b.Build());
-        }
+        //    conn.Close();
+        //    await Context.Message.ReplyAsync("", false, b.Build());
+        //}
 
         [Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
         public async Task stats(params string[] graph)
@@ -1262,6 +1292,7 @@ namespace FinBot.Modules
                 int count = 0;
                 string Username = "labels: [";
                 string Data = "data: [";
+                SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
 
                 while (reader.Read())
                 {
@@ -1269,7 +1300,27 @@ namespace FinBot.Modules
 
                     if (count <= 10)
                     {
-                        Username += $"'{Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))).Username}', ";
+
+                        if (Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))) == null)
+                        {
+                            Username += $"'<@{reader.GetString(0)}>', ";
+                        }
+
+                        else
+                        {
+                            user = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0)));
+
+                            if (user.Nickname != null)
+                            {
+                                Username += $"'{user.Nickname}', ";
+                            }
+
+                            else
+                            {
+                                Username += $"'{user.Username}', ";
+                            }
+                        }
+
                         Data += $"{reader.GetInt64(5)}, ";
                     }
 
@@ -1456,7 +1507,7 @@ namespace FinBot.Modules
         [Command("testing")]
         public async Task testing()
         {
-            string connStr = "server=localhost;user=root;database=world;port=3306;password=REPLACEPASSWORDHERE";
+            string connStr = "server=localhost;user=root;database=world;port=3306;password=Pas5w0rdboim8";
 
             MySqlConnection conn = new MySqlConnection(connStr);
             try
@@ -1481,6 +1532,82 @@ namespace FinBot.Modules
 
             conn.Close();
             Console.WriteLine("Done.");
+        }
+
+        [Command("dbins")]
+        public async Task dbins([Remainder] string args)
+        {
+            MySqlConnection conn = new MySqlConnection(Global.connStr);
+            try
+            {
+                Console.WriteLine("Connecting to MySQL...");
+                conn.Open();
+
+                MySqlCommand cmd = new MySqlCommand(args, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                
+                while (rdr.Read())
+                {
+                    await ReplyAsync($"{rdr[0]}, {rdr[1]}, {rdr[2]}, {rdr[3]}, {rdr[4]}, {rdr[5]}");
+                }
+                rdr.Close();
+            }
+
+            catch (Exception ex)
+            {
+                await ReplyAsync(ex.ToString());
+            }
+
+            conn.Close();
+            Console.WriteLine("Done.");
+        }
+
+        [Command("test")]
+        public async Task test()
+        {
+            IAsyncEnumerable<IReadOnlyCollection<RestAuditLogEntry>> t = Context.Guild.GetAuditLogsAsync(10, actionType: ActionType.MemberRoleUpdated);
+            var f = Context.Guild.GetAuditLogsAsync(10, actionType: ActionType.BotAdded).FlattenAsync();
+
+            //IEnumerator<string> e = (IEnumerator<string>)t;
+
+            //List<string> l = (List<string>)e;
+
+
+            //string prntmsg = "";
+
+            //for(int i = 0; i < 10; i++)
+            //{
+            //    prntmsg += $"{l[i]}\n";
+            //}
+
+
+            //await ReplyAsync($"```{prntmsg}```");
+            //Console.Write(prntmsg);
+
+            string a = "";
+            string b = "";
+            string c = "";
+            foreach (var audit in f.Result)
+            {
+                if (audit.Data is RoleUpdateAuditLogData data)
+                {
+                    a += data.RoleId+ "\n";
+                }
+
+                else if(audit.Data is MemberUpdateAuditLogData dataa)
+                {
+                    b += $"{dataa.Before} -> {dataa.After}\n {dataa.Target}\n\n";
+                }
+
+                else if(audit.Data is MemberRoleAuditLogData dataaa)
+                {
+                    c += dataaa.Target.Username + "\n";
+                }
+            }
+
+            await ReplyAsync(a);
+            await ReplyAsync(b);
+            await ReplyAsync(c);
         }
     }
 }

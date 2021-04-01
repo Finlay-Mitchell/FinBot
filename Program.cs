@@ -2,14 +2,18 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using FinBot.Handlers;
+using FinBot.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
+using FinBot.Handlers.AutoMod;
+using Victoria;
 
 namespace FinBot
 {
-    class Program : ModuleBase<SocketCommandContext>
+    class Program
     {
         static void Main(string[] args)
         {
@@ -28,54 +32,99 @@ namespace FinBot
             }
         }
 
-        private DiscordSocketClient _client;
-        private CommandService _commands;
-        private IServiceProvider _services;
-        private CommandHandler _commandhandler;
-
         public async Task RunBotAsync()
         {
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] - ");
-            Console.WriteLine($"Welcome, {Environment.UserName}");
             Global.ReadConfig();
 
-            _commands = new CommandService();
-            _client = new DiscordSocketClient();
-            _services = new ServiceCollection()
-                .AddSingleton(_client)
-                .AddSingleton(_commands)
+            var services = new ServiceCollection()
+                .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
+                {
+                    GatewayIntents =
+                        GatewayIntents.GuildMembers |
+                        GatewayIntents.GuildMessages |
+                        GatewayIntents.GuildIntegrations |
+                        GatewayIntents.Guilds |
+                        GatewayIntents.GuildBans |
+                        GatewayIntents.GuildVoiceStates |
+                        GatewayIntents.GuildEmojis |
+                        GatewayIntents.GuildInvites |
+                        GatewayIntents.GuildMessageReactions |
+                        GatewayIntents.GuildMessageTyping |
+                        GatewayIntents.GuildWebhooks |
+                        GatewayIntents.DirectMessageReactions |
+                        GatewayIntents.DirectMessages |
+                        GatewayIntents.DirectMessageTyping,
+                    LogLevel = LogSeverity.Error,
+                    MessageCacheSize = 1000,
+                }))
+                .AddSingleton(new CommandService(new CommandServiceConfig
+                {
+                    DefaultRunMode = RunMode.Async,
+                    LogLevel = LogSeverity.Verbose,
+                    CaseSensitiveCommands = false,
+                    ThrowOnError = false
+                }))
+                .AddSingleton<StartupService>()
+                .AddSingleton<CommandHandler>()
+                .AddSingleton<RedditHandler>()
+                .AddSingleton<YouTubeModel>()
+                .AddSingleton<LevellingHandler>()
+                .AddSingleton<ChatFilter>()
                 .AddSingleton<InfractionMessageHandler>()
-                .BuildServiceProvider();
-            _client = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                LogLevel = LogSeverity.Verbose,
-                AlwaysDownloadUsers = true,
-                MessageCacheSize = 99999,
-            });
-            _client.Log += Log;
-            await _client.LoginAsync(TokenType.Bot, Global.Token);
-            await _client.StartAsync();
-            Global.Client = _client;
-            _commandhandler = new CommandHandler(_client);
-            Console.WriteLine($"[{ DateTime.Now.TimeOfDay}] - Command Handler ready");
+                .AddSingleton<HelpHandler>()
+                .AddSingleton<StatusService>()
+                .AddSingleton<LoggingService>();
+
+            ConfigureServices(services);
+            var serviceProvider = services.BuildServiceProvider();
+            serviceProvider.GetRequiredService<LoggingService>();
+            await serviceProvider.GetRequiredService<StartupService>().StartAsync();
+            serviceProvider.GetRequiredService<CommandHandler>();
+
+            //serviceProvider.GetRequiredService<UserInteraction>();
+
             await Task.Delay(-1);
         }
 
-        private Task Log(LogMessage msg)
+        private static void ConfigureServices(IServiceCollection services)
         {
-            if (msg.Message == null)
+            services.AddLogging(configure => configure.AddSerilog());
+            Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Error;
+
+            switch (Global.LoggingLevel.ToLower())
             {
-                return Task.CompletedTask;
+                case "error":
+                    level = Serilog.Events.LogEventLevel.Error;
+                    break;
+
+                case "info":
+                    level = Serilog.Events.LogEventLevel.Information;
+                    break;
+
+                case "debug":
+                    level = Serilog.Events.LogEventLevel.Debug;
+                    break;
+
+                case "crit":
+                    level = Serilog.Events.LogEventLevel.Fatal;
+                    break;
+
+                case "warn":
+                    level = Serilog.Events.LogEventLevel.Warning;
+                    break;
+
+                case "trace":
+                    level = Serilog.Events.LogEventLevel.Debug;
+                    break;
+                default:
+                    throw new Exception("Logging level is invalid");
             }
 
-            if (!msg.Message.StartsWith("Received Dispatch"))
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"[Svt: {msg.Severity} Src: {msg.Source} Ex: {msg.Exception}] - " + msg.Message);
-            }
-
-            return Task.CompletedTask;
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .MinimumLevel.Is(level)
+                .CreateLogger();
         }
+
     }
 }

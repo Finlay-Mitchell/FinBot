@@ -12,7 +12,6 @@ namespace FinBot.Handlers
 
         public HelpHandler(CommandService service)
         {
-            Global.ConsoleLog("Started HelpHandler", ConsoleColor.Blue);
             _service = service;
         }
 

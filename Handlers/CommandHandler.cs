@@ -6,75 +6,74 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Configuration;
-using FinBot.Handlers.Automod;
 using System.Data.SQLite;
 using FinBot.Handlers.AutoMod;
 using FinBot.Services;
+using Discord.Rest;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace FinBot.Handlers
 {
     class CommandHandler : ModuleBase<SocketCommandContext>
     {
-        public static DiscordSocketClient _client;
-        public static CommandService _service;
-        public static IConfigurationRoot _config = null;
+        private CommandService _commands;
+        private DiscordShardedClient _client;
+        private readonly ILogger _logger;
+        private readonly IServiceProvider _services;
 
-        public CommandHandler(DiscordSocketClient client)
+        public CommandHandler(IServiceProvider services)
         {
-            _client = client;
-            _service = new CommandService();
-            _service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-            _client.MessageReceived += LogMessage;
+            _services = services;
+            _client = services.GetRequiredService<DiscordShardedClient>();
+            _commands = services.GetRequiredService<CommandService>();
+            _client.MessageReceived += HandleCommandAsync;
+            _logger = services.GetRequiredService<ILogger<CommandHandler>>();
+
             _client.Log += Client_Log;
             _client.GuildMembersDownloaded += GMD;
-            _client.Ready += Init;
-            _client.MessageReceived += HandleCommandAsync;
-            _client.MessageDeleted += AddToSnipe;
-            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] - " + "Services loaded");
         }
 
         private async Task AddToSnipe(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
         {
-            SocketGuildChannel sGC = (SocketGuildChannel)arg2;
-            IMessage msg = await arg1.GetOrDownloadAsync();
-            SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
-            conn.Open();
-            using var cmd = new SQLiteCommand(conn);
-            using var cmd1 = new SQLiteCommand(conn);
-            long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
-            cmd1.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{sGC.Guild.Id}'";
-            using SQLiteDataReader reader = cmd1.ExecuteReader();
-            bool IsEmpty = true;
-            string finalmsg = "";
+            //SocketGuildChannel sGC = (SocketGuildChannel)arg2;
+            //RestUserMessage msg = (RestUserMessage)await arg1.GetOrDownloadAsync();
+            //IMessage msg = await arg1.GetOrDownloadAsync();
 
-            while (reader.Read())
-            {
-                finalmsg = msg.Content;
+            //await ReplyAsync(msg.Content);
 
-                if (msg.Content.Contains("'"))
-                {
-                    finalmsg = Regex.Replace(msg.Content, "'", "\"");
-                }
+            //SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
+            //conn.Open();
+            //using var cmd = new SQLiteCommand(conn);
+            //using var cmd1 = new SQLiteCommand(conn);
+            //long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
+            //cmd1.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{sGC.Guild.Id}'";
+            //using SQLiteDataReader reader = cmd1.ExecuteReader();
+            //bool IsEmpty = true;
+            //string finalmsg = "";
 
-                IsEmpty = false;
-                cmd.CommandText = $"UPDATE SnipeLogs SET timestamp = {Now}, message = '{finalmsg}', author = '{msg.Author.Id}' WHERE guildId = '{sGC.Guild.Id}'";
-                cmd.ExecuteNonQuery();
-            }
+            //while (reader.Read())
+            //{
+            //    finalmsg = msg.Content;
 
-            if (IsEmpty)
-            {
-                cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId, author) VALUES ('{finalmsg}', {Now}, '{sGC.Guild.Id}', '{msg.Author.Id}')";
-                cmd.ExecuteNonQuery();
-            }
+            //    if (msg.Content.Contains("'"))
+            //    {
+            //        finalmsg = Regex.Replace(msg.Content, "'", "\"");
+            //    }
 
-            conn.Close();
-        }
+            //    IsEmpty = false;
+            //    cmd.CommandText = $"UPDATE SnipeLogs SET timestamp = {Now}, message = '{finalmsg}', author = '{msg.Author.Id}' WHERE guildId = '{sGC.Guild.Id}'";
+            //    cmd.ExecuteNonQuery();
+            //}
 
-        private Task LogMessage(SocketMessage arg)
-        {
-            Global.ConsoleLog("Message from: " + arg.Author + ": \"" + arg.Content + "\"", ConsoleColor.Magenta);
-            return Task.CompletedTask;
+            //if (IsEmpty)
+            //{
+            //    cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId, author) VALUES ('{finalmsg}', {Now}, '{sGC.Guild.Id}', '{msg.Author.Id}')";
+            //    cmd.ExecuteNonQuery();
+            //}
+
+            //conn.Close();
         }
 
         public Task<int> GMD(SocketGuild arg)
@@ -91,110 +90,193 @@ namespace FinBot.Handlers
 
         public async Task HandleCommandAsync(SocketMessage s)
         {
-            if (!(s is SocketUserMessage msg))
+            SocketUserMessage message = s as SocketUserMessage;
+
+            if (message == null)
             {
                 return;
             }
 
-            SocketCommandContext context = new SocketCommandContext(_client, msg);
-
-            if (msg.Author.IsBot)
+            if (message.Source != MessageSource.User)
             {
                 return;
             }
 
             int argPos = 0;
+            ShardedCommandContext context = new ShardedCommandContext(_client, message);
 
-            if (msg.HasStringPrefix(Global.Prefix, ref argPos))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(Global.Prefix, ref argPos)))
             {
-                if (msg.Channel.GetType() == typeof(SocketDMChannel) && msg.Author.Id != 305797476290527235)
+                return;
+            }
+
+            IResult result = await _commands.ExecuteAsync(context, argPos, _services);
+
+            await LogCommandUsage(context, result);
+
+            if (!result.IsSuccess)
+            {
+                EmbedBuilder b = new EmbedBuilder
                 {
-                    try
-                    {
-                        await msg.Channel.SendMessageAsync("sorry but DM's do not accept bot commands.");
-                    }
+                    Color = Color.Red,
+                    Description = $"The following info is the Command error info, `{message.Author.Username}#{message.Author.Discriminator}` tried to use the `{message}` Command in {message.Channel}: \n \n **COMMAND ERROR**: ```{result.Error.Value}``` \n \n **COMMAND ERROR REASON**: ```{result.ErrorReason}```",
+                    Author = new EmbedAuthorBuilder()
+                };
+                b.Author.Name = message.Author.Username + "#" + message.Author.Discriminator;
+                b.Author.IconUrl = message.Author.GetAvatarUrl();
+                b.Footer = new EmbedFooterBuilder
+                {
+                    Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " ZULU"
+                };
+                b.Title = "Bot Command Error!";
+                await _client.GetGuild(725886999646437407).GetTextChannel(784231099324301312).SendMessageAsync("", false, b.Build());
+            }
+        }
 
-                    catch (Exception)
-                    {
-
-                    }
+        private async Task LogCommandUsage(SocketCommandContext context, IResult result)
+        {
+            await Task.Run(() =>
+            {
+                if (context.Channel is IGuildChannel)
+                {
+                    var logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] Discord Server: [{context.Guild.Name}] -> [{context.Message.Content}]";
+                    _logger.LogInformation(logTxt);
                 }
 
                 else
                 {
-                    IResult result = await _service.ExecuteAsync(context, argPos, null, MultiMatchHandling.Best);
-
-                    if (!result.IsSuccess)
-                    {
-                        EmbedBuilder b = new EmbedBuilder
-                        {
-                            Color = Color.Red,
-                            Description = $"The following info is the Command error info, `{msg.Author.Username}#{msg.Author.Discriminator}` tried to use the `{msg}` Command in {msg.Channel}: \n \n **COMMAND ERROR**: ```{result.Error.Value}``` \n \n **COMMAND ERROR REASON**: ```{result.ErrorReason}```",
-                            Author = new EmbedAuthorBuilder()
-                        };
-                        b.Author.Name = msg.Author.Username + "#" + msg.Author.Discriminator;
-                        b.Author.IconUrl = msg.Author.GetAvatarUrl();
-                        b.Footer = new EmbedFooterBuilder
-                        {
-                            Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " ZULU"
-                        };
-                        b.Title = "Bot Command Error!";
-                        await _client.GetGuild(799431538814222406).GetTextChannel(810885351223984168).SendMessageAsync("", false, b.Build());
-                    }
-
-                    if (!result.IsSuccess && result.Error == CommandError.BadArgCount)
-                    {
-                        string msgwp = Regex.Replace(msg.ToString(), $"{Global.Prefix}", "");
-                        await msg.Channel.SendMessageAsync("", false, new EmbedBuilder()
-                        {
-                            Color = Color.LightOrange,
-                            Title = "Bad arg count",
-                            Description = $"Sorry, {msg.Author.Mention} but the command {msg.ToString().Split(' ').First()} does not take those parameters. Use the help command {Global.Prefix}help {msgwp.Split(' ').First()}",
-                            Author = new EmbedAuthorBuilder()
-                            {
-                                Name = msg.Author.ToString(),
-                                IconUrl = msg.Author.GetAvatarUrl(),
-                                Url = msg.GetJumpUrl()
-                            }
-                        }
-                        .WithFooter($"{result.Error.Value}")
-                        .WithCurrentTimestamp()
-                        .Build());
-                    }
+                    var logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] -> [{context.Message.Content}]";
+                    _logger.LogInformation(logTxt);
                 }
-            }
-        }
-
-        public async Task Init()
-        {
-            try
-            {
-                Console.WriteLine("Starting handler loading...");
-                await StartHandlers();
-                Global.ConsoleLog("Finnished Init!", ConsoleColor.Black, ConsoleColor.DarkGreen);
-                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] - " + "Command Handler ready");
-            }
-
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-        }
-
-        public bool FirstPass = false;
-
-        public Task StartHandlers()
-        {
-            if (!FirstPass)
-            {
-                HelpHandler helpHandler = new HelpHandler(_service);
-                ChatFilter chatFilter = new ChatFilter(_client);
-                LevellingHandler levellingHandler = new LevellingHandler(_client);
-                StatusService statusService = new StatusService(_client);                
-                FirstPass = true;
-            }
-
-            return Task.CompletedTask;
+            });
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //    if (!(s is SocketUserMessage msg))
+    //    {
+    //        return;
+    //    }
+
+    //    SocketCommandContext context = new SocketCommandContext(_client, msg);
+
+    //    if (msg.Author.IsBot)
+    //    {
+    //        return;
+    //    }
+
+    //    int argPos = 0;
+
+    //    if (msg.HasStringPrefix(Global.Prefix, ref argPos))
+    //    {
+    //        if (msg.Channel.GetType() == typeof(SocketDMChannel) && msg.Author.Id != 305797476290527235)
+    //        {
+    //            try
+    //            {
+    //                await msg.Channel.SendMessageAsync("sorry but DM's do not accept bot commands.");
+    //            }
+
+    //            catch (Exception)
+    //            {
+
+    //            }
+    //        }
+
+    //        else
+    //        {
+    //            IResult result = await _service.ExecuteAsync(context, argPos, null, MultiMatchHandling.Best);
+
+    //            if (!result.IsSuccess)
+    //            {
+    //                EmbedBuilder b = new EmbedBuilder
+    //                {
+    //                    Color = Color.Red,
+    //                    Description = $"The following info is the Command error info, `{msg.Author.Username}#{msg.Author.Discriminator}` tried to use the `{msg}` Command in {msg.Channel}: \n \n **COMMAND ERROR**: ```{result.Error.Value}``` \n \n **COMMAND ERROR REASON**: ```{result.ErrorReason}```",
+    //                    Author = new EmbedAuthorBuilder()
+    //                };
+    //                b.Author.Name = msg.Author.Username + "#" + msg.Author.Discriminator;
+    //                b.Author.IconUrl = msg.Author.GetAvatarUrl();
+    //                b.Footer = new EmbedFooterBuilder
+    //                {
+    //                    Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " ZULU"
+    //                };
+    //                b.Title = "Bot Command Error!";
+    //                await _client.GetGuild(799431538814222406).GetTextChannel(810885351223984168).SendMessageAsync("", false, b.Build());
+    //            }
+
+    //            if (!result.IsSuccess && result.Error == CommandError.BadArgCount)
+    //            {
+    //                string msgwp = Regex.Replace(msg.ToString(), $"{Global.Prefix}", "");
+    //                await msg.Channel.SendMessageAsync("", false, new EmbedBuilder()
+    //                {
+    //                    Color = Color.LightOrange,
+    //                    Title = "Bad arg count",
+    //                    Description = $"Sorry, {msg.Author.Mention} but the command {msg.ToString().Split(' ').First()} does not take those parameters. Use the help command {Global.Prefix}help {msgwp.Split(' ').First()}",
+    //                    Author = new EmbedAuthorBuilder()
+    //                    {
+    //                        Name = msg.Author.ToString(),
+    //                        IconUrl = msg.Author.GetAvatarUrl(),
+    //                        Url = msg.GetJumpUrl()
+    //                    }
+    //                }
+    //                .WithFooter($"{result.Error.Value}")
+    //                .WithCurrentTimestamp()
+    //                .Build());
+    //            }
+    //        }
+    //    }
+    //}
+
+    //public async Task Init()
+    //{
+    //    try
+    //    {
+    //        Console.WriteLine("Starting handler loading...");
+    //        await StartHandlers();
+    //        Global.ConsoleLog("Finnished Init!", ConsoleColor.Black, ConsoleColor.DarkGreen);
+    //        Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] - " + "Command Handler ready");
+    //    }
+
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine(ex);
+    //    }
+    //}
+
+    //public bool FirstPass = false;
+
+    //public Task StartHandlers()
+    //{
+    //    if (!FirstPass)
+    //    {
+    //        HelpHandler helpHandler = new HelpHandler(_service);
+    //        ChatFilter chatFilter = new ChatFilter(_client);
+    //        LevellingHandler levellingHandler = new LevellingHandler(_client);
+    //        StatusService statusService = new StatusService(_client);                
+    //        FirstPass = true;
+    //    }
+
+    //    return Task.CompletedTask;
+    //}
+
+
 }

@@ -21,9 +21,18 @@ namespace FinBot
         public static uint LevelMultiplier { get; set; }
         public static uint MinMessageTimestamp { get; set; }
         public static string GoogleSearchAPIKey { get; set; }
+        public static string MySQLServer { get; set; }
+        public static string MySQLUser { get; set; }
+        public static string MySQLDatabase { get; set; }
+        public static string MySQLPort { get; set; }
+        public static string MySQLPassword { get; set; }
+        public static string GeniusAPIKey { get; set; }
+        public static string LoggingLevel { get; set; }
 
-        public static DiscordSocketClient Client { get; set; }
+
+
         private static string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
+        public static DiscordShardedClient Client { get; set; }
         public static string WelcomeMessageURL { get; set; }
         internal static JsonItems CurrentJsonData;
         public static string KickMessageURL { get; set; }
@@ -44,6 +53,8 @@ namespace FinBot
                             new Emoji("✅"),
                             new Emoji("❌")
                         };
+        public static string connStr = $"server={MySQLServer};user={MySQLUser};database={MySQLDatabase};port={MySQLPort};password={MySQLPassword}";
+        public static List<string> FileNames = new List<string>() { ModLogsPath, muteRoleFilepath, LevelPath, SnipeLogs, Polls};
 
         public static void ReadConfig()
         {
@@ -58,6 +69,39 @@ namespace FinBot
             LevelMultiplier = data.LevelMultiplier;
             MinMessageTimestamp = data.MinMessageTimestamp;
             GoogleSearchAPIKey = data.GoogleSearchAPIKey;
+            MySQLServer = data.MySQLServer;
+            MySQLUser = data.MySQLUser;
+            MySQLDatabase = data.MySQLDatabase;
+            MySQLPort = data.MySQLPort;
+            MySQLPassword = data.MySQLPassword;
+            GeniusAPIKey = data.GeniusAPIKey;
+            LoggingLevel = data.LoggingLevel;
+
+            //for(int i = 0; i < FileNames.Count; i++)
+            //{
+            //    if(!File.Exists(FileNames[i]))
+            //    {
+            //        SQLiteConnection.CreateFile(FileNames[i]);
+            //        SQLiteConnection conn = new SQLiteConnection($"data source = {ModLogsPath}");
+            //        using var cmd = new SQLiteCommand(conn);
+            //        conn.Open();
+
+            //        switch(FileNames[i])
+            //        {
+            //            case ModLogsPath:
+            //                cmd.CommandText = @"CREATE TABLE modlogs(id INTEGER PRIMARY KEY, userId TEXT, action TEXT, moderatorId TEXT, reason TEXT, guildId TEXT, dateTime TEXT, indx INTEGER)";
+            //                break;
+
+
+
+            //            default:
+            //                ConsoleLog("Error with creating file", ConsoleColor.Red);
+            //                break;
+            //        }
+
+            //        conn.Close();
+            //    }
+            //}
 
             if (!File.Exists(ModLogsPath))
             {
@@ -125,6 +169,13 @@ namespace FinBot
             public uint LevelMultiplier { get; set; }
             public uint MinMessageTimestamp { get; set; }
             public string GoogleSearchAPIKey { get; set; }
+            public string MySQLServer { get; set; }
+            public string MySQLUser { get; set; }
+            public string MySQLDatabase { get; set; }
+            public string MySQLPort { get; set; }
+            public string MySQLPassword { get; set; }
+            public string GeniusAPIKey { get; set; }
+            public string LoggingLevel { get; set; }
         }
 
         public static void ConsoleLog(string ConsoleMessage, ConsoleColor FColor = ConsoleColor.Green, ConsoleColor BColor = ConsoleColor.Black)

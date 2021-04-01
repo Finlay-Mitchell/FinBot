@@ -16,9 +16,9 @@ namespace FinBot.Handlers
         public static int InfractionPagesPublicCount = 0;
 
         public static Dictionary<ulong, ulong> CurrentInfractionMessages = Global.LoadInfractionMessageCards();
-        private DiscordSocketClient client;
+        private DiscordShardedClient client;
         private ulong GuildId;
-        public InfractionMessageHandler(DiscordSocketClient client, ulong GuildId, Embed e)
+        public InfractionMessageHandler(DiscordShardedClient client, ulong GuildId, Embed e)
         {
             this.client = client;
             this.GuildId = GuildId;
