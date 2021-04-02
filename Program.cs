@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
-using Victoria;
+using Discord.Addons.Interactive;
 
 namespace FinBot
 {
@@ -34,6 +34,8 @@ namespace FinBot
 
         public async Task RunBotAsync()
         {
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
             Global.ReadConfig();
 
             var services = new ServiceCollection()
@@ -53,7 +55,8 @@ namespace FinBot
                         GatewayIntents.GuildWebhooks |
                         GatewayIntents.DirectMessageReactions |
                         GatewayIntents.DirectMessages |
-                        GatewayIntents.DirectMessageTyping,
+                        GatewayIntents.DirectMessageTyping |
+                        GatewayIntents.GuildPresences,
                     LogLevel = LogSeverity.Error,
                     MessageCacheSize = 1000,
                 }))
@@ -72,7 +75,7 @@ namespace FinBot
                 .AddSingleton<ChatFilter>()
                 .AddSingleton<InfractionMessageHandler>()
                 .AddSingleton<HelpHandler>()
-                .AddSingleton<StatusService>()
+                .AddSingleton<InteractiveService>()
                 .AddSingleton<LoggingService>();
 
             ConfigureServices(services);
@@ -80,9 +83,6 @@ namespace FinBot
             serviceProvider.GetRequiredService<LoggingService>();
             await serviceProvider.GetRequiredService<StartupService>().StartAsync();
             serviceProvider.GetRequiredService<CommandHandler>();
-
-            //serviceProvider.GetRequiredService<UserInteraction>();
-
             await Task.Delay(-1);
         }
 

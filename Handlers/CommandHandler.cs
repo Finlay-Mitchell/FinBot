@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Data.SQLite;
 using FinBot.Handlers.AutoMod;
 using FinBot.Services;
 using Discord.Rest;
@@ -30,62 +29,6 @@ namespace FinBot.Handlers
             _commands = services.GetRequiredService<CommandService>();
             _client.MessageReceived += HandleCommandAsync;
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
-
-            _client.Log += Client_Log;
-            _client.GuildMembersDownloaded += GMD;
-        }
-
-        private async Task AddToSnipe(Cacheable<IMessage, ulong> arg1, ISocketMessageChannel arg2)
-        {
-            //SocketGuildChannel sGC = (SocketGuildChannel)arg2;
-            //RestUserMessage msg = (RestUserMessage)await arg1.GetOrDownloadAsync();
-            //IMessage msg = await arg1.GetOrDownloadAsync();
-
-            //await ReplyAsync(msg.Content);
-
-            //SQLiteConnection conn = new SQLiteConnection($"data source = {Global.SnipeLogs}");
-            //conn.Open();
-            //using var cmd = new SQLiteCommand(conn);
-            //using var cmd1 = new SQLiteCommand(conn);
-            //long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
-            //cmd1.CommandText = $"SELECT * FROM SnipeLogs WHERE guildId = '{sGC.Guild.Id}'";
-            //using SQLiteDataReader reader = cmd1.ExecuteReader();
-            //bool IsEmpty = true;
-            //string finalmsg = "";
-
-            //while (reader.Read())
-            //{
-            //    finalmsg = msg.Content;
-
-            //    if (msg.Content.Contains("'"))
-            //    {
-            //        finalmsg = Regex.Replace(msg.Content, "'", "\"");
-            //    }
-
-            //    IsEmpty = false;
-            //    cmd.CommandText = $"UPDATE SnipeLogs SET timestamp = {Now}, message = '{finalmsg}', author = '{msg.Author.Id}' WHERE guildId = '{sGC.Guild.Id}'";
-            //    cmd.ExecuteNonQuery();
-            //}
-
-            //if (IsEmpty)
-            //{
-            //    cmd.CommandText = $"INSERT INTO SnipeLogs(message, timestamp, guildId, author) VALUES ('{finalmsg}', {Now}, '{sGC.Guild.Id}', '{msg.Author.Id}')";
-            //    cmd.ExecuteNonQuery();
-            //}
-
-            //conn.Close();
-        }
-
-        public Task<int> GMD(SocketGuild arg)
-        {
-            Console.WriteLine("Guild Members downloaded " + arg);
-            return Task.FromResult(0);
-        }
-
-        private Task Client_Log(LogMessage arg)
-        {
-            Console.WriteLine(arg);
-            return Task.CompletedTask;
         }
 
         public async Task HandleCommandAsync(SocketMessage s)
@@ -110,8 +53,12 @@ namespace FinBot.Handlers
                 return;
             }
 
-            IResult result = await _commands.ExecuteAsync(context, argPos, _services);
+            if(s.Channel.GetType() == typeof(SocketDMChannel) && message.Author.Id != 305797476290527235)
+            {
+                await message.ReplyAsync("Sorry, but commands are not enabled in DM's. Please try using bot commands in a server.");
+            }
 
+            IResult result = await _commands.ExecuteAsync(context, argPos, _services);
             await LogCommandUsage(context, result);
 
             if (!result.IsSuccess)
@@ -146,6 +93,12 @@ namespace FinBot.Handlers
                 else
                 {
                     var logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] -> [{context.Message.Content}]";
+                    _logger.LogInformation(logTxt);
+                }
+
+                if(!result.IsSuccess)
+                {
+                    var logTxt = $"Command: Failed to execute \"{context.Message.Content}\" for {context.User.Username} in {context.Guild.Name}/{context.Channel} with reason: {result.Error}/{result.ErrorReason}";
                     _logger.LogInformation(logTxt);
                 }
             });
