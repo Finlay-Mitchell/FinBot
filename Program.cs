@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
-using Discord.Addons.Interactive;
 
 namespace FinBot
 {
@@ -37,8 +36,7 @@ namespace FinBot
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
             Global.ReadConfig();
-
-            var services = new ServiceCollection()
+            IServiceCollection services = new ServiceCollection()
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
                     GatewayIntents =
@@ -75,11 +73,10 @@ namespace FinBot
                 .AddSingleton<ChatFilter>()
                 .AddSingleton<InfractionMessageHandler>()
                 .AddSingleton<HelpHandler>()
-                .AddSingleton<InteractiveService>()
                 .AddSingleton<LoggingService>();
 
             ConfigureServices(services);
-            var serviceProvider = services.BuildServiceProvider();
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
             serviceProvider.GetRequiredService<LoggingService>();
             await serviceProvider.GetRequiredService<StartupService>().StartAsync();
             serviceProvider.GetRequiredService<CommandHandler>();
@@ -125,6 +122,5 @@ namespace FinBot
                 .MinimumLevel.Is(level)
                 .CreateLogger();
         }
-
     }
 }

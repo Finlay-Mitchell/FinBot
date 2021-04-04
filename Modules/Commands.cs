@@ -26,10 +26,11 @@ using QuickChart;
 using ICanHazDadJoke.NET;
 using System.Data;
 using MySql.Data.MySqlClient;
+using Google.Apis.YouTube.v3.Data;
 
 namespace FinBot.Modules
 {
-    public class Commands : ModuleBase<SocketCommandContext>
+    public class Commands : ModuleBase<ShardedCommandContext>
     {
         [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r")]
         public async Task Reddit(string subreddit)
@@ -363,6 +364,23 @@ namespace FinBot.Modules
         [Command("serverinfo"), Summary("Shows information on the server"), Remarks("(PREFIX)serverinfo"), Alias("server", "server-info")]
         public async Task ServerInfo()
         {
+            string boosttier = "";
+
+            switch (Context.Guild.PremiumTier.ToString())
+            {
+                case "Tier1":
+                    boosttier = "Tier 1";
+                    break;
+
+                case "Tier2":
+                    boosttier = "Tier 2";
+                    break;
+
+                case "Tier3":
+                    boosttier = "Tier 3";
+                    break;
+            }
+
             EmbedBuilder eb = new EmbedBuilder()
             {
                 Title = "Serverinfo",
@@ -375,7 +393,7 @@ namespace FinBot.Modules
             eb.AddField("Created at", Context.Guild.CreatedAt, true);
             eb.AddField("server location", Context.Guild.VoiceRegionId, true);
             eb.AddField("boosters", Context.Guild.PremiumSubscriptionCount, true);
-            eb.AddField("Boost level", Context.Guild.PremiumTier, true);
+            eb.AddField("Boost level", boosttier, true);
             eb.AddField("Number of roles", Context.Guild.Roles.Count, true);
             eb.AddField("Number of channels", $"Text channels: {Context.Guild.TextChannels.Count}\nVoice channels: {Context.Guild.VoiceChannels.Count}\nCategories: {Context.Guild.CategoryChannels.Count}", true);
             eb.AddField($"VIP perks [{Context.Guild.Features.Count}]", String.IsNullOrEmpty(String.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower()) ? "None" : String.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower().Replace("_", " "), true);
@@ -388,13 +406,12 @@ namespace FinBot.Modules
         [Command("botInfo"), Summary("shows some basic bot information"), Remarks("(PREFIX)botinfo")]
         public async Task BotInfo()
         {
-            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
             await Context.Channel.TriggerTypingAsync();
             EmbedBuilder eb = new EmbedBuilder();
             eb.AddField("Developer:", "Finlay Mitchell");
             eb.AddField("Version: ", Global.Version);
             eb.AddField("Language", "C# - Discord.net API");
-            eb.WithAuthor(GuildUser);
+            eb.WithAuthor(Context.Message.Author);
             eb.WithColor(Color.Gold);
             eb.WithTitle("Bot info");
             eb.AddField("Uptime", $"{(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}");
@@ -484,46 +501,46 @@ namespace FinBot.Modules
             return eb.Build();
         }
 
-        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
-        public async Task Remind(int seconds, [Remainder] string remindMsg)
-        {
-            if (seconds > 604800)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("Can not set a reminder longer than a week");
-            }
+        //[Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
+        //public async Task Remind(int seconds, [Remainder] string remindMsg)
+        //{
+        //    if (seconds > 604800)
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync("Can not set a reminder longer than a week");
+        //    }
 
-            else if (seconds < 0)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("Can not set reminders for less than a second");
-            }
+        //    else if (seconds < 0)
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync("Can not set reminders for less than a second");
+        //    }
 
-            else if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here"))
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Sorry but can't mention everybody");
-            }
+        //    else if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here"))
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Sorry but can't mention everybody");
+        //    }
 
-            else if (Context.Message.MentionedUsers.Any())
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Sorry but you can't mention users");
-            }
+        //    else if (Context.Message.MentionedUsers.Any())
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Sorry but you can't mention users");
+        //    }
 
-            else if (Context.Message.MentionedRoles.Any())
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Sorry but you can't mention roles");
-            }
+        //    else if (Context.Message.MentionedRoles.Any())
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Sorry but you can't mention roles");
+        //    }
 
-            else
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Ok, set the reminder '{remindMsg}' in {seconds} seconds.");
-                await ReminderService.RemindAsyncSeconds(Context.User, seconds, remindMsg, Context.Message);
-            }
-        }
+        //    else
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Ok, set the reminder '{remindMsg}' in {seconds} seconds.");
+        //        await ReminderService.RemindAsyncSeconds(Context.User, seconds, remindMsg, Context.Message);
+        //    }
+        //}
 
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
@@ -891,7 +908,7 @@ namespace FinBot.Modules
             EmbedBuilder embed = new EmbedBuilder();
             string embedThumb = Context.User.GetAvatarUrl();
             StringBuilder sb = new StringBuilder();
-            List<Google.Apis.YouTube.v3.Data.SearchResult> results = null;
+            List<Google.Apis.YouTube.v3.Data.SearchResult > results = null;
             embed.ThumbnailUrl = embedThumb;
 
             if (string.IsNullOrEmpty(args))
@@ -922,7 +939,7 @@ namespace FinBot.Modules
                     embed.ThumbnailUrl = thumbFromVideo.Snippet.Thumbnails.Default__.Url;
                 }
 
-                foreach (var result in results.Where(r => r.Id.Kind == "youtube#video").Take(3))
+                foreach (Google.Apis.YouTube.v3.Data.SearchResult result in results.Where(r => r.Id.Kind == "youtube#video").Take(3))
                 {
                     string fullVideoUrl = string.Empty;
                     string videoId = string.Empty;
@@ -962,7 +979,6 @@ namespace FinBot.Modules
                 httpClient.DefaultRequestHeaders
                     .Accept
                     .Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                //test = httpClient.PostAsJsonAsync<FaceRequest>(fullUrl, request).Result;                             
                 response = httpClient.GetStringAsync(url).Result;
             }
             return response;
@@ -999,12 +1015,9 @@ namespace FinBot.Modules
             SearchResource.ListRequest searchListRequest = youtubeService.Search.List("snippet");
             searchListRequest.Q = keyword;
             searchListRequest.MaxResults = maxResults;
-            Google.Apis.YouTube.v3.Data.SearchListResponse searchListResponse = await searchListRequest.ExecuteAsync();
+            SearchListResponse searchListResponse = await searchListRequest.ExecuteAsync();
             return searchListResponse.Items.ToList();
         }
-
-
-
 
         [Command("TranslateTo"), Summary("Translates the input text to the language you specify"), Remarks("(PREFIX)TranslateTo <language code> <text>"), Alias("trto")]
         public async Task TranslateTo(string toLanguage, [Remainder] string translate)
@@ -1443,7 +1456,7 @@ namespace FinBot.Modules
         [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
         public async Task dadjoke()
         {
-            var client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
+            DadJokeClient client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
             string dadJoke = await client.GetRandomJokeStringAsync();
             await Context.Message.ReplyAsync(dadJoke);
         }
@@ -1571,95 +1584,5 @@ namespace FinBot.Modules
         //        await Context.Message.ReplyAsync("", false, eb.Build());
         //    }
         //}
-
-        [Command("testing")]
-        public async Task testing()
-        {
-            string connStr = "server=localhost;user=root;database=world;port=3306;password=Pas5w0rdboim8";
-
-            MySqlConnection conn = new MySqlConnection(connStr);
-            try
-            {
-                Console.WriteLine("Connecting to MySQL...");
-                conn.Open();
-
-                string sql = "SELECT * FROM test";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                MySqlDataReader rdr = cmd.ExecuteReader();
-
-                while (rdr.Read())
-                {
-                    await ReplyAsync($"{rdr[0]}");
-                }
-                rdr.Close();
-            }
-            catch (Exception ex)
-            {
-                await ReplyAsync(ex.ToString());
-            }
-
-            conn.Close();
-            Console.WriteLine("Done.");
-        }
-
-        [Command("dbins")]
-        public async Task dbins([Remainder] string args)
-        {
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            try
-            {
-                Console.WriteLine("Connecting to MySQL...");
-                conn.Open();
-
-                MySqlCommand cmd = new MySqlCommand(args, conn);
-                MySqlDataReader rdr = cmd.ExecuteReader();
-                
-                while (rdr.Read())
-                {
-                    await ReplyAsync($"{rdr[0]}, {rdr[1]}, {rdr[2]}, {rdr[3]}, {rdr[4]}, {rdr[5]}");
-                }
-                rdr.Close();
-            }
-
-            catch (Exception ex)
-            {
-                await ReplyAsync(ex.ToString());
-            }
-
-            conn.Close();
-            Console.WriteLine("Done.");
-        }
-
-        [Command("test")]
-        public async Task test()
-        {
-            IAsyncEnumerable<IReadOnlyCollection<RestAuditLogEntry>> t = Context.Guild.GetAuditLogsAsync(10, actionType: ActionType.BotAdded);
-            var f = Context.Guild.GetAuditLogsAsync(10, actionType: ActionType.BotAdded).FlattenAsync();
-
-            string a = "";
-            string b = "";
-            string c = "";
-            foreach (var audit in f.Result)
-            {
-                if (audit.Data is BotAddAuditLogData data)
-                {
-                    a += data.Target.Username+ "\n";
-                }
-
-                else if(audit.Data is MemberUpdateAuditLogData dataa)
-                {
-                    b += $"{dataa.Before} -> {dataa.After}\n {dataa.Target}\n\n";
-                }
-
-                else if(audit.Data is MemberRoleAuditLogData dataaa)
-                {
-                    c += dataaa.Target.Username + "\n";
-                }
-            }
-
-            await ReplyAsync(a);
-            await ReplyAsync(b);
-            await ReplyAsync(c);
-        }
     }
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinBot
 {
@@ -107,22 +108,28 @@ namespace FinBot
         public static void SaveInfractionMessageCards()
         {
             string s = "";
-            foreach (var item in InfractionMessageHandler.CurrentInfractionMessages)
+            foreach (KeyValuePair<ulong, ulong> item in InfractionMessageHandler.CurrentInfractionMessages)
+            {
                 s += item.Key + "," + item.Value + "\n";
+            }
+
             File.WriteAllText(infractionMessagefilepath, s);
         }
 
         public static Dictionary<ulong, ulong> LoadInfractionMessageCards()
         {
-            var t = File.ReadAllText(infractionMessagefilepath);
+            string t = File.ReadAllText(infractionMessagefilepath);
             Dictionary<ulong, ulong> ulist = new Dictionary<ulong, ulong>();
             if (t == "")
+            {
                 return ulist;
-            foreach (var i in t.Split("\n"))
+            }
+
+            foreach (string i in t.Split("\n"))
             {
                 if (i != "")
                 {
-                    var spl = i.Split(",");
+                    string[] spl = i.Split(",");
                     ulist.Add(ulong.Parse(spl[0]), ulong.Parse(spl[1]));
                 }
             }
@@ -142,15 +149,18 @@ namespace FinBot
 
         public static Dictionary<string, string> LoadLeetRules()
         {
-            var t = File.ReadAllText(LeetRulesPath);
+            string t = File.ReadAllText(LeetRulesPath);
             Dictionary<string, string> list = new Dictionary<string, string>();
             if (t == "")
+            {
                 return list;
-            foreach (var i in t.Split("\n"))
+            }
+
+            foreach (string i in t.Split("\n"))
             {
                 if (i != "")
                 {
-                    var spl = i.Split(",");
+                    string[] spl = i.Split(",");
                     list.Add(spl[0], spl[1]);
                 }
             }

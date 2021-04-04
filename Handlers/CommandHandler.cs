@@ -3,13 +3,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using FinBot.Handlers.AutoMod;
-using FinBot.Services;
-using Discord.Rest;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

@@ -1197,3 +1197,42 @@
 //    }
 //}
 ////✅❌
+///
+
+
+//[Command("mute")]
+//[RequireUserPermission(GuildPermission.KickMembers)]
+//[RequireBotPermission(GuildPermission.ManageRoles)]
+//public async Task Mute(SocketGuildUser user, int minutes, [Remainder] string reason = null)
+//{
+//    if (user.Hierarchy > Context.Guild.CurrentUser.Hierarchy)
+//    {
+//        await Context.Channel.SendErrorAsync("Invalid user", "That user has a higher position than the bot.");
+//        return;
+//    }
+
+//    var role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+//    if (role == null)
+//        role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(sendMessages: false), null, false, null);
+
+//    if (role.Position > Context.Guild.CurrentUser.Hierarchy)
+//    {
+//        await Context.Channel.SendErrorAsync("Invalid permissions", "The muted role has a higher position than the bot.");
+//        return;
+//    }
+
+//    if (user.Roles.Contains(role))
+//    {
+//        await Context.Channel.SendErrorAsync("Already muted", "That user is already muted.");
+//        return;
+//    }
+
+//    await role.ModifyAsync(x => x.Position = Context.Guild.CurrentUser.Hierarchy);
+
+//    foreach (var channel in Context.Guild.TextChannels)
+//    {
+//        if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
+//        {
+//            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
+//        }
+//    }

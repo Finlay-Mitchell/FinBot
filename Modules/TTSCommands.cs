@@ -1,11 +1,9 @@
 ﻿using Discord.Commands;
 using System.Threading.Tasks;
-using Discord.Addons.Interactive;
-using System;
 
 namespace FinBot.Modules
 {
-    public class TTSCommands : InteractiveBase// This is purely boilerplate code to allow for the HelpHandler to hold all commands, including Python module.
+    public class TTSCommands //This is purely boilerplate code to allow for the HelpHandler to hold all commands, including Python module.
     {
         [Command("speak"), Summary("Adds/removes user from the TTS speak list"), Remarks("(PREFIX)speak (optional)<user>")]
         public Task speak(params string[] args)
@@ -53,57 +51,5 @@ namespace FinBot.Modules
          * Some commands are hidden from the public, since they are only accessable to the bot owner(me), for example:
          * tld(Top Level Domain) which sets the TTS TLD to what you select, e.g: (PREFIX)tld com || (PREFIX)tld co.uk
          */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        [Command("delete")]
-        public async Task<RuntimeResult> Test_DeleteAfterAsync()
-        {
-            await ReplyAndDeleteAsync(content: "this message will delete in 10 seconds", timeout: TimeSpan.FromSeconds(10));
-            return Ok();
-        }
-
-
-
-
-
-        [Command("next", RunMode = RunMode.Async)]
-        public async Task Test_NextMessageAsync()
-        {
-            await ReplyAsync("What is 2+2?");
-            var response = await NextMessageAsync();
-            if (response != null)
-                await ReplyAsync($"You replied: {response.Content}");
-            else
-                await ReplyAsync("You did not reply before the timeout");
-        }
-
-
-        [Command("paginator")]
-        public async Task Test_Paginator()
-        {
-            var pages = new[] { "Page 1", "Page 2", "Page 3", "aaaaaa", "Page 5" };
-            await PagedReplyAsync(pages);
-        }
-
-
-
-
-
-
-
-
     }
 }

@@ -34,6 +34,7 @@ namespace FinBot.Handlers
             if (!CurrentInfractionMessages.Keys.Any(x => x == arg3.MessageId))
                 return;
             var msg = (SocketUserMessage)client.GetGuild(GuildId).GetTextChannel(arg3.Channel.Id).GetMessageAsync(arg3.MessageId).Result;
+            
             if (CurrentInfractionMessages.Keys.Contains(arg3.MessageId) && msg != null)
             {
                 if (arg3.UserId != CurrentInfractionMessages[arg3.MessageId])
