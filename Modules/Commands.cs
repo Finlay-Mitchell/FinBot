@@ -501,46 +501,33 @@ namespace FinBot.Modules
             return eb.Build();
         }
 
-        //[Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
-        //public async Task Remind(int seconds, [Remainder] string remindMsg)
-        //{
-        //    if (seconds > 604800)
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync("Can not set a reminder longer than a week");
-        //    }
+        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
+        public async Task Remind(string duration, [Remainder] string remindMsg)
+        {
+            if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here"))
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync($"Sorry but can't mention everybody");
+            }
 
-        //    else if (seconds < 0)
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync("Can not set reminders for less than a second");
-        //    }
+            else if (Context.Message.MentionedUsers.Any())
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync($"Sorry but you can't mention users");
+            }
 
-        //    else if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here"))
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync($"Sorry but can't mention everybody");
-        //    }
+            else if (Context.Message.MentionedRoles.Any())
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync($"Sorry but you can't mention roles");
+            }
 
-        //    else if (Context.Message.MentionedUsers.Any())
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync($"Sorry but you can't mention users");
-        //    }
-
-        //    else if (Context.Message.MentionedRoles.Any())
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync($"Sorry but you can't mention roles");
-        //    }
-
-        //    else
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync($"Ok, set the reminder '{remindMsg}' in {seconds} seconds.");
-        //        await ReminderService.RemindAsyncSeconds(Context.User, seconds, remindMsg, Context.Message);
-        //    }
-        //}
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await ReminderService.setReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);           
+            }
+        }
 
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
@@ -702,81 +689,6 @@ namespace FinBot.Modules
         {
             await baseMessage.ModifyAsync(x => { x.Embed = embed.Build(); });
         }
-
-        //[Command("time"), Summary("Gets the time of a location"), Remarks("(PREFIX)time <location>")]
-        //public async Task Time([Remainder] string loc)
-        //{
-        //    //      Regex r1 = new Regex(".*");
-        //    //      loc = "time " + loc;
-
-
-        //    ////         if (r1.IsMatch(loc.ToLower()))
-        //    //      {
-        //    //             //HttpClient HTTPClient = new HttpClient();
-        //    //HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync($"https://www.google.com/search?q={loc.ToLower().Replace(' ', '+')}");
-        //    //string resp = await HTTPResponse.Content.ReadAsStringAsync();
-        //    //Regex x = new Regex(@"<div class=""BNeawe iBp4i AP7Wnd""><div><div class=""BNeawe iBp4i AP7Wnd"">(.*?)<\/div><\/div>");
-
-        //    loc = Regex.Replace(loc, "in", "");
-        //    DateTimeOffset nowDateTime = DateTimeOffset.Now;
-        //    DateTimeOffset newDateTime = TimeZoneInfo.ConvertTime(
-        //        nowDateTime,
-        //        TimeZoneInfo.FindSystemTimeZoneById($"Hawaiian Standard Time"));
-
-        //    if(newDateTime.Minute > 10)
-        //    {
-        //        newDateTime.Minute = (DateTimeOffset)"";
-        //    }
-
-        //    await ReplyAsync($"Time in {loc} is: {newDateTime.Hour}:{newDateTime.Minute}");
-        //    //        }
-
-        //}
-
-
-                //   if (x.IsMatch(resp))
-                //   {
-                ////      string time = x.Match(resp).Groups[1].Value;
-            //    await ReplyAsync(time);
-                ////    HTTPClient.Dispose();
-
-                //    if (!loc.Contains("in"))
-                //    {
-                //        int index = loc.IndexOf("time");
-                //        loc = loc.Insert(index + 4, " in ");
-                //    }
-
-                //    await Context.Channel.TriggerTypingAsync();
-                //    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                //    {
-                //        Color = Color.Blue,
-                //        Description = $"The current {loc.ToLower()} is {time}",
-                //        Author = new EmbedAuthorBuilder()
-                //        {
-                //            Name = Context.Message.Author.ToString(),
-                //            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                //            Url = Context.Message.GetJumpUrl()
-                //        }
-                //    }.Build());
-                //}
-
-                //else
-                //{
-                //    HTTPClient.Dispose();
-
-                //    if (!loc.Contains("in"))
-                //    {
-                //        int index = loc.IndexOf("time");
-                //        loc = loc.Insert(index + 4, " in");
-                //    }
-
-                //    await Context.Message.ReplyAsync($"Sorry buddy but could not get the {loc.ToLower().Replace("what time is it ", "")}");
-              //  }
-////
-//                await ReplyAsync(resp);
-//                Console.WriteLine(resp);
-//            }
-//        }
 
         [Command("Roleinfo"), Summary("Gets information on the parsed role"), Remarks("(PREFIX)roleinfo <role name> or <@role>"), Alias("role", "role-info", "ri")]
         public async Task RoleInfo([Remainder] SocketRole role)
@@ -1138,154 +1050,193 @@ namespace FinBot.Modules
             public string text { get; set; }
         }
 
-        //[Command("leaderboard"), Summary("Gets the top 10 members in the leaderboard for the guild"), Remarks("(PREFIX)leaderboard")]
-        //public async Task GetLeaderboard()
-        //{
-        //    SQLiteConnection conn = new SQLiteConnection($"data source = {Global.LevelPath}");
-        //    using SQLiteCommand cmd = new SQLiteCommand(conn);
-        //    conn.Open();
-        //    List<Dictionary<string, dynamic>> scores = new List<Dictionary<string, dynamic>>();
-        //    cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{Context.Guild.Id}' ORDER BY totalXP DESC LIMIT 10";
-        //    using SQLiteDataReader reader = cmd.ExecuteReader();
-        //    int count = 0;
-        //    EmbedBuilder b = new EmbedBuilder()
-        //    {
-        //        Author = new EmbedAuthorBuilder()
-        //        {
-        //            Name = Context.Message.Author.ToString(),
-        //            IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        },
-        //        Title = $"Leaderboard for {Context.Guild}",
-        //        Color = Color.Green,
-        //    };
-        //    string format = "```";
-        //    string username = "";
+        [Command("leaderboard"), Summary("Gets the top 10 members in the leaderboard for the guild"), Remarks("(PREFIX)leaderboard")]
+        public async Task GetLeaderboard()
+        {
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
 
-        //    while (reader.Read())
-        //    {
-        //        count++;
+            try
+            {
+                conn.Open();
+                List<Dictionary<string, dynamic>> scores = new List<Dictionary<string, dynamic>>();
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY totalXP DESC LIMIT 10", conn);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+                int count = 0;
+                EmbedBuilder b = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Leaderboard for {Context.Guild}",
+                    Color = Color.Green,
+                };
+                string format = "```";
+                string username = "";
 
-        //        if (count <= 10)
-        //        {
-        //            Dictionary<string, dynamic> arr = new Dictionary<string, dynamic>();
-        //            SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+                while (reader.Read())
+                {
+                    count++;
 
-        //            if (Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))) == null)
-        //            {
-        //                username = $"<@{reader.GetString(0)}>";
-        //            }
+                    if (count <= 10)
+                    {
+                        Dictionary<string, dynamic> arr = new Dictionary<string, dynamic>();
+                        SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
 
-        //            else
-        //            {
-        //                user = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0)));
+                        if (Context.Guild.GetUser((ulong)reader.GetInt64(0)) == null)
+                        {
+                            username = $"<@{reader.GetInt64(0)}>";
+                        }
 
-        //                if (user.Nickname != null)
-        //                {
-        //                    username = user.Nickname;
-        //                }
+                        else
+                        {
+                            user = Context.Guild.GetUser((ulong)reader.GetInt64(0));
 
-        //                else
-        //                {
-        //                    username = user.Username;
-        //                }
-        //            }
+                            if (user.Nickname != null)
+                            {
+                                username = user.Nickname;
+                            }
 
-        //            arr.Add("name", username);
-        //            arr.Add("score", reader.GetInt64(5));
-        //            scores.Add(arr);
-        //            int spaceCount = 32 - username.Length;
-        //            string spaces = "";
+                            else
+                            {
+                                username = user.Username;
+                            }
+                        }
 
-        //            for(int i = 0; i < spaceCount; i++)
-        //            {
-        //                spaces += " ";
-        //            }
+                        arr.Add("name", username);
+                        arr.Add("score", reader.GetInt64(5));
+                        scores.Add(arr);
+                        int spaceCount = 32 - username.Length;
+                        string spaces = "";
 
-        //            format += $"{count}.{username}{spaces} | Score: {reader.GetInt64(4)}\n";
-        //        }
+                        for (int i = 0; i < spaceCount; i++)
+                        {
+                            spaces += " ";
+                        }
 
-        //        else
-        //        {
-        //            break;
-        //        }
-        //    }
+                        format += $"{count}.{username}{spaces} | Score: {reader.GetInt64(4)}\n";
+                    }
 
-        //    conn.Close();
+                    else
+                    {
+                        break;
+                    }
+                }
 
-        //    try
-        //    {
-        //        Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>>();
-        //        final_object.Add("scores", scores);
-        //        HttpClient HTTPClient = new HttpClient();
-        //        var content = JsonConvert.SerializeObject(final_object);
-        //        var buffer = Encoding.UTF8.GetBytes(content);
-        //        var byteContent = new ByteArrayContent(buffer);
-        //        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        //        HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
-        //        //This next line is so I can test my failover embed in case Thomas's website doesn't want to work with me.
-        //        //HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/failovertest", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
-        //        string resp = await HTTPResponse.Content.ReadAsStringAsync();
-        //        Dictionary<string, string> APIData = JsonConvert.DeserializeObject<Dictionary<string, string>>(resp);
-        //        b.WithCurrentTimestamp();
-        //        b.Description = APIData["description"];
-        //        await Context.Message.ReplyAsync("", false, b.Build());
-        //    }
+                conn.Close();
 
-        //    catch(Exception)
-        //    {
-        //        b.WithCurrentTimestamp();
-        //        b.Description = format + "```";
-        //        await Context.Message.ReplyAsync("", false, b.Build());
-        //    }
+                try
+                {
+                    Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>>();
+                    final_object.Add("scores", scores);
+                    HttpClient HTTPClient = new HttpClient();
+                    var content = JsonConvert.SerializeObject(final_object);
+                    var buffer = Encoding.UTF8.GetBytes(content);
+                    var byteContent = new ByteArrayContent(buffer);
+                    byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
+                    //This next line is so I can test my failover embed in case Thomas's website doesn't want to work with me.
+                    //HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/failovertest", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
+                    string resp = await HTTPResponse.Content.ReadAsStringAsync();
+                    Dictionary<string, string> APIData = JsonConvert.DeserializeObject<Dictionary<string, string>>(resp);
+                    b.WithCurrentTimestamp();
+                    b.Description = APIData["description"];
+                    await Context.Message.ReplyAsync("", false, b.Build());
+                }
 
-        //}
+                catch (Exception)
+                {
+                    b.WithCurrentTimestamp();
+                    b.Description = format + "```";
+                    await Context.Message.ReplyAsync("", false, b.Build());
+                }
+            }
 
-        //[Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>")]
-        //public async Task Rank(params string[] arg)
-        //{
-        //    if (arg.Length == 0)
-        //    {
-        //        await Context.Channel.TriggerTypingAsync();
-        //        await Context.Message.ReplyAsync("", false, GetRank(Context.Message.Author, Context.Guild.Id));
-        //    }
+            catch (Exception ex)
+            {
+                if (ex.Message.GetType() != typeof(NullReferenceException))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(Context.User);
+                    eb.WithTitle("Error getting info from database:");
+                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eb.WithCurrentTimestamp();
+                    eb.WithColor(Color.Red);
+                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    await Context.Channel.SendMessageAsync("", false, eb.Build());
+                    return;
+                }
+            }
 
-        //    else
-        //    {
-        //        if (Context.Message.MentionedUsers.Any())
-        //        {
-        //            await Context.Channel.TriggerTypingAsync();
-        //            await Context.Message.ReplyAsync("", false, GetRank(Context.Message.MentionedUsers.First(), Context.Guild.Id));
-        //        }
-        //    }
-        //}
+        }
 
-        //public Embed GetRank(SocketUser user, ulong guild)
-        //{
-        //    SQLiteConnection conn = new SQLiteConnection($"data source = {Global.LevelPath}");
-        //    using SQLiteCommand cmd = new SQLiteCommand(conn);
-        //    conn.Open();
-        //    cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{guild}' AND userId = '{user.Id}'";
-        //    using SQLiteDataReader reader = cmd.ExecuteReader();
-        //    EmbedBuilder b = new EmbedBuilder()
-        //    {
-        //        Author = new EmbedAuthorBuilder()
-        //        {
-        //            Name = Context.Message.Author.ToString(),
-        //            IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        },
-        //        Title = $"Score for {user.Username}",
-        //        Color = Color.Green,
-        //    };
+        [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("rank")]
+        public async Task Rank(params string[] arg)
+        {
+            if (arg.Length == 0)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync("", false, GetRank(Context.Message.Author, Context.Guild.Id));
+            }
 
-        //    while (reader.Read())
-        //    {
-        //        b.Description = $"**{user.Username} - __{reader.GetInt64(5)}__**\nLevel - {reader.GetInt64(3)}";
-        //    }
+            else
+            {
+                if (Context.Message.MentionedUsers.Any())
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, GetRank(Context.Message.MentionedUsers.First(), Context.Guild.Id));
+                }
+            }
+        }
 
-        //    conn.Close();
-        //    b.WithCurrentTimestamp();
-        //    return b.Build();
-        //}
+        public Embed GetRank(SocketUser user, ulong guild)
+        {
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            
+            try
+            {
+                conn.Open();
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {guild} AND userId = {user.Id}", conn);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+                EmbedBuilder b = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Score for {user.Username}",
+                    Color = Color.Green,
+                };
+
+                while (reader.Read())
+                {
+                    b.Description = $"**{user.Username} - __{reader.GetInt64(5)}__**\nLevel - {reader.GetInt64(3)}";
+                }
+
+                conn.Close();
+                b.WithCurrentTimestamp();
+                return b.Build();
+            }
+
+            catch(Exception ex)
+            {
+                if (ex.Message.GetType() != typeof(NullReferenceException))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(user);
+                    eb.WithTitle("Error getting info from database:");
+                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eb.WithCurrentTimestamp();
+                    eb.WithColor(Color.Red);
+                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    return eb.Build();
+                }
+            }
+
+            return null;
+        }
 
         [Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe")]
         public async Task Snipe()
@@ -1301,7 +1252,8 @@ namespace FinBot.Modules
 
                 while (reader.Read())
                 {
-                    b.Title = (string)reader[0];
+                    b.Title = "Sniped message";
+                    b.Description = (string)reader[0];
                     b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetDouble(1))}");
                     SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
                     string username = "";
@@ -1345,113 +1297,141 @@ namespace FinBot.Modules
 
             catch(Exception ex)
             {
-                await Context.Message.ReplyAsync(ex.Message);
+                if (ex.Message.GetType() != typeof(NullReferenceException))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(Context.User);
+                    eb.WithTitle("Error getting info from database:");
+                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eb.WithCurrentTimestamp();
+                    eb.WithColor(Color.Red);
+                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                }
             }
         }
 
-        //[Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
-        //public async Task stats(params string[] graph)
-        //{
-        //    if (graph.Length == 0)
-        //    {
-        //        EmbedBuilder noOp = new EmbedBuilder();
-        //        noOp.WithTitle("Error");
-        //        noOp.WithDescription("Please enter an option!");
-        //        noOp.WithColor(Color.Red);
-        //        noOp.WithAuthor(Context.Message.Author);
-        //        await Context.Message.ReplyAsync("", false, noOp.Build());
-        //        return;
-        //    }
+        [Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
+        public async Task stats(params string[] graph)
+        {
+            if (graph.Length == 0)
+            {
+                EmbedBuilder noOp = new EmbedBuilder();
+                noOp.WithTitle("Error");
+                noOp.WithDescription("Please enter an option!");
+                noOp.WithColor(Color.Red);
+                noOp.WithAuthor(Context.Message.Author);
+                await Context.Message.ReplyAsync("", false, noOp.Build());
+                return;
+            }
 
-        //    else if (graph.Length == 1)
-        //    {
-        //        SQLiteConnection conn = new SQLiteConnection($"data source = {Global.LevelPath}");
-        //        using SQLiteCommand cmd = new SQLiteCommand(conn);
-        //        conn.Open();
-        //        cmd.CommandText = $"SELECT * FROM Levels WHERE guildId = '{Context.Guild.Id}' ORDER BY totalXP DESC LIMIT 10";
-        //        using SQLiteDataReader reader = cmd.ExecuteReader();
-        //        int count = 0;
-        //        string Username = "labels: [";
-        //        string Data = "data: [";
-        //        SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+            else if (graph.Length == 1)
+            {
+                MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
 
-        //        while (reader.Read())
-        //        {
-        //            count++;
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY totalXP DESC LIMIT 10", conn);
+                    using MySqlDataReader reader = cmd.ExecuteReader();
+                    int count = 0;
+                    string Username = "labels: [";
+                    string Data = "data: [";
+                    SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
 
-        //            if (count <= 10)
-        //            {
+                    while (reader.Read())
+                    {
+                        count++;
 
-        //                if (Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0))) == null)
-        //                {
-        //                    Username += $"'<@{reader.GetString(0)}>', ";
-        //                }
+                        if (count <= 10)
+                        {
 
-        //                else
-        //                {
-        //                    user = Context.Guild.GetUser(Convert.ToUInt64(reader.GetString(0)));
+                            if (Context.Guild.GetUser((ulong)reader.GetInt64(0)) == null)
+                            {
+                                Username += $"'<@{reader.GetInt64(0)}>', ";
+                            }
 
-        //                    if (user.Nickname != null)
-        //                    {
-        //                        Username += $"'{user.Nickname}', ";
-        //                    }
+                            else
+                            {
+                                user = Context.Guild.GetUser((ulong)reader.GetInt64(0));
 
-        //                    else
-        //                    {
-        //                        Username += $"'{user.Username}', ";
-        //                    }
-        //                }
+                                if (user.Nickname != null)
+                                {
+                                    Username += $"'{user.Nickname}', ";
+                                }
 
-        //                Data += $"{reader.GetInt64(5)}, ";
-        //            }
+                                else
+                                {
+                                    Username += $"'{user.Username}', ";
+                                }
+                            }
 
-        //            else
-        //            {
-        //                break;
-        //            }
-        //        }
+                            Data += $"{reader.GetInt64(5)}, ";
+                        }
 
-        //        conn.Close();
-        //        Chart qc = new Chart();
-        //        qc.Width = 500;
-        //        qc.Height = 300;
-        //        Username = Username.Remove(Username.LastIndexOf(','));
-        //        Username += "]";
-        //        Data = Data.Remove(Data.LastIndexOf(','));
-        //        Data += "]";
+                        else
+                        {
+                            break;
+                        }
+                    }
 
-        //        switch (graph[0].ToLower())
-        //        {
-        //            case "pie":
-        //                qc.Config = $"{{type: 'pie', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-        //                await Context.Message.ReplyAsync(qc.GetUrl());
-        //                break;
+                    conn.Close();
+                    Chart qc = new Chart();
+                    qc.Width = 500;
+                    qc.Height = 300;
+                    Username = Username.Remove(Username.LastIndexOf(','));
+                    Username += "]";
+                    Data = Data.Remove(Data.LastIndexOf(','));
+                    Data += "]";
 
-        //            case "bar":
-        //                qc.Config = $"{{type: 'bar', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-        //                await Context.Message.ReplyAsync(qc.GetUrl());
-        //                break;
+                    switch (graph[0].ToLower())
+                    {
+                        case "pie":
+                            qc.Config = $"{{type: 'pie', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            break;
 
-        //            case "line":
-        //                qc.Config = $"{{type: 'line', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-        //                await Context.Message.ReplyAsync(qc.GetUrl());
-        //                break;
+                        case "bar":
+                            qc.Config = $"{{type: 'bar', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            break;
 
-        //            case "doughnut":
-        //                qc.Config = $"{{type: 'doughnut', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-        //                await Context.Message.ReplyAsync(qc.GetUrl());
-        //                break;
+                        case "line":
+                            qc.Config = $"{{type: 'line', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            break;
 
-        //            case "polararea":
-        //                qc.Config = $"{{type: 'polarArea', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-        //                await Context.Message.ReplyAsync(qc.GetUrl());
-        //                break;
-        //            default:
-        //                await ReplyAsync("Please only enter \"pie\", \"bar\", \"line\", \"doughnut\" or \"polararea\"");
-        //                break;
-        //        }
-        //    }
-        //}
+                        case "doughnut":
+                            qc.Config = $"{{type: 'doughnut', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            break;
+
+                        case "polararea":
+                            qc.Config = $"{{type: 'polarArea', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
+                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            break;
+                        default:
+                            await ReplyAsync("Please only enter \"pie\", \"bar\", \"line\", \"doughnut\" or \"polararea\"");
+                            break;
+                    }
+                }
+
+                catch(Exception ex)
+                {
+                    if (ex.Message.GetType() != typeof(NullReferenceException))
+                    {
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.WithAuthor(Context.User);
+                        eb.WithTitle("Error getting info from database:");
+                        eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                        eb.WithCurrentTimestamp();
+                        eb.WithColor(Color.Red);
+                        eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                        await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    }
+                }
+            }
+        }
 
         [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
         public async Task dadjoke()
@@ -1461,128 +1441,176 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync(dadJoke);
         }
 
-        //[Command("poll")]
-        //public async Task poll([Remainder] string question)
-        //{
-        //    SQLiteConnection conn = new SQLiteConnection($"data source = {Global.Polls}");
-        //    using SQLiteCommand cmd = new SQLiteCommand(conn);
-        //    using SQLiteCommand cmd1 = new SQLiteCommand(conn);
-        //    conn.Open();
-        //    cmd.CommandText = $"SELECT * FROM Polls WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
-        //    using SQLiteDataReader reader = cmd.ExecuteReader();
-        //    bool hasRan = false;
+        [Command("poll")]
+        public async Task poll([Remainder] string question)
+        {
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
 
-        //    while(reader.Read())
-        //    {
-        //        hasRan = true;
+            try
+            {
+                conn.Open();
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Polls WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", conn);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+                bool hasRan = false;
 
-        //        if (reader.GetString(3) == "Active")
-        //        {
-        //            EmbedBuilder eb = new EmbedBuilder();
-        //            eb.Title = "Poll already active";
-        //            eb.Description = $"Your poll with ID {reader.GetString(0)} is already active, please close this poll by doing {Global.Prefix}endpoll";
-        //            eb.WithAuthor(Context.Message.Author);
-        //            eb.WithCurrentTimestamp();
-        //            eb.Color = Color.Red;
-        //            await Context.Message.ReplyAsync("", false, eb.Build());
-        //            return;
-        //        }
+                while (reader.Read())
+                {
+                    hasRan = true;
 
-        //        else
-        //        {
-        //            EmbedBuilder eb = new EmbedBuilder();
-        //            eb.Title = $"{question}";
-        //            eb.WithAuthor(Context.Message.Author);
-        //            eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
-        //            var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
-        //            await msg.AddReactionsAsync(Global.reactions.ToArray());
-        //            cmd1.CommandText = $"UPDATE Polls SET message = '{msg.Id}', guildId = '{Context.Guild.Id}', author = '{Context.Message.Author.Id}', state = 'Active', chanId = {Context.Message.Channel.Id} WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
-        //            cmd1.ExecuteNonQuery();
-        //        }
-        //    }
+                    if (reader.GetString(3) == "Active")
+                    {
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.Title = "Poll already active";
+                        eb.Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {Global.Prefix}endpoll";
+                        eb.WithAuthor(Context.Message.Author);
+                        eb.WithCurrentTimestamp();
+                        eb.Color = Color.Red;
+                        await Context.Message.ReplyAsync("", false, eb.Build());
+                        return;
+                    }
 
-        //    if(!hasRan)
-        //    {
-        //        EmbedBuilder eb = new EmbedBuilder();
-        //        eb.Title = $"{question}";
-        //        eb.WithAuthor(Context.Message.Author);
-        //        eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
-        //        var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
-        //        await msg.AddReactionsAsync(Global.reactions.ToArray());
-        //        cmd1.CommandText = $"INSERT INTO Polls(message, guildId, author, state, chanId) VALUES ('{msg.Id}', '{Context.Guild.Id}', '{Context.Message.Author.Id}', 'Active', '{Context.Message.Channel.Id}')";
-        //        cmd1.ExecuteNonQuery();
-        //    }
-        //}
+                    else
+                    {
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.Title = $"{question}";
+                        eb.WithAuthor(Context.Message.Author);
+                        eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
+                        var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                        await msg.AddReactionsAsync(Global.reactions.ToArray());
+                        queryConn.Open();
+                        MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET message = {msg.Id}, guildId = {Context.Guild.Id}, author = {Context.Message.Author.Id}, state = 'Active', chanId = {Context.Message.Channel.Id} WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
+                        cmd1.ExecuteNonQuery();
+                        queryConn.Close();
+                    }
+                }
 
-        //[Command("endpoll")]
-        //public async Task endpoll()
-        //{
-        //    SQLiteConnection conn = new SQLiteConnection($"data source = {Global.Polls}");
-        //    using SQLiteCommand cmd = new SQLiteCommand(conn);
-        //    using SQLiteCommand cmd1 = new SQLiteCommand(conn);
-        //    conn.Open();
-        //    cmd.CommandText = $"SELECT * FROM Polls WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
-        //    using SQLiteDataReader reader = cmd.ExecuteReader();
-        //    bool hasRan = false;
+                conn.Close();
 
-        //    while (reader.Read())
-        //    {
-        //        hasRan = true;
+                if (!hasRan)
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.Title = $"{question}";
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
+                    var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    await msg.AddReactionsAsync(Global.reactions.ToArray());
+                    queryConn.Open();
+                    MySqlCommand cmd1 = new MySqlCommand($"INSERT INTO Polls(message, guildId, author, state, chanId) VALUES ({msg.Id}, {Context.Guild.Id}, {Context.Message.Author.Id}, 'Active', {Context.Message.Channel.Id})", queryConn);
+                    cmd1.ExecuteNonQuery();
+                    queryConn.Close();
+                }
+            }
 
-        //        if (reader.GetString(3) == "Active")
-        //        {
-        //            try
-        //            {
-        //                ulong mId = Convert.ToUInt64(reader.GetString(0));
-        //                ulong chanId = Convert.ToUInt64(reader.GetString(4));
-        //                ITextChannel channel = (ITextChannel)Context.Guild.GetChannel(chanId);
-        //                var msg = await channel.GetMessageAsync(mId);
-        //                EmbedBuilder eb = new EmbedBuilder();
-        //                eb.WithTitle("Getting poll results...");
-        //                eb.Color = Color.Orange;
-        //                RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("", false, eb.Build());
-        //                msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
-        //                msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
-        //                eb.Title = $"{msg.Embeds.First().Title}";
-        //                eb.WithAuthor(Context.Message.Author);
-        //                eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
-        //                eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
-        //                eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
-        //                await ModifyMessage(message, eb);
-        //                cmd1.CommandText = $"UPDATE Polls SET state = 'Inactive' WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
-        //                cmd1.ExecuteNonQuery();
-        //            }
+            catch(Exception ex)
+            {
+                if (ex.Message.GetType() != typeof(NullReferenceException))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(Context.User);
+                    eb.WithTitle("Error getting info from database:");
+                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eb.WithCurrentTimestamp();
+                    eb.WithColor(Color.Red);
+                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                }
+            }
+        }
 
-        //            catch (Exception ex)
-        //            {
-        //                await Context.Message.ReplyAsync($"Error: {ex.Message}");
-        //                cmd1.CommandText = $"UPDATE Polls SET state = 'Inactive' WHERE guildId = '{Context.Guild.Id}' AND author = '{Context.Message.Author.Id}'";
-        //                cmd1.ExecuteNonQuery();
-        //            }
-        //        }
+        [Command("endpoll")]
+        public async Task endpoll()
+        {
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
 
-        //        else
-        //        {
-        //            EmbedBuilder eb = new EmbedBuilder();
-        //            eb.Title = "Poll not active";
-        //            eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
-        //            eb.WithAuthor(Context.Message.Author);
-        //            eb.WithCurrentTimestamp();
-        //            eb.Color = Color.Red;
-        //            await Context.Message.ReplyAsync("", false, eb.Build());
-        //        }
-        //    }
+            try
+            {
+                conn.Open();
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Polls WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", conn);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+                bool hasRan = false;
 
-        //    if (!hasRan)
-        //    {
-        //        EmbedBuilder eb = new EmbedBuilder();
-        //        eb.Title = "Poll not active";
-        //        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
-        //        eb.WithAuthor(Context.Message.Author);
-        //        eb.WithCurrentTimestamp();
-        //        eb.Color = Color.Red;
-        //        await Context.Message.ReplyAsync("", false, eb.Build());
-        //    }
-        //}
+                while (reader.Read())
+                {
+                    hasRan = true;
+
+                    if (reader.GetString(3) == "Active")
+                    {
+                        try
+                        {
+                            ulong mId = (ulong)reader.GetInt64(0);
+                            ulong chanId = (ulong)reader.GetInt64(4);
+                            ITextChannel channel = (ITextChannel)Context.Guild.GetChannel(chanId);
+                            var msg = await channel.GetMessageAsync(mId);
+                            EmbedBuilder eb = new EmbedBuilder();
+                            eb.WithTitle("Getting poll results...");
+                            eb.Color = Color.Orange;
+                            RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("", false, eb.Build());
+                            msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
+                            msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
+                            eb.Title = $"{msg.Embeds.First().Title}";
+                            eb.WithAuthor(Context.Message.Author);
+                            eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
+                            eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
+                            eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
+                            await ModifyMessage(message, eb);
+                            queryConn.Open();
+                            MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
+                            cmd1.ExecuteNonQuery();
+                            queryConn.Close();
+                        }
+
+                        catch (Exception ex)
+                        {
+                            await Context.Message.ReplyAsync($"Error: {ex.Message}");
+                            queryConn.Open();
+                            MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
+                            cmd1.ExecuteNonQuery();
+                            queryConn.Close();
+                        }
+                    }
+
+                    else
+                    {
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.Title = "Poll not active";
+                        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
+                        eb.WithAuthor(Context.Message.Author);
+                        eb.WithCurrentTimestamp();
+                        eb.Color = Color.Red;
+                        await Context.Message.ReplyAsync("", false, eb.Build());
+                    }
+                }
+
+                conn.Close();
+
+                if (!hasRan)
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.Title = "Poll not active";
+                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    eb.Color = Color.Red;
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+                }
+            }
+
+            catch(Exception ex)
+            {
+                if (ex.Message.GetType() != typeof(NullReferenceException))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(Context.User);
+                    eb.WithTitle("Error getting info from database:");
+                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eb.WithCurrentTimestamp();
+                    eb.WithColor(Color.Red);
+                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                }
+            }
+        }
     }
 }

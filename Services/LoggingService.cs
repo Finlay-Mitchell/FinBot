@@ -7,6 +7,7 @@ using System;
 using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace FinBot.Services
 {
@@ -27,6 +28,98 @@ namespace FinBot.Services
             _discord.ShardReady += OnShardReady;
             _discord.MessageReceived += OnLogMessage;
             _discord.MessageDeleted += OnMessageDelete;
+            _discord.MessageReceived += AddToDB;
+        }
+
+        public async Task AddToDB(SocketMessage arg)
+        {
+
+            if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
+            {
+                return;
+            }
+
+            SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
+            long Now = Global.ConvertToTimestamp(arg.Timestamp.UtcDateTime);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+
+            try
+            {
+                conn.Open();
+                long TimeStamp = 0;
+                long XP = 0;
+                long level = 0;
+                bool ran = false;
+                long xpToNextLevel = 0;
+                long totalXP = 0;
+
+                MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Levels WHERE userId = {arg.Author.Id} AND guildId = {chan.Guild.Id}", conn);
+                MySqlDataReader reader = cmd1.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    ran = true;
+                    TimeStamp = Now - reader.GetInt64(2);
+
+                    if (TimeStamp >= Global.MinMessageTimestamp)
+                    {
+                        XP = reader.GetInt64(4);
+                        level = reader.GetInt64(3);
+                        Random r = new Random();
+                        XP += r.Next(15, 25);
+                        totalXP = +XP;
+                        xpToNextLevel = (long)(5 * Math.Pow(level, 2) + 50 * level + 100);
+
+
+                        if (XP >= xpToNextLevel)
+                        {
+                            level += 1;
+                            XP = XP - xpToNextLevel;
+                            await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                        }
+
+                        queryConn.Open();
+                        MySqlCommand cmd2 = new MySqlCommand($"UPDATE Levels SET LastValidTimestamp = {Now}, level = {level}, XP = {XP}, totalXP = {totalXP} WHERE guildId = {chan.Guild.Id} AND userId = {arg.Author.Id}", queryConn);
+                        cmd2.ExecuteNonQuery();
+                        queryConn.Close();
+                    }
+
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                if (!ran)
+                {
+                    Random r = new Random();
+                    totalXP =+ r.Next(15, 25);
+                    queryConn.Open();
+                    MySqlCommand cmd2 = new MySqlCommand($"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES({arg.Author.Id}, {chan.Guild.Id}, {Now}, 0, {XP}, {totalXP})", queryConn);
+                    cmd2.ExecuteNonQuery();
+                    queryConn.Close();
+
+                }
+
+                conn.Close();
+            }
+
+            catch (Exception ex)
+            {
+                if (ex.Message.GetType() != typeof(NullReferenceException))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(arg.Author);
+                    eb.WithTitle("Error sending deatils to database:");
+                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eb.WithCurrentTimestamp();
+                    eb.WithColor(Color.Red);
+                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    await arg.Channel.SendMessageAsync("", false, eb.Build());
+                    return;
+                }
+            }
         }
 
         private async Task OnMessageDelete(Cacheable<IMessage, ulong> msg, ISocketMessageChannel arg2)
@@ -44,37 +137,31 @@ namespace FinBot.Services
             SocketUserMessage author = (SocketUserMessage)await msg.GetOrDownloadAsync();
             SocketGuildChannel sGC = (SocketGuildChannel)arg2;
             string messagecontent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
-            string title = "";
-            string descripion = "";
             string fields = "";
+            List<string> content = new List<string>();
 
-            if (msg.HasValue && author.Embeds.Count > 0)
+            if (msg.HasValue)
             {
-                IEmbed message = author.Embeds.First();
-                var embed = message.ToEmbedBuilder();
-
-                if (embed.Fields.Count > 0)
+                if (author.Embeds.Count > 0)
                 {
-                    foreach(var field in embed.Fields)
+                    IEmbed message = author.Embeds.First();
+                    var embed = message.ToEmbedBuilder();
+
+                    if (embed.Fields.Count > 0)
                     {
-                        fields += $"**{field.Name}**\n{field.Value}\n";
+                        foreach (var field in embed.Fields)
+                        {
+                            fields += $"**{field.Name}**\n{field.Value}\n";
+                        }
                     }
-                }
-                
-                if(!string.IsNullOrEmpty(embed.Title))
-                {
-                    title = embed.Title;
-                }
 
-                if(!string.IsNullOrEmpty(embed.Description))
-                {
-                    descripion = embed.Description;
+                    content.Add(string.IsNullOrEmpty(embed.Title) ? "" : $"**{embed.Title}**");
+                    content.Add(string.IsNullOrEmpty(embed.Description) ? "" : embed.Description);
+                    fields = string.IsNullOrEmpty(fields) ? "" : $"\n{fields}";
+                    content.Add(string.IsNullOrEmpty(author.Content) ? "" : author.Content);
+                    content.Add(string.IsNullOrEmpty(embed.Footer.Text) ? "" : embed.Footer.Text);
+                    messagecontent = $"{content[2]}\n\n{content[0]}\n\n{content[1]}\n{fields}\n{content[3]}";
                 }
-
-                title = string.IsNullOrEmpty(title) ? "No title found" : $"**Title:**\n{title}";
-                descripion = string.IsNullOrEmpty(descripion) ? "No description found" : $"**Description:**\n{descripion}";
-                fields = string.IsNullOrEmpty(fields) ? "No fields found" : $"**Fields:**\n{fields}";
-                messagecontent = $"{title}\n\n{descripion}\n\n{fields}";
             }
 
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
@@ -86,7 +173,7 @@ namespace FinBot.Services
                 QueryConn.Open();
                 long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
                 bool IsEmpty = true;
-                MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = '{sGC.Guild.Id}'", conn);
+                MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM SnipeLogs WHERE guildId = '{sGC.Guild.Id}'", conn);
                 MySqlDataReader reader = (MySqlDataReader)await cmd1.ExecuteReaderAsync();
 
                 if (messagecontent.Contains("'"))
@@ -97,14 +184,15 @@ namespace FinBot.Services
                 while (reader.Read())
                 {                    
                     IsEmpty = false;
-                    MySqlCommand cmd = new MySqlCommand($"UPDATE snipelogs SET ts = {Now}, message = '{messagecontent}', author = {author.Author.Id} WHERE guildId = {sGC.Guild.Id}", QueryConn);
+                    MySqlCommand cmd = new MySqlCommand($"UPDATE SnipeLogs SET MessageTimestamp = {Now}, message = '{messagecontent}', author = {author.Author.Id} WHERE guildId = {sGC.Guild.Id}", QueryConn);
+
                     MySqlSuccess = cmd.ExecuteNonQuery();
                     QueryConn.Close();
                 }
 
                 if (IsEmpty)
                 {
-                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO snipelogs(message, ts, guildId, author) VALUES('{messagecontent}', {Now}, {sGC.Guild.Id}, {author.Author.Id})", QueryConn);
+                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO SnipeLogs(message, MessageTimestamp, guildId, author) VALUES('{messagecontent}', {Now}, {sGC.Guild.Id}, {author.Author.Id})", QueryConn);
                     MySqlSuccess = await cmd.ExecuteNonQueryAsync();
                     QueryConn.Close();
                 }

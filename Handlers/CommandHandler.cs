@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace FinBot.Handlers
 {
@@ -40,6 +41,27 @@ namespace FinBot.Handlers
 
             int argPos = 0;
             ShardedCommandContext context = new ShardedCommandContext(_client, message);
+
+            if (s.Channel.GetType() == typeof(SocketDMChannel))
+            {
+                string msg = s.ToString();
+
+                if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"{Global.Prefix}support") || msg.ToLower().StartsWith($"{Global.Prefix}support "))
+                {
+                    msg = Regex.Replace(msg, "support", "");
+                    IUserMessage reply = (IUserMessage)s;
+                    await reply.ReplyAsync($"Thank you for submitting your support ticket. A developer will review it shortly.\nYour ticket Id is: {s.Id}");
+
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithAuthor(s.Author);
+                    eb.WithCurrentTimestamp();
+                    eb.WithFooter($"DM channel Id: {context.Channel.Id}\nSupport ticket Id: {s.Id}");
+                    eb.WithTitle("New support ticket");
+                    eb.WithDescription($"```{msg}```");
+                    eb.WithColor(Color.DarkPurple);
+                    IUserMessage replyMessage = await _client.GetGuild(Global.SupportGuildId).GetTextChannel(Global.SupportChannelId).SendMessageAsync("", false, eb.Build());
+                }
+            }
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(Global.Prefix, ref argPos)))
             {

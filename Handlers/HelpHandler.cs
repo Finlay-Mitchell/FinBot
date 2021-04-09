@@ -55,6 +55,11 @@ namespace FinBot.Handlers
                 {
                     PreconditionResult result = await cmd.CheckPreconditionsAsync(Context);
 
+                    if (Global.hiddenCommands.Contains(cmd.Name.ToString()))
+                    {
+                        continue;
+                    }
+
                     if (result.IsSuccess)
                     {
                         description += $"{Global.Prefix}{cmd.Aliases.First()}, \t";
@@ -113,7 +118,7 @@ namespace FinBot.Handlers
         {
             SearchResult result = _service.Search(Context, command);
 
-            if (!result.IsSuccess)
+            if (!result.IsSuccess || Global.hiddenCommands.Contains(command))
             {
                 await Context.Message.ReplyAsync($"Sorry, I couldn't find a command like **{command}**.");
                 return;

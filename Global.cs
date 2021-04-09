@@ -23,6 +23,9 @@ namespace FinBot
         public static string GoogleSearchAPIKey { get; set; }
         public static string GeniusAPIKey { get; set; }
         public static string LoggingLevel { get; set; }
+        public static string Pythoninterpreter { get; set; }
+        public static ulong SupportChannelId { get; set; }
+        public static ulong SupportGuildId { get; set; }
 
         public class MySQL
         {
@@ -51,6 +54,9 @@ namespace FinBot
                             new Emoji("✅"),
                             new Emoji("❌")
                         };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport" };
+        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 368095722442194945, 230778630597246983 };
+
 
         public static void ReadConfig()
         {
@@ -72,6 +78,9 @@ namespace FinBot
             MySQL.MySQLPassword = data.MySQLPassword;
             GeniusAPIKey = data.GeniusAPIKey;
             LoggingLevel = data.LoggingLevel;
+            Pythoninterpreter = data.Pythoninterpreter;
+            SupportChannelId = data.SupportChannelId;
+            SupportGuildId = data.SupportGuildId;
 
             MySQL.connStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}";
         }
@@ -94,6 +103,9 @@ namespace FinBot
             public string MySQLPassword { get; set; }
             public string GeniusAPIKey { get; set; }
             public string LoggingLevel { get; set; }
+            public string Pythoninterpreter { get; set; }
+            public ulong SupportChannelId { get; set; }
+            public ulong SupportGuildId { get; set; }
         }
 
         public static void ConsoleLog(string ConsoleMessage, ConsoleColor FColor = ConsoleColor.Green, ConsoleColor BColor = ConsoleColor.Black)
@@ -108,6 +120,7 @@ namespace FinBot
         public static void SaveInfractionMessageCards()
         {
             string s = "";
+            
             foreach (KeyValuePair<ulong, ulong> item in InfractionMessageHandler.CurrentInfractionMessages)
             {
                 s += item.Key + "," + item.Value + "\n";
@@ -120,6 +133,7 @@ namespace FinBot
         {
             string t = File.ReadAllText(infractionMessagefilepath);
             Dictionary<ulong, ulong> ulist = new Dictionary<ulong, ulong>();
+          
             if (t == "")
             {
                 return ulist;
@@ -151,6 +165,7 @@ namespace FinBot
         {
             string t = File.ReadAllText(LeetRulesPath);
             Dictionary<string, string> list = new Dictionary<string, string>();
+           
             if (t == "")
             {
                 return list;
@@ -188,5 +203,47 @@ namespace FinBot
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
+
+        public static bool IsDev(SocketUser user)
+        {
+            return DevUIDs.Contains(user.Id);
+        }
+
+        public static async Task ModifyMessage(IUserMessage baseMessage, string newMessage)
+        {
+            await baseMessage.ModifyAsync(x => { x.Content = newMessage; });
+        }
+
+        public static async Task ModifyMessage(IUserMessage baseMessage, EmbedBuilder embed)
+        {
+            await baseMessage.ModifyAsync(x => { x.Embed = embed.Build(); });
+        }
+
+        public class processes
+        {
+            public int MainBotPID { get; set; }
+            public int PyBotPID { get; set; }
+            public static int ProcessID { get; set; }
+        }
+
+        public static int GetPreviousProcessTaskPID()
+        {
+            string Data = File.ReadAllText(@$"{Environment.CurrentDirectory}\Data\PID.txt");
+
+            if (string.IsNullOrEmpty(Data))
+            {
+                return 0;
+            }
+
+            else
+            {
+                return Convert.ToInt32(Data);
+            }
+        }
+
+        public static void UpdatePIDValue(int PID)
+        {
+            File.WriteAllText(@$"{Environment.CurrentDirectory}\Data\PID.txt", $"{PID}");
+        }    
     }
 }

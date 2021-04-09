@@ -69,7 +69,6 @@ namespace FinBot
                 .AddSingleton<CommandHandler>()
                 .AddSingleton<RedditHandler>()
                 .AddSingleton<YouTubeModel>()
-                .AddSingleton<LevellingHandler>()
                 .AddSingleton<ChatFilter>()
                 .AddSingleton<InfractionMessageHandler>()
                 .AddSingleton<HelpHandler>()
