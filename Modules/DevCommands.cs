@@ -74,5 +74,17 @@ namespace FinBot.Modules
                 }
             }
         }
+
+        [Command("tld")] //boilerplate code for python TLD module
+        public Task tld(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("exec")] //more boilerplate
+        public Task exec(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

@@ -34,6 +34,20 @@ class FinBot(commands.Bot):
         embed = discord.Embed(title="Error", description=text, colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
         return embed
 
+    @staticmethod
+    def split_text(full_text):
+        while len(full_text) > 2000:
+            newline_indices = [m.end() for m in re.finditer("\n", full_text[:2000])]
+            if len(newline_indices) == 0:
+                to_send = full_text[:2000]
+                full_text = full_text[2000:]
+            else:
+                to_send = full_text[:newline_indices[-1]]
+                full_text = full_text[newline_indices[-1]:]
+            yield to_send
+        if len(full_text) > 0:
+            yield full_text
+
 def get_bot():
     bot = FinBot()
     data = DataHelper()

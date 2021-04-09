@@ -68,7 +68,7 @@ namespace FinBot.Services
                         level = reader.GetInt64(3);
                         Random r = new Random();
                         XP += r.Next(15, 25);
-                        totalXP = +XP;
+                        totalXP =+ XP;
                         xpToNextLevel = (long)(5 * Math.Pow(level, 2) + 50 * level + 100);
 
 
@@ -91,6 +91,8 @@ namespace FinBot.Services
                     }
                 }
 
+                conn.Close();
+
                 if (!ran)
                 {
                     Random r = new Random();
@@ -99,26 +101,23 @@ namespace FinBot.Services
                     MySqlCommand cmd2 = new MySqlCommand($"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES({arg.Author.Id}, {chan.Guild.Id}, {Now}, 0, {XP}, {totalXP})", queryConn);
                     cmd2.ExecuteNonQuery();
                     queryConn.Close();
-
                 }
-
-                conn.Close();
             }
 
             catch (Exception ex)
             {
-                if (ex.Message.GetType() != typeof(NullReferenceException))
-                {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.WithAuthor(arg.Author);
-                    eb.WithTitle("Error sending deatils to database:");
-                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
-                    eb.WithCurrentTimestamp();
-                    eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
-                    await arg.Channel.SendMessageAsync("", false, eb.Build());
-                    return;
-                }
+                //if (ex.Message.GetType() != typeof(NullReferenceException))
+                //{
+                //    EmbedBuilder eb = new EmbedBuilder();
+                //    eb.WithAuthor(arg.Author);
+                //    eb.WithTitle("Error sending deatils to database:");
+                //    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                //    eb.WithCurrentTimestamp();
+                //    eb.WithColor(Color.Red);
+                //    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                //    await arg.Channel.SendMessageAsync("", false, eb.Build());
+                //    return;
+                //}
             }
         }
 

@@ -96,6 +96,15 @@ namespace FinBot.Handlers
                                 x.IsInline = false;
                             });
                             break;
+                           
+                        case "MusicModule":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Music commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
 
                         default:
                             builder.AddField(x =>
