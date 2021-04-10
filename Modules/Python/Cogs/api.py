@@ -5,6 +5,7 @@ from discord.ext import commands
 from main import FinBot
 from Handlers.storageHandler import DataHelper
 
+
 def get_protocol(bot):
     class ReceiveAPIMessage(asyncio.Protocol):
         def data_received(self, data: bytes) -> None:
@@ -26,7 +27,9 @@ def get_protocol(bot):
                     return
 
                 bot.bot.loop.create_task(bot.speak_id_content(int(member_id), content))
+
     return ReceiveAPIMessage
+
 
 async def start_server(bot):
     loop = bot.bot.loop
@@ -53,6 +56,7 @@ class API(commands.Cog):
         all_keys[key] = ctx.author.id
         storage["api_keys"] = all_keys
         await ctx.author.send("Your API key is: {}".format(key))
+
 
 def setup(bot):
     cog = API(bot)

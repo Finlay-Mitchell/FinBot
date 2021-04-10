@@ -1,6 +1,6 @@
 import discord
 import asyncio
-import sys
+# import sys
 import json
 import os
 import datetime
@@ -10,15 +10,18 @@ from discord.ext import commands
 from Data import config
 from Handlers.storageHandler import DataHelper
 from traceback import format_exc, print_tb
-from Data.config import monkey_guild_id
-from mee6_py_api import API
+# from Data.config import monkey_guild_id
+# from mee6_py_api import API
+import re
+
 
 class FinBot(commands.Bot):
     def __init__(self):
         # Initialises the actual commands.Bot class
         intents = discord.Intents.all()
         intents.members = True
-        super().__init__(command_prefix=config.prefix, description=config.description, loop=asyncio.new_event_loop(), intents=intents, case_insensitive=True, help_command=None)
+        super().__init__(command_prefix=config.prefix, description=config.description, loop=asyncio.new_event_loop(),
+                         intents=intents, case_insensitive=True, help_command=None)
         self.guild = None
         self.error_channel = None
         self.data = DataHelper()
@@ -26,12 +29,14 @@ class FinBot(commands.Bot):
 
     @staticmethod
     def create_completed_embed(title, text):
-        embed = discord.Embed(title=title, description=text, colour=discord.Colour.green(), timestamp=datetime.datetime.utcnow())
+        embed = discord.Embed(title=title, description=text, colour=discord.Colour.green(),
+                              timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
     def create_error_embed(text):
-        embed = discord.Embed(title="Error", description=text, colour=discord.Colour.red(), timestamp=datetime.datetime.utcnow())
+        embed = discord.Embed(title="Error", description=text, colour=discord.Colour.red(),
+                              timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
@@ -47,6 +52,7 @@ class FinBot(commands.Bot):
             yield to_send
         if len(full_text) > 0:
             yield full_text
+
 
 def get_bot():
     bot = FinBot()
@@ -69,7 +75,8 @@ def get_bot():
 
             original_msg = await bot.get_channel(channel_id).fetch_message(message_id)
             embed = bot.create_completed_embed(title, text)
-            embed.add_field(name="New Version: {}".format(config.version), value="Previous Version: {}".format(old_version_num))
+            embed.add_field(name="New Version: {}".format(config.version),
+                            value="Previous Version: {}".format(old_version_num))
             last_commit_message = subprocess.check_output(["git", "log", "-1", "--pretty=%s"]).decode("utf-8").strip()
             embed.set_footer(text=last_commit_message)
             await original_msg.edit(embed=embed)
@@ -79,7 +86,8 @@ def get_bot():
     @bot.event
     async def on_error(method, *args, **kwargs):
         try:
-            embed = discord.Embed(title= f" {FinBot.user}  experienced an error when running.", colour=discord.Colour.red())
+            embed = discord.Embed(title=f" {FinBot.user}  experienced an error when running.",
+                                  colour=discord.Colour.red())
             embed.description = format_exc()[:2000]
             print(format_exc())
             await bot.error_channel.send(embed=embed)
@@ -95,11 +103,13 @@ def get_bot():
             return
 
         if isinstance(error, commands.CheckFailure):
-            await ctx.send(embed=bot.create_error_embed("You don't have permission to do that, {}.".format(ctx.message.author.mention)))
+            await ctx.send(embed=bot.create_error_embed(
+                "You don't have permission to do that, {}.".format(ctx.message.author.mention)))
             return
 
         try:
-            embed = discord.Embed(title=f"{FinBot.user} experienced an error in a command.", colour=discord.Colour.red())
+            embed = discord.Embed(title=f"{FinBot.user} experienced an error in a command.",
+                                  colour=discord.Colour.red())
             embed.description = format_exc()[:2000]
             embed.add_field(name="Command passed error", value=error)
             embed.add_field(name="Context", value=ctx.message.content)
@@ -114,27 +124,26 @@ def get_bot():
             print("Error in sending error to discord. Error was {}".format(error))
             print("Error sending to discord was {}".format(e))
 
-
-
-    @bot.event
-    async def on_member_join(member):
-        mee6API = API(monkey_guild_id)
-        Xp = await mee6API.levels.get_user_level(member.id)
-        Level = await mee6API.levels.get_user_xp(member.id)
-
-        if not Xp == "None" and not Level == "None":
-            data = {}
-            data["Users"] = []
-            data["Users"].append({
-                "UserId": f"{member.id}",
-                "Level": f"{Level}",
-                "Xp": f"{Xp}"
-            })
-
-            with open("../../bin/Debug/netcoreapp3.1/Data/LEVELS.json", "a") as outfile:
-                json.dump(data, outfile, indent=2)
+    # @bot.event
+    # async def on_member_join(member):
+    #  mee6API = API(monkey_guild_id)
+    #   Xp = await mee6API.levels.get_user_level(member.id)
+    #   Level = await mee6API.levels.get_user_xp(member.id)
+    #
+    #   if not Xp == "None" and not Level == "None":
+    #       data = {}
+    #       data["Users"] = []
+    #       data["Users"].append({
+    #           "UserId": f"{member.id}",
+    #           "Level": f"{Level}",
+    #           "Xp": f"{Xp}"
+    #       })
+    #
+    #       with open("../../bin/Debug/netcoreapp3.1/Data/LEVELS.json", "a") as outfile:
+    #           json.dump(data, outfile, indent=2)
 
     return bot
+
 
 if __name__ == '__main__':
     FinBot_bot = get_bot()

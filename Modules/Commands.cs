@@ -564,7 +564,7 @@ namespace FinBot.Modules
             return Colours[index];
         }
 
-        [Command("translate")]
+        [Command("translate"), Summary("Translates inputted text to English"), Remarks("(PREFIX)translate <text>"), Alias("t", "trans")]
         public async Task Translate([Remainder] string translate)
         {
             translate = Regex.Replace(translate, @"^\s*""?|""?\s*$", "");
@@ -931,7 +931,7 @@ namespace FinBot.Modules
             return searchListResponse.Items.ToList();
         }
 
-        [Command("TranslateTo"), Summary("Translates the input text to the language you specify"), Remarks("(PREFIX)TranslateTo <language code> <text>"), Alias("trto")]
+        [Command("TranslateTo"), Summary("Translates the input text to the language you specify"), Remarks("(PREFIX)TranslateTo <language code> <text>"), Alias("trto", "tto")]
         public async Task TranslateTo(string toLanguage, [Remainder] string translate)
         {
             translate = Regex.Replace(translate, @"^\s*""?|""?\s*$", "");

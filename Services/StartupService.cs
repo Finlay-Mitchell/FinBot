@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace FinBot.Services
 {
@@ -48,7 +49,7 @@ namespace FinBot.Services
                     int PrevPID = Global.GetPreviousProcessTaskPID();
                     Process currentProcess = Process.GetCurrentProcess();
 
-                    if (Process.GetProcesses().Any(x => x.Id == PrevPID) /* && Process.GetProcessById(PrevPID).ProcessName == currentProcess.ProcessName*/)
+                    if (Process.GetProcesses().Any(x => x.Id == PrevPID))
                     {
                         Process.GetProcessById(PrevPID).Close();
                     }
@@ -65,7 +66,8 @@ namespace FinBot.Services
                         process1.Start();
                         Global.processes.ProcessID = process1.Id;
                         Global.UpdatePIDValue(process1.Id);
-                        hasRanSuccessfully = true;
+
+
                     }
                 }
             }

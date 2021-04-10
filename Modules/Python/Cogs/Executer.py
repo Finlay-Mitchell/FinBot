@@ -1,6 +1,7 @@
 from discord.ext import commands
 from main import FinBot
 
+
 class Executer(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot: FinBot = bot
@@ -23,6 +24,7 @@ class Executer(commands.Cog):
             print(tmp_dic['temp_func'])
             function = tmp_dic['temp_func']
             await function()
+
 
 def setup(bot):
     cog = Executer(bot)

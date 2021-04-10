@@ -1,3 +1,4 @@
+# Do some PEP-8 conformation tests
 import datetime
 import discord
 from discord.ext import commands
@@ -5,15 +6,19 @@ from Data import config
 from typing import Optional
 from main import FinBot
 
+
 def is_staff_backend(member):
-    return (member.guild_permissions.administrator or member.guild_permissions.manage_guild or member.guild_permissions.manage_roles or member.guild_permissions.manage_channels)
+    return (member.guild_permissions.administrator or member.guild_permissions.manage_guild or
+            member.guild_permissions.manage_roles or member.guild_permissions.manage_channels)
+
 
 class Audit(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot: FinBot = bot
 
     @commands.command(pass_context=True)
-    async def audit(self, ctx, command, member: Optional[discord.Member], channel: Optional[discord.TextChannel], *, other_info=""):
+    async def audit(self, ctx, command, member: Optional[discord.Member], channel: Optional[discord.TextChannel], *,
+                    other_info=""):
         if not is_staff_backend(ctx.author):
             raise commands.CheckFailure
         if command.lower() == "roles":
@@ -34,8 +39,6 @@ class Audit(commands.Cog):
         embed.set_author(name=ctx.message.author.id)
         await sent_message.edit(content=None, embed=embed)
         await sent_message.add_reaction("⏩")
-
-
 
     async def create_channel_updates_embed(self, channel: discord.TextChannel):
         embed = discord.Embed(timestamp=datetime.datetime.utcnow())
@@ -93,7 +96,6 @@ class Audit(commands.Cog):
             return [], None
         last_time = None
         first_time = None
-
 
     @staticmethod
     async def get_role_updates(member: discord.Member, before=None, after=None):
@@ -200,6 +202,7 @@ class Audit(commands.Cog):
                 await reaction.remove(user)
                 if not add_back:
                     await reaction.remove(self.bot.user)
+
 
 def setup(bot):
     cog = Audit(bot)
