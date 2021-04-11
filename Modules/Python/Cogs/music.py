@@ -1,4 +1,3 @@
-# GOOD CODE:
 import discord
 from discord.ext import commands
 from main import FinBot
@@ -12,126 +11,11 @@ import json.decoder
 import re
 import time
 from Data import config
-
-# BAD CODE:
-
 import spotipy
-from youtube_dl import YoutubeDL
-from urllib import request as rq
-from argparse import ArgumentParser
 from spotipy.oauth2 import SpotifyClientCredentials
-
 import random as rand
 
-
-# BAD CODE:
-parser = ArgumentParser(description="Download Spotify playlist the easy way")
-
-
-class Hades:
-    # Spotify app credentials
-    __CLIENT_ID = config.client_Id
-    __CLIENT_SECRET = config.client_secret
-
-    def __init__(self, pl_uri, embed):
-        self.auth_manager = SpotifyClientCredentials(
-            client_id=self.__CLIENT_ID, client_secret=self.__CLIENT_SECRET
-        )
-        self.sp = spotipy.Spotify(auth_manager=self.auth_manager)
-        self.pl_uri = pl_uri
-        self.embed = embed
-
-    def get_ydl_opts(self, path):
-        if self.embed:
-            return {
-                "writethumbnail": True,
-                "format": "bestaudio/best",
-                "outtmpl": f"./{path}/%(title)s.%(ext)s",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "mp3",
-                        "preferredquality": "320",
-                    },
-                    {
-                        "key": "EmbedThumbnail",
-                    },
-                ],
-            }
-        else:
-            return {
-                "format": "bestaudio/best",
-                "outtmpl": f"./{path}/%(title)s.%(ext)s",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "mp3",
-                        "preferredquality": "320",
-                    }
-                ],
-            }
-
-    def get_playlist_details(self):
-        offset = 0
-        pl_name = self.sp.playlist(self.pl_uri)["name"]
-        pl_items = self.sp.playlist_items(
-            self.pl_uri,
-            offset=offset,
-            fields="items.track.name,items.track.artists.name, total",
-            additional_types=["track"],
-        )["items"]
-
-        pl_tracks = []
-        while len(pl_items) > 0:
-            for item in pl_items:
-                track_name = item["track"]["name"].replace(" ", "+")
-                artist_name = item["track"]["artists"][0]["name"].replace(" ", "+")
-                pl_tracks.append(f"{track_name}+{artist_name}".encode("utf8"))
-
-            offset = (offset + len(pl_items))
-            pl_items = self.sp.playlist_items(
-                self.pl_uri,
-                offset=offset,
-                fields="items.track.name,items.track.artists.name, total",
-                additional_types=["track"],
-            )["items"]
-
-        return {"pl_name": pl_name, "pl_tracks": pl_tracks}
-
-    def create_download_directory(self, dir_name):
-        path = f"./{dir_name}"
-
-        if os.path.exists(path):
-            return path
-
-        try:
-            os.mkdir(path)
-            return path
-        except OSError:
-            print("Creation of the download directory failed")
-
-    def download_tracks(self):
-        pl_details = self.get_playlist_details()
-        path = self.create_download_directory(pl_details["pl_name"])
-
-        with YoutubeDL(self.get_ydl_opts(path)) as ydl:
-            for track in pl_details["pl_tracks"]:
-                html = rq.urlopen(
-                    f"https://www.youtube.com/results?search_query={track}"
-                )
-                video_ids = re.findall(r"watch\?v=(\S{11})", html.read().decode())
-
-                if video_ids:
-                    url = "https://www.youtube.com/watch?v=" + video_ids[0]
-                    ydl.download([url])
-
-
-
-
-# GOOD CODE:
-
 youtube_dl.utils.bug_reports_message = lambda: ''
-
 ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
@@ -145,12 +29,10 @@ ytdl_format_options = {
     'default_search': 'auto',
     'source_address': '0.0.0.0'  # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
-
 ffmpeg_options = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
-
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
@@ -306,6 +188,23 @@ class Music(commands.Cog):
         history = await self.called_from[voice_client.guild.id].history(limit=1).flatten()
         await self.called_from[voice_client.guild.id].send(embed=embed)
 
+    @staticmethod
+    def getTracks(playlistURL):
+        client_credentials_manager = SpotifyClientCredentials(config.client_Id, config.client_secret)
+        spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+
+    @commands.command()
+    async def testing(self, ctx, to_play):
+        try:
+            test = self.getTracks(to_play)
+            index = 0
+            for i in test:
+                await ctx.reply(f"name: {i}")
+
+        except Exception as e:
+            await ctx.reply(f"Uh oh, stinkie:\n{e}")
+
     @commands.command()
     async def resume(self, ctx):
         self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
@@ -363,7 +262,7 @@ class Music(commands.Cog):
         all_guilds = self.data.get("song_volumes", {})
         all_guilds[str(ctx.guild.id)] = 100
         self.data["song_volumes"] = all_guilds
-        ctx.voice_client.source.volume = 1-0
+        ctx.voice_client.source.volume = 1 - 0
         await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
 
     @commands.command()
@@ -375,25 +274,7 @@ class Music(commands.Cog):
         all_queued[str(voice_client.guild.id)] = guild_queued
         await ctx.reply(embed=self.bot.create_completed_embed("Shuffled the current playlist", "current guild playlist"
                                                                                                " shuffled!"))
-
-
-
-    @commands.command()
-    async def testing(self, ctx, *, to_play):
-        parser.add_argument(
-            "playlist_uri", metavar="PL_URI", type=str, help="Spotify playlist uri"
-        )
-
-        parser.add_argument('-e', '--embed', action='store_true',
-                            help='embeds youtube thumbnail into mp3')
-
-        args = parser.parse_args()
-        hades = Hades(args.playlist_uri, args.embed)
-        hades.download_tracks()
-        # for playlist in Hades(to_play, None).get_playlist_details():
-        #     for track in playlist["pl_tracks"]:
-        #         queue.add(track)
-
+        
     @shuffle.before_invoke
     @unmute.before_invoke
     @mute.before_invoke
