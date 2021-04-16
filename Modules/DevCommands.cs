@@ -11,6 +11,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Discord.Rest;
 using MySql.Data.MySqlClient;
 using FinBot.Services;
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Web;
 
 namespace FinBot.Modules
 {
@@ -85,6 +91,25 @@ namespace FinBot.Modules
         public Task exec(params string[] args)
         {
             return Task.CompletedTask;
+        }
+
+
+        [Command("Trump")]
+        public async Task test([Remainder] string text)
+        {
+
+            //text = ;
+            //https://api.no-api-key.com/api/v2/trump?message=%22yesy%22
+            string txt = $"https://api.no-api-key.com/api/v2/trump?message={HttpUtility.UrlEncode(text)}";
+
+            await ReplyAsync(txt);
+        }
+
+        [Command("test")]
+        public async Task tessting()
+        {
+            string URL = $"https://vacefron.nl/api/rankcard?username={HttpUtility.UrlEncode(Context.User.Username)}&avatar={Context.Message.Author.GetAvatarUrl()}&rank=0&currentxp=120&lextlevelxp=2354&previouslevelxp=3";
+                await ReplyAsync(URL);  
         }
     }
 }

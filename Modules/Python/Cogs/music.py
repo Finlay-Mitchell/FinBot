@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+
+from Handlers.PaginationHandler import Paginator
 from main import FinBot
 from pytube import Playlist
 from Handlers.storageHandler import DataHelper
@@ -14,6 +16,7 @@ from Data import config
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import random as rand
+from pprint import pprint
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 ytdl_format_options = {
@@ -122,39 +125,92 @@ class Music(commands.Cog):
         thumbnail = f"https://i.ytimg.com/vi/{s}/hqdefault.jpg"
         return thumbnail
 
+    @staticmethod
+    def tracks_from_spotify(playlist_identifier):
+
+        client_credentials_manager = SpotifyClientCredentials(config.client_Id, config.client_secret)
+        spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+        playlist_tracks = []
+        for item in spotify.playlist_items(playlist_identifier)["items"]:
+            track = item.get("track")
+            name = track.get("name")
+            artist = track.get("artists")[0].get("name")
+            playlist_tracks.append(f"{artist} - {name}")
+
+        return playlist_tracks
+
     @commands.command()
     async def play(self, ctx, *, to_play):
         async with ctx.typing():
-            playlist_info = await self.bot.loop.run_in_executor(None, partial(self.get_playlist, to_play))
-            if playlist_info is None:
-                playlist_info = await YTDLSource.get_video_data(to_play, self.bot.loop)
-                playlist_info = [playlist_info["webpage_url"]]
-            first_song = playlist_info.pop(0)
-            self.enqueue(ctx.guild, first_song)
-            self.called_from[ctx.guild.id] = ctx.channel
-            if not ctx.voice_client.is_playing():
-                self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
-            first_song_name = await self.title_from_url(first_song)
-            embed = self.bot.create_completed_embed("Added song to queue!", f"Added [{first_song_name}]"
-                                                                            f"({first_song}) "
-                                                                            f"to queue!\n"
-                                                                            f"Please note other songs in "
-                                                                            f"a playlist may still be "
-                                                                            f"processing.")
-            embed.set_thumbnail(url=self.thumbnail_from_url(first_song))
-            await ctx.reply(embed=embed)
-            futures = []
-            for url in playlist_info:
-                futures.append(self.bot.loop.create_task(self.title_from_url(url), name=url))
-            await asyncio.sleep(2)
-            titles = await asyncio.gather(*futures)
-            successfully_added = ""
-            for index, title in enumerate(titles):
-                self.enqueue(ctx.guild, playlist_info[index])
-                successfully_added += f"{index + 1}. **{title}**\n"
-        if successfully_added != "":
-            for short_text in self.bot.split_text(successfully_added):
-                await ctx.reply(embed=self.bot.create_completed_embed("Successfully queued songs!", short_text))
+            if "spotify" in to_play:
+                tracks = self.tracks_from_spotify(to_play)
+                spotify_playlist_info = []
+
+                for index, title in enumerate(tracks):
+                    spotify_playlist_info.append(await YTDLSource.get_video_data(title, self.bot.loop))
+
+                spotify_playlist_info = [spotify_playlist_info["webpage_url"]]
+                first_song = spotify_playlist_info.pop(0)
+                self.enqueue(ctx.guild, first_song)
+                self.called_from[ctx.guild.id] = ctx.channel
+                if not ctx.voice_client.is_playing():
+                    self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
+                first_song_name = await self.title_from_url(first_song)
+                embed = self.bot.create_completed_embed("Added song to queue!", f"Added [{first_song_name}]"
+                                                                                f"({first_song}) "
+                                                                                f"to queue!\n"
+                                                                                f"Please note other songs in "
+                                                                                f"a playlist may still be "
+                                                                                f"processing.")
+                embed.set_thumbnail(url=self.thumbnail_from_url(first_song))
+                await ctx.reply(embed=embed)
+                futures = []
+                for url in spotify_playlist_info:
+                    futures.append(self.bot.loop.create_task(self.title_from_url(url), name=url))
+                await asyncio.sleep(2)
+                titles = await asyncio.gather(*futures)
+                spot_successfully_added = ""
+                for index, title in enumerate(titles):
+                    self.enqueue(ctx.guild, spotify_playlist_info[index])
+                    spot_successfully_added  += f"{index + 1}. **{title}**\n"
+                if spot_successfully_added  != "":
+                    for short_text in self.bot.split_text(spot_successfully_added ):
+                        await ctx.reply(embed=self.bot.create_completed_embed("Successfully queued songs!", short_text))
+
+
+            else:
+
+                playlist_info = await self.bot.loop.run_in_executor(None, partial(self.get_playlist, to_play))
+                if playlist_info is None:
+                    playlist_info = await YTDLSource.get_video_data(to_play, self.bot.loop)
+                    playlist_info = [playlist_info["webpage_url"]]
+                first_song = playlist_info.pop(0)
+                self.enqueue(ctx.guild, first_song)
+                self.called_from[ctx.guild.id] = ctx.channel
+                if not ctx.voice_client.is_playing():
+                    self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
+                first_song_name = await self.title_from_url(first_song)
+                embed = self.bot.create_completed_embed("Added song to queue!", f"Added [{first_song_name}]"
+                                                                                f"({first_song}) "
+                                                                                f"to queue!\n"
+                                                                                f"Please note other songs in "
+                                                                                f"a playlist may still be "
+                                                                                f"processing.")
+                embed.set_thumbnail(url=self.thumbnail_from_url(first_song))
+                await ctx.reply(embed=embed)
+                futures = []
+                for url in playlist_info:
+                    futures.append(self.bot.loop.create_task(self.title_from_url(url), name=url))
+                await asyncio.sleep(2)
+                titles = await asyncio.gather(*futures)
+                successfully_added = ""
+                for index, title in enumerate(titles):
+                    self.enqueue(ctx.guild, playlist_info[index])
+                    successfully_added += f"{index + 1}. **{title}**\n"
+            if successfully_added != "":
+                for short_text in self.bot.split_text(successfully_added):
+                    await ctx.reply(embed=self.bot.create_completed_embed("Successfully queued songs!", short_text))
 
     async def play_next_queued(self, voice_client: discord.VoiceClient):
         if voice_client is None or not voice_client.is_connected():
@@ -188,19 +244,10 @@ class Music(commands.Cog):
         history = await self.called_from[voice_client.guild.id].history(limit=1).flatten()
         await self.called_from[voice_client.guild.id].send(embed=embed)
 
-    @staticmethod
-    def getTracks(playlistURL):
-        client_credentials_manager = SpotifyClientCredentials(config.client_Id, config.client_secret)
-        spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-
     @commands.command()
     async def testing(self, ctx, to_play):
         try:
-            test = self.getTracks(to_play)
-            index = 0
-            for i in test:
-                await ctx.reply(f"name: {i}")
+            test = self.tracks_from_spotify(to_play)
 
         except Exception as e:
             await ctx.reply(f"Uh oh, stinkie:\n{e}")
@@ -274,7 +321,7 @@ class Music(commands.Cog):
         all_queued[str(voice_client.guild.id)] = guild_queued
         await ctx.reply(embed=self.bot.create_completed_embed("Shuffled the current playlist", "current guild playlist"
                                                                                                " shuffled!"))
-        
+
     @shuffle.before_invoke
     @unmute.before_invoke
     @mute.before_invoke

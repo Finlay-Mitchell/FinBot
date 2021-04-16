@@ -17,7 +17,7 @@ class Executer(commands.Cog):
             tmp_dic = {}
             executing_string = """async def temp_func():
         {}
-    """.format(ctx.message.content.partition("\n")[2].strip("`").replace("\n", "    \n    "))
+    """.format(ctx.message.content.partition("\n")[2].strip("`").replace("\n", "\t\n\t"))
             print(executing_string)
             exec(executing_string, {**globals(), **locals()}, tmp_dic)
             print(tmp_dic)

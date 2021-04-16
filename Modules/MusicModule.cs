@@ -34,5 +34,23 @@ namespace FinBot.Modules
         {
             return Task.CompletedTask;
         }
+
+        [Command("mute"), Summary("mutes the bot from sending music to the voice channel"), Remarks("(PREFIX)mute")]
+        public Task mute(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("unmute"), Summary("unmutes the bot from sending music to the voice channel"), Remarks("(PREFIX)unmute")]
+        public Task unmutemusic(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("shuffle"), Summary("Shuffles the current music playlist"), Remarks("(PREFIX) shuffle")]
+        public Task shuffle(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

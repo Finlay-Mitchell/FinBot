@@ -1212,8 +1212,9 @@ namespace FinBot.Modules
 
                 while (reader.Read())
                 {
-                    b.Description = $"**{user.Username} - __{reader.GetInt64(5)}__**\nLevel - {reader.GetInt64(3)}";
+                    b.Description = $"**{user.Username} - __{reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}__**\nLevel - {reader.GetInt64(3)}";
                 }
+
 
                 conn.Close();
                 b.WithCurrentTimestamp();
