@@ -1,15 +1,29 @@
-import discord
-from discord.ext import commands
-from main import FinBot
-from pytube import Playlist
-from Handlers.storageHandler import DataHelper
-import youtube_dl
 import asyncio
-from functools import partial
+import discord
+import youtube_dl
 import aiohttp
 import json.decoder
 import re
 import time
+import random
+from discord.ext import commands
+from pytube import Playlist
+from functools import partial
+from main import FinBot
+from Handlers.storageHandler import DataHelper
+from Handlers.spotifyHandler import SpotifySearcher
+from Handlers.PaginationHandler import Paginator
+from Data import config
+
+# TODO:
+"""1. Add a true pagination system to the bot as a whole to allow !queue
+2. Add !queue DONE, !clearqueue, !dequeue <index>
+3. Add !volume DONE
+4. Add thumbnails (maybe) for "now playing" embeds. DONE
+5. Clean up help command for music related bot commands.
+6. Add variable prefix (set to something obscure at first)
+7. Add !pause DONE
+8. <FUTURE> Start on web help page and change help handler to fully custom help handler."""
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -52,7 +66,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return super().read()
 
     @classmethod
-    async def from_url(cls, url, *, loop=None, stream=False):
+    async def from_url(cls, url, *, loop=None):
         data = await cls.get_video_data(url, loop)
         if data is None:
             return None
@@ -62,7 +76,20 @@ class YTDLSource(discord.PCMVolumeTransformer):
     async def get_video_data(url, loop=None):
         loop = loop or asyncio.get_event_loop()
         try:
-            data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
+            attempts = 0
+            while True:
+                if attempts > 10:
+                    return None
+                attempts += 1
+                future = loop.run_in_executor(None,
+                                              lambda: youtube_dl.YoutubeDL(
+                                                  ytdl_format_options).extract_info(url, download=False))
+                try:
+                    data = await asyncio.wait_for(future, 3)
+                    if data is not None:
+                        break
+                except asyncio.TimeoutError:
+                    pass
         except youtube_dl.utils.DownloadError:
             return None
         if 'entries' in data and len(data['entries']) > 0:
@@ -79,6 +106,8 @@ class Music(commands.Cog):
         self.data = DataHelper()
         self.data["song_queues"] = {}
         self.called_from = {}
+        self.spotify = SpotifySearcher(self.bot)
+        self.url_to_title_cache = {}
 
     def enqueue(self, guild, song_url, time=None, start=False):
         all_queues = self.data.get("song_queues", {})
@@ -104,6 +133,8 @@ class Music(commands.Cog):
         return playlist_info
 
     async def title_from_url(self, video_url):
+        if video_url in self.url_to_title_cache:
+            return self.url_to_title_cache[video_url]
         params = {"format": "json", "url": video_url}
         url = "https://www.youtube.com/oembed"
         async with aiohttp.ClientSession() as session:
@@ -112,21 +143,88 @@ class Music(commands.Cog):
                 json_response = await request.json()
             except json.decoder.JSONDecodeError:
                 json_response = await YTDLSource.get_video_data(video_url, self.bot.loop)
-        return json_response["title"]
+        title = json_response["title"]
+        self.url_to_title_cache[video_url] = title
+        return title
 
-    def thumbnail_from_url(self, video_url):
+    @staticmethod
+    def thumbnail_from_url(video_url):
         exp = r"^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*"
         s = re.findall(exp, video_url)[0][-1]
         thumbnail = f"https://i.ytimg.com/vi/{s}/hqdefault.jpg"
         return thumbnail
 
+    async def song_from_yt(self, song):
+        attempts = 0
+        while True:
+            if attempts > 3:
+                print(f"{song} failed after 3 attempts")
+                return None
+            attempts += 1
+            youtube_song = await YTDLSource.get_video_data(song, self.bot.loop)
+            if youtube_song is not None and youtube_song.get("webpage_url") is not None:
+                return youtube_song.get("webpage_url")
+            await asyncio.sleep(2)
+
+    async def transform_spotify(self, to_play):
+        string_playlist = await self.spotify.handle_spotify(to_play)
+        if string_playlist is None:
+            return None
+        tasks = []
+        for string_song in string_playlist:
+            task = self.bot.loop.create_task(self.song_from_yt(string_song))
+            task.set_name(string_song)
+            tasks.append(task)
+        link_playlist = await asyncio.gather(*tasks)
+        link_playlist = [x for x in link_playlist if x is not None]
+        if len(link_playlist) == 0:
+            return None
+        else:
+            return link_playlist
+
+    async def send_queue(self, channel, reply_message=None):
+        all_queued = self.data.get("song_queues", {})
+        guild_queued = all_queued.get(str(channel.guild.id), [])
+        if len(guild_queued) == 0:
+            return False
+        futures = []
+        titles = []
+        for url in guild_queued:
+            if url in self.url_to_title_cache:
+                titles.append(self.url_to_title_cache[url])
+                continue
+            titles.append(None)
+            futures.append(self.bot.loop.create_task(self.title_from_url(url), name=url))
+        waited_titles = await asyncio.gather(*futures)
+        for index, title in enumerate(titles.copy()):
+            if title is None:
+                # noinspection PyUnresolvedReferences
+                titles[index] = waited_titles.pop()
+        successfully_added = ""
+        for index, title in enumerate(titles):
+            successfully_added += f"{index + 1}. **{title}**\n"
+        paginator = Paginator(self.bot, channel, "Queued Songs", successfully_added, 1000, reply_message=reply_message)
+        await paginator.start()
+        return True
+
+    @commands.command()
+    async def queue(self, ctx):
+        if not await self.send_queue(ctx.channel, ctx):
+            await ctx.reply(embed=self.bot.create_error_embed("No songs queued!"))
+            return
+
     @commands.command()
     async def play(self, ctx, *, to_play):
         async with ctx.typing():
-            playlist_info = await self.bot.loop.run_in_executor(None, partial(self.get_playlist, to_play))
-            if playlist_info is None:
-                playlist_info = await YTDLSource.get_video_data(to_play, self.bot.loop)
-                playlist_info = [playlist_info["webpage_url"]]
+            if "spotify" in to_play:
+                playlist_info = await self.transform_spotify(to_play)
+                if playlist_info is None:
+                    await ctx.reply(embed=self.bot.create_error_embed("I couldn't recognise that song, sorry!"))
+            else:
+                playlist_info = await self.bot.loop.run_in_executor(None, partial(self.get_playlist, to_play))
+                if playlist_info is None:
+                    video_info = await YTDLSource.get_video_data(to_play, self.bot.loop)
+                    playlist_info = [video_info["webpage_url"]]
             first_song = playlist_info.pop(0)
             self.enqueue(ctx.guild, first_song)
             self.called_from[ctx.guild.id] = ctx.channel
@@ -151,8 +249,20 @@ class Music(commands.Cog):
                 self.enqueue(ctx.guild, playlist_info[index])
                 successfully_added += f"{index + 1}. **{title}**\n"
         if successfully_added != "":
-            for short_text in self.bot.split_text(successfully_added):
-                await ctx.reply(embed=self.bot.create_completed_embed("Successfully queued songs!", short_text))
+            await self.send_queue(ctx.channel, ctx)
+
+    @commands.command()
+    async def shuffle(self, ctx):
+        all_queued = self.data.get("song_queues", {})
+        guild_queued = all_queued.get(str(ctx.guild.id), [])
+        if len(guild_queued) == 0:
+            await ctx.reply(embed=self.bot.create_error_embed("There is no queue in your guild!"))
+            return
+        random.shuffle(guild_queued)
+        all_queued[str(ctx.guild.id)] = guild_queued
+        self.data["song_queues"] = all_queued
+        await ctx.reply(embed=self.bot.create_completed_embed("Shuffled!", "Shuffled song queue! "
+                                                                           "(skip to go to next shuffled song)"))
 
     async def play_next_queued(self, voice_client: discord.VoiceClient):
         if voice_client is None or not voice_client.is_connected():
@@ -171,7 +281,6 @@ class Music(commands.Cog):
         if type(next_song_url) == tuple or type(next_song_url) == list:
             next_song_url, resume_from = next_song_url
             local_ffmpeg_options['options'] = "-vn -ss {}".format(resume_from)
-        print(next_song_url)
         all_queued[str(voice_client.guild.id)] = guild_queued
         self.data["song_queues"] = all_queued
         volume = self.data.get("song_volumes", {}).get(str(voice_client.guild.id), 0.5)
@@ -184,6 +293,12 @@ class Music(commands.Cog):
                                                                                                     next_song_url))
         embed.set_thumbnail(url=self.thumbnail_from_url(next_song_url))
         history = await self.called_from[voice_client.guild.id].history(limit=1).flatten()
+        if len(history) > 0 and history[0].author.id == self.bot.user.id:
+            old_message = history[0]
+            if len(old_message.embeds) > 0:
+                if old_message.embeds[0].title == "Playing next song!":
+                    await old_message.edit(embed=embed)
+                    return
         await self.called_from[voice_client.guild.id].send(embed=embed)
 
     @commands.command()
@@ -216,16 +331,28 @@ class Music(commands.Cog):
         self.data["song_volumes"] = all_guilds
         ctx.voice_client.source.volume = volume
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
-                                                                                 f"{volume*100}% for this guild!"))
+                                                                                 f"{volume * 100}% for this guild!"))
 
-    # async def queue(self, ctx):
-    #     self.bot.add_listener()
-    #     guild_queue = self.data.get("song_queues", {}).get(str(ctx.guild.id), [])
-    #     queue_message = ""
-    #     for index in range(len(guild_queue)):
-    #         link = guild_queue[index]
-    #         if index % 5 == 0:
+    @commands.command()
+    async def mute(self, ctx):
+        all_guilds = self.data.get("song_volumes", {})
+        all_guilds[str(ctx.guild.id)] = 0
+        self.data["song_volumes"] = all_guilds
+        ctx.voice_client.source.volume = 0
+        await ctx.reply(embed=self.bot.create_completed_embed(f"{config.mute_emoji}Muted bot!", f"muted bot for"
+        f" this guild!\nTo undo this, just type {config.prefix}unmute or {config.prefix}volume <new volume>"))
 
+    @commands.command()
+    async def unmute(self, ctx):
+        all_guilds = self.data.get("song_volumes", {})
+        all_guilds[str(ctx.guild.id)] = 100
+        self.data["song_volumes"] = all_guilds
+        ctx.voice_client.source.volume = 1 - 0
+        await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
+
+    @mute.before_invoke
+    @unmute.before_invoke
+    @shuffle.before_invoke
     @volume.before_invoke
     @pause.before_invoke
     @play.before_invoke
@@ -245,5 +372,4 @@ class Music(commands.Cog):
 
 
 def setup(bot: FinBot):
-    cog = Music(bot)
-    bot.add_cog(cog)
+    bot.add_cog(Music(bot))
