@@ -349,7 +349,7 @@ class Music(commands.Cog):
         self.data["song_volumes"] = all_guilds
         ctx.voice_client.source.volume = 1 - 0
         await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
-
+    
     @mute.before_invoke
     @unmute.before_invoke
     @shuffle.before_invoke
