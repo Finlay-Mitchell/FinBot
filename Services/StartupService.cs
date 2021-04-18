@@ -44,32 +44,32 @@ namespace FinBot.Services
 
             try
             {
-                while (!hasRanSuccessfully)
-                {
-                    int PrevPID = Global.GetPreviousProcessTaskPID();
-                    Process currentProcess = Process.GetCurrentProcess();
+                //while (!hasRanSuccessfully)
+                //{
+                //    int PrevPID = Global.GetPreviousProcessTaskPID();
+                //    Process currentProcess = Process.GetCurrentProcess();
 
-                    if (Process.GetProcesses().Any(x => x.Id == PrevPID))
-                    {
-                        Process.GetProcessById(PrevPID).Close();
-                    }
+                //    if (Process.GetProcesses().Any(x => x.Id == PrevPID))
+                //    {
+                //        Process.GetProcessById(PrevPID).Close();
+                //    }
 
-                    else
-                    {
-                        ProcessStartInfo start = new ProcessStartInfo();
-                        ProcessStartInfo processStartInfo = new ProcessStartInfo(Global.Pythoninterpreter);
-                        processStartInfo.UseShellExecute = false;
-                        processStartInfo.RedirectStandardOutput = true;
-                        processStartInfo.Arguments = $"{Directory.GetCurrentDirectory()}../../../../Modules/Python/main.py";
-                        Process process1 = new Process();
-                        process1.StartInfo = processStartInfo;
-                        process1.Start();
-                        Global.processes.ProcessID = process1.Id;
-                        Global.UpdatePIDValue(process1.Id);
+                //    else
+                //    {
+                //        ProcessStartInfo start = new ProcessStartInfo();
+                //        ProcessStartInfo processStartInfo = new ProcessStartInfo(Global.Pythoninterpreter);
+                //        processStartInfo.UseShellExecute = false;
+                //        processStartInfo.RedirectStandardOutput = true;
+                //        processStartInfo.Arguments = $"{Directory.GetCurrentDirectory()}../../../../Modules/Python/main.py";
+                //        Process process1 = new Process();
+                //        process1.StartInfo = processStartInfo;
+                //        process1.Start();
+                //        Global.processes.ProcessID = process1.Id;
+                //        Global.UpdatePIDValue(process1.Id);
 
 
-                    }
-                }
+                //    }
+                //}
             }
 
             catch (Exception ex)

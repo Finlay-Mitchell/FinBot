@@ -62,15 +62,14 @@ namespace FinBot.Services
                     ran = true;
                     TimeStamp = Now - reader.GetInt64(2);
 
-                    if (TimeStamp >= Global.MinMessageTimestamp)
+                    if (TimeStamp >= Global.MinMessageTimestamp || Global.IsDev(arg.Author))
                     {
                         XP = reader.GetInt64(4);
                         level = reader.GetInt64(3);
                         Random r = new Random();
                         XP += r.Next(15, 25);
-                        totalXP =+ XP;
+                        totalXP += XP;
                         xpToNextLevel = (long)(5 * Math.Pow(level, 2) + 50 * level + 100);
-
 
                         if (XP >= xpToNextLevel)
                         {
