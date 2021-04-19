@@ -25,3 +25,8 @@ data_path = "../../bin/Debug/netcoreapp3.1/Data/tts_config.json"
 extensions = ["audit", "Executer", "api", "tts", "music"]  # This is because we are temp removing Mee6Levels
 owner_id = 305797476290527235
 mute_emoji = ":mute:"
+<<<<<<< Updated upstream
+=======
+genius_id = data["GeniusId"]
+# genius_secret = data["GeniusSecret"]
+>>>>>>> Stashed changes
