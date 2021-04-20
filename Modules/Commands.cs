@@ -1613,5 +1613,13 @@ namespace FinBot.Modules
                 }
             }
         }
+
+        [Command("Trump"), Summary("Puts your parsed text into a image manipulation function to make it look like Trump is saying it via Twitter"), Remarks("(PREFIX)Trump <text>")]
+        public async Task test([Remainder] string text)
+        {
+            string txt = $"https://api.no-api-key.com/api/v2/trump?message={HttpUtility.UrlEncode(text)}";
+
+            await ReplyAsync(txt);
+        }
     }
 }

@@ -29,7 +29,8 @@ class SpotifySearcher:
         for item in items_response:
             name = item.get("track").get("name")
             first_artist = item.get("track").get("artists")[0].get("name")
-            playlist_as_names.append(f"{name} by {first_artist}")
+            url = item.get("track").get("external_urls").get("spotify")
+            playlist_as_names.append((url, f"{name} by {first_artist}"))
         return playlist_as_names
 
     def get_track(self, track):
@@ -39,7 +40,7 @@ class SpotifySearcher:
             return None
         name = response.get("name")
         first_artist = response.get("artists")[0].get("name")
-        return f"{name} by {first_artist}"
+        return response.get('external_urls').get('spotify'), f"{name} by {first_artist}"
 
     async def handle_spotify(self, media_identifier):
         while not self.ready:

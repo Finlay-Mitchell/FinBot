@@ -5,31 +5,31 @@ namespace FinBot.Modules
 {
     public class MusicModule : ModuleBase<ShardedCommandContext> //This is more code just to fill the help command up, much like TTSCommands.cs
     {
-        [Command("play"), Summary("plays a song/playlist from YouTube"), Remarks("(PREFIX)play <song name/playlist/song URL>")]
+        [Command("play"), Summary("plays a song/playlist"), Remarks("(PREFIX)play <song(s)>"), Alias("p")]
         public Task play(params string[] args)
         {
             return Task.CompletedTask;
         }
 
-        [Command("pause"), Summary("Stops the currently playing track"), Remarks("(PREFIX)pause"), Alias("stop")]
+        [Command("pause"), Summary("Stops the currently playing track"), Remarks("(PREFIX)pause"), Alias("stop", "s", "leave")]
         public Task pause(params string[] args)
         {
             return Task.CompletedTask;
         }
 
-        [Command("resume"), Summary("Resumes the currently paused track"), Remarks("(PREFIX)resume")]
+        [Command("resume"), Summary("Resumes the currently paused track"), Remarks("(PREFIX)resume"), Alias("res", "r", "continue")]
         public Task resume(params string[] args)
         {
             return Task.CompletedTask;
         }
 
-        [Command("skip"), Summary("skips the currently playing track"), Remarks("(PREFIX)skip")]
+        [Command("skip"), Summary("skips the currently playing track"), Remarks("(PREFIX)skip"), Alias("next")]
         public Task skip(params string[] args)
         {
             return Task.CompletedTask;
         }
 
-        [Command("volume"), Summary("Sets the volume for the audio output of the music"), Remarks("(PREFIX)volume <volume>")]
+        [Command("volume"), Summary("Sets the volume for the audio output of the music"), Remarks("(PREFIX)volume <volume>"), Alias("vol")]
         public Task volume(params string[] args)
         {
             return Task.CompletedTask;
@@ -47,8 +47,32 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("shuffle"), Summary("Shuffles the current music playlist"), Remarks("(PREFIX) shuffle")]
+        [Command("shuffle"), Summary("Shuffles the current music playlist"), Remarks("(PREFIX) shuffle"), Alias("shuff")]
         public Task shuffle(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("queue"), Summary("Shows the queued songs on the guild playlist"), Remarks("(PREFIX)queue"), Alias("que", "cue")]
+        public Task queue(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("clear_queue"), Summary("clears the current queue for the current guild"), Remarks("(PREFIX)clear_queue"), Alias("clearqueue")]
+        public Task clear_queue(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("lyrics"), Summary("Gets the lyrics of a song"), Remarks("(PREFIX)lyrics <song name>")]
+        public Task lyrics(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("lyricSearch"), Summary("Tries to match a song to the provided lyrics"), Remarks("(PREFIX)")]
+        public Task lyricSearch(params string[] args)
         {
             return Task.CompletedTask;
         }

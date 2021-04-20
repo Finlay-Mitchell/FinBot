@@ -9,6 +9,8 @@ import random
 from discord.ext import commands
 from pytube import Playlist
 from functools import partial
+
+from Checks.Permission_check import is_staff
 from main import FinBot
 from Handlers.storageHandler import DataHelper
 from Handlers.spotifyHandler import SpotifySearcher
@@ -66,7 +68,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return super().read()
 
     @classmethod
-    async def from_url(cls, url, *, loop=None):
+    async def from_url(cls, url, *, loop=None, stream=False):
         data = await cls.get_video_data(url, loop)
         if data is None:
             return None
@@ -135,6 +137,9 @@ class Music(commands.Cog):
     async def title_from_url(self, video_url):
         if video_url in self.url_to_title_cache:
             return self.url_to_title_cache[video_url]
+        if "open.spotify.com" in video_url:
+            _, title = await self.bot.loop.run_in_executor(None, partial(self.spotify.get_track, video_url))
+            return title
         params = {"format": "json", "url": video_url}
         url = "https://www.youtube.com/oembed"
         async with aiohttp.ClientSession() as session:
@@ -147,8 +152,7 @@ class Music(commands.Cog):
         self.url_to_title_cache[video_url] = title
         return title
 
-    @staticmethod
-    def thumbnail_from_url(video_url):
+    def thumbnail_from_url(self, video_url):
         exp = r"^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*"
         s = re.findall(exp, video_url)[0][-1]
         thumbnail = f"https://i.ytimg.com/vi/{s}/hqdefault.jpg"
@@ -167,20 +171,21 @@ class Music(commands.Cog):
             await asyncio.sleep(2)
 
     async def transform_spotify(self, to_play):
-        string_playlist = await self.spotify.handle_spotify(to_play)
-        if string_playlist is None:
+        spotify_playlist = await self.spotify.handle_spotify(to_play)
+        if spotify_playlist is None:
             return None
-        tasks = []
-        for string_song in string_playlist:
-            task = self.bot.loop.create_task(self.song_from_yt(string_song))
-            task.set_name(string_song)
-            tasks.append(task)
-        link_playlist = await asyncio.gather(*tasks)
-        link_playlist = [x for x in link_playlist if x is not None]
-        if len(link_playlist) == 0:
+        for song in spotify_playlist:
+            self.url_to_title_cache[song[0]] = song[1]
+        return [song[0] for song in spotify_playlist]
+
+    async def transform_single_song(self, song):
+        if "open.spotify.com" not in song:
+            return song
+        _, string_song = await self.bot.loop.run_in_executor(None, partial(self.spotify.get_track, song))
+        if string_song is None:
             return None
-        else:
-            return link_playlist
+        youtube_link = await self.song_from_yt(string_song)
+        return youtube_link
 
     async def send_queue(self, channel, reply_message=None):
         all_queued = self.data.get("song_queues", {})
@@ -203,17 +208,28 @@ class Music(commands.Cog):
         successfully_added = ""
         for index, title in enumerate(titles):
             successfully_added += f"{index + 1}. **{title}**\n"
-        paginator = Paginator(self.bot, channel, "Queued Songs", successfully_added, 1000, reply_message=reply_message)
+        paginator = Paginator(self.bot, channel, "Queued Songs", successfully_added, 500, reply_message=reply_message)
         await paginator.start()
         return True
 
-    @commands.command()
+    @commands.command(aliases=["que", "cue"])
     async def queue(self, ctx):
         if not await self.send_queue(ctx.channel, ctx):
             await ctx.reply(embed=self.bot.create_error_embed("No songs queued!"))
             return
 
-    @commands.command()
+    @commands.command(aliases=["clearqueue"])
+    @is_staff()
+    async def clear_queue(self, ctx):
+        all_queued = self.data.get("song_queues", {})
+        guild_queued = all_queued.get(str(ctx.guild.id), [])
+        if len(guild_queued) == 0:
+            await ctx.reply(self.bot.create_error_embed("There are no songs queued."))
+            return
+        all_queued["guild_queued"] = []
+        self.data["song_queues"] = all_queued
+
+    @commands.command(aliases=["p"])
     async def play(self, ctx, *, to_play):
         async with ctx.typing():
             if "spotify" in to_play:
@@ -226,6 +242,7 @@ class Music(commands.Cog):
                     video_info = await YTDLSource.get_video_data(to_play, self.bot.loop)
                     playlist_info = [video_info["webpage_url"]]
             first_song = playlist_info.pop(0)
+            first_song = await self.transform_single_song(first_song)
             self.enqueue(ctx.guild, first_song)
             self.called_from[ctx.guild.id] = ctx.channel
             if not ctx.voice_client.is_playing():
@@ -251,7 +268,7 @@ class Music(commands.Cog):
         if successfully_added != "":
             await self.send_queue(ctx.channel, ctx)
 
-    @commands.command()
+    @commands.command(asliases=["shuff"])
     async def shuffle(self, ctx):
         all_queued = self.data.get("song_queues", {})
         guild_queued = all_queued.get(str(ctx.guild.id), [])
@@ -267,9 +284,9 @@ class Music(commands.Cog):
     async def play_next_queued(self, voice_client: discord.VoiceClient):
         if voice_client is None or not voice_client.is_connected():
             return
+        await asyncio.sleep(0.5)
         while voice_client.is_playing():
             await asyncio.sleep(0.5)
-        await asyncio.sleep(1)
         all_queued = self.data.get("song_queues", {})
         guild_queued = all_queued.get(str(voice_client.guild.id), [])
         if len(guild_queued) == 0:
@@ -284,6 +301,10 @@ class Music(commands.Cog):
         all_queued[str(voice_client.guild.id)] = guild_queued
         self.data["song_queues"] = all_queued
         volume = self.data.get("song_volumes", {}).get(str(voice_client.guild.id), 0.5)
+        next_song_url = await self.transform_single_song(next_song_url)
+        if next_song_url is None:
+            self.bot.loop.create_task(self.play_next_queued(voice_client))
+            return
         data = await YTDLSource.get_video_data(next_song_url, self.bot.loop)
         source = YTDLSource(discord.FFmpegPCMAudio(data["url"], **local_ffmpeg_options),
                             data=data, volume=volume, resume_from=resume_from)
@@ -301,12 +322,12 @@ class Music(commands.Cog):
                     return
         await self.called_from[voice_client.guild.id].send(embed=embed)
 
-    @commands.command()
+    @commands.command(aliases=["res", "r", "continue"])
     async def resume(self, ctx):
         self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
         await ctx.reply(embed=self.bot.create_completed_embed("Resumed!", "Resumed playing."))
 
-    @commands.command(aliases=["stop"])
+    @commands.command(aliases=["stop", "s", "leave"])
     async def pause(self, ctx):
         currently_playing_url = ctx.voice_client.source.webpage_url
         current_time = int(time.time() - ctx.voice_client.source.start_time)
@@ -315,12 +336,12 @@ class Music(commands.Cog):
         await ctx.voice_client.disconnect()
         await ctx.reply(embed=self.bot.create_completed_embed("Successfully paused.", "Song paused successfully."))
 
-    @commands.command()
+    @commands.command(aliases=["next"])
     async def skip(self, ctx):
         ctx.voice_client.stop()
         await ctx.reply(embed=self.bot.create_completed_embed("Song skipped.", "Song skipped successfully."))
 
-    @commands.command()
+    @commands.command(asliases=["vol"])
     async def volume(self, ctx, volume: float):
         if volume > 1:
             volume = volume / 100
@@ -329,7 +350,10 @@ class Music(commands.Cog):
         all_guilds = self.data.get("song_volumes", {})
         all_guilds[str(ctx.guild.id)] = volume
         self.data["song_volumes"] = all_guilds
-        ctx.voice_client.source.volume = volume
+        try:
+            ctx.voice_client.source.volume = volume
+        except AttributeError:
+            pass
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
                                                                                  f"{volume * 100}% for this guild!"))
 
@@ -349,7 +373,9 @@ class Music(commands.Cog):
         self.data["song_volumes"] = all_guilds
         ctx.voice_client.source.volume = 1 - 0
         await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
-    
+
+    @clear_queue.before_invoke
+    @queue.before_invoke
     @mute.before_invoke
     @unmute.before_invoke
     @shuffle.before_invoke
