@@ -10,25 +10,23 @@ from discord.ext import commands
 from pytube import Playlist
 from functools import partial
 
-from Checks.Permission_check import is_staff
 from main import FinBot
 from Handlers.storageHandler import DataHelper
 from Handlers.spotifyHandler import SpotifySearcher
 from Handlers.PaginationHandler import Paginator
-from Data import config
+from Checks.Permission_check import is_staff
 
 # TODO:
-"""1. Add a true pagination system to the bot as a whole to allow !queue
+"""1. Add a true pagination system to the bot as a whole to allow !queue DONE
 2. Add !queue DONE, !clearqueue, !dequeue <index>
 3. Add !volume DONE
 4. Add thumbnails (maybe) for "now playing" embeds. DONE
 5. Clean up help command for music related bot commands.
-6. Add variable prefix (set to something obscure at first)
+6. Add variable prefix (set to something obscure at first) DONE
 7. Add !pause DONE
 8. <FUTURE> Start on web help page and change help handler to fully custom help handler."""
 
 youtube_dl.utils.bug_reports_message = lambda: ''
-
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
@@ -128,6 +126,9 @@ class Music(commands.Cog):
     #                 if not isinstance(voice_client.source, YTDLSource):
     #                     continue
     #                 await self.pause_voice_client(voice_client)
+    #             resume_from = self.data.get("resume_voice", [])
+    #             resume_from.append(voice_client.channel.id)
+    #             self.data["resume_voice"] = resume_from
     #             async with self.bot.restart_waiter_lock:
     #                 self.bot.restart_waiters -= 1
     #             return
@@ -162,6 +163,7 @@ class Music(commands.Cog):
             return self.url_to_title_cache[video_url]
         if "open.spotify.com" in video_url:
             _, title = await self.bot.loop.run_in_executor(None, partial(self.spotify.get_track, video_url))
+            self.url_to_title_cache[video_url] = title
             return title
         params = {"format": "json", "url": video_url}
         url = "https://www.youtube.com/oembed"
@@ -175,7 +177,8 @@ class Music(commands.Cog):
         self.url_to_title_cache[video_url] = title
         return title
 
-    def thumbnail_from_url(self, video_url):
+    @staticmethod
+    def thumbnail_from_url(video_url):
         exp = r"^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*"
         s = re.findall(exp, video_url)[0][-1]
         thumbnail = f"https://i.ytimg.com/vi/{s}/hqdefault.jpg"
@@ -218,6 +221,8 @@ class Music(commands.Cog):
         futures = []
         titles = []
         for url in guild_queued:
+            if type(url) == tuple or type(url) == list:
+                url, _ = url
             if url in self.url_to_title_cache:
                 titles.append(self.url_to_title_cache[url])
                 continue
@@ -227,7 +232,7 @@ class Music(commands.Cog):
         for index, title in enumerate(titles.copy()):
             if title is None:
                 # noinspection PyUnresolvedReferences
-                titles[index] = waited_titles.pop()
+                titles[index] = waited_titles.pop(0)
         successfully_added = ""
         for index, title in enumerate(titles):
             successfully_added += f"{index + 1}. **{title}**\n"
@@ -334,8 +339,6 @@ class Music(commands.Cog):
         if voice_client is None or not voice_client.is_connected():
             return
         await asyncio.sleep(0.5)
-        while voice_client.is_playing():
-            await asyncio.sleep(0.5)
         all_queued = self.data.get("song_queues", {})
         guild_queued = all_queued.get(str(voice_client.guild.id), [])
         if len(guild_queued) == 0:
@@ -357,6 +360,8 @@ class Music(commands.Cog):
         data = await YTDLSource.get_video_data(next_song_url, self.bot.loop)
         source = YTDLSource(discord.FFmpegPCMAudio(data["url"], **local_ffmpeg_options),
                             data=data, volume=volume, resume_from=resume_from)
+        while voice_client.is_playing():
+            await asyncio.sleep(0.5)
         voice_client.play(source, after=lambda e: self.bot.loop.create_task(self.play_next_queued(voice_client)))
         title = await self.title_from_url(next_song_url)
         embed = self.bot.create_completed_embed("Playing next song!", "Playing **[{}]({})**".format(title,
@@ -387,9 +392,6 @@ class Music(commands.Cog):
         currently_playing_url = voice_client.source.webpage_url
         current_time = int(time.time() - voice_client.source.start_time)
         self.enqueue(voice_client.guild, currently_playing_url, int(current_time), start=True)
-        resume_from = self.data.get("resume_voice", [])
-        resume_from.append(voice_client.channel.id)
-        self.data["resume_voice"] = resume_from
         voice_client.stop()
         await voice_client.disconnect()
 
@@ -438,13 +440,6 @@ class Music(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
                                                                                  f"{volume * 100}% for this guild!"))
 
-    # async def queue(self, ctx):
-    #     self.bot.add_listener()
-    #     guild_queue = self.data.get("song_queues", {}).get(str(ctx.guild.id), [])
-    #     queue_message = ""
-    #     for index in range(len(guild_queue)):
-    #         link = guild_queue[index]
-    #         if index % 5 == 0:
     @commands.command()
     async def mute(self, ctx):
         all_guilds = self.data.get("song_volumes", {})
@@ -484,6 +479,7 @@ class Music(commands.Cog):
             await ctx.reply(embed=self.bot.create_error_embed("You have to be connected to the voice channel to "
                                                               "execute these commands!"))
             raise commands.CommandError("Author not connected to the correct voice channel.")
+
 
 def setup(bot: FinBot):
     bot.add_cog(Music(bot))
