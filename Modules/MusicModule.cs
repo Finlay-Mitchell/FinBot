@@ -47,7 +47,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("shuffle"), Summary("Shuffles the current music playlist"), Remarks("(PREFIX) shuffle"), Alias("shuff")]
+        [Command("shuffle"), Summary("Shuffles the current music playlist"), Remarks("(PREFIX) shuffle"), Alias("shuff", "mix")]
         public Task shuffle(params string[] args)
         {
             return Task.CompletedTask;
@@ -61,6 +61,12 @@ namespace FinBot.Modules
 
         [Command("clear_queue"), Summary("clears the current queue for the current guild"), Remarks("(PREFIX)clear_queue"), Alias("clearqueue")]
         public Task clear_queue(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("dequeue"), Summary("removes item from queue"), Remarks("(PREFIX)dequeue <item>"), Alias("unqueue", "remove")]
+        public Task dequeue(params string[] args)
         {
             return Task.CompletedTask;
         }

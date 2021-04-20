@@ -29,6 +29,7 @@ from Data import config
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 
+
 ytdl_format_options = {
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
@@ -106,10 +107,32 @@ class Music(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot = bot
         self.data = DataHelper()
-        self.data["song_queues"] = {}
-        self.called_from = {}
+        # self.data["song_queues"] = {}
+        if self.data.get("called_from", None) is None:
+            self.data["called_from"] = {}
         self.spotify = SpotifySearcher(self.bot)
         self.url_to_title_cache = {}
+    #     self.bot.loop.create_task(self.restart_watcher())
+    #
+    # async def restart_watcher(self):
+    #     while True:
+    #         try:
+    #             await self.bot.wait_until_ready()
+    #             await self.post_restart_resume()
+    #             await self.bot.restart_event.wait()
+    #             async with self.bot.restart_waiter_lock:
+    #                 self.bot.restart_waiters += 1
+    #             for voice_client in self.bot.voice_clients:
+    #                 if not isinstance(voice_client, discord.VoiceClient):
+    #                     continue
+    #                 if not isinstance(voice_client.source, YTDLSource):
+    #                     continue
+    #                 await self.pause_voice_client(voice_client)
+    #             async with self.bot.restart_waiter_lock:
+    #                 self.bot.restart_waiters -= 1
+    #             return
+    #         except RuntimeError:
+    #             pass
 
     def enqueue(self, guild, song_url, time=None, start=False):
         all_queues = self.data.get("song_queues", {})
@@ -224,10 +247,34 @@ class Music(commands.Cog):
         all_queued = self.data.get("song_queues", {})
         guild_queued = all_queued.get(str(ctx.guild.id), [])
         if len(guild_queued) == 0:
-            await ctx.reply(self.bot.create_error_embed("There are no songs queued."))
+            await ctx.reply(embed=self.bot.create_error_embed("There are no songs queued."))
             return
-        all_queued["guild_queued"] = []
+        all_queued[str(ctx.guild.id)] = []
         self.data["song_queues"] = all_queued
+        await ctx.reply(embed=self.bot.create_completed_embed("Cleared Queue!", "Queue cleared!"))
+
+    @commands.command(aliases=["unqueue"])
+    async def dequeue(self, ctx, index: int):
+        all_queued = self.data.get("song_queues", {})
+        guild_queued = all_queued.get(str(ctx.guild.id), [])
+        if not 0 < index < len(guild_queued) + 1:
+            await ctx.reply(embed=self.bot.create_error_embed("That is not a valid queue position!"))
+            return
+        index -= 1
+        song = guild_queued.pop(index)
+        all_queued[str(ctx.guild.id)] = guild_queued
+        self.data["song_queues"] = all_queued
+        title = await self.title_from_url(song)
+        await ctx.reply(embed=self.bot.create_completed_embed("Successfully removed song from queue!",
+                                                              f"Successfully removed [{title}]({song})"
+                                                              f" from the queue!"))
+
+    @dequeue.error
+    async def dequeue_error(self, ctx, error):
+        if isinstance(error, commands.ConversionError):
+            await ctx.reply(embed=self.bot.create_error_embed("Please refer to the song by index, not name, "
+                                                              "so I don't guess wrong! \n"
+                                                              "(do !queue to see the queue with indexes)"))
 
     @commands.command(aliases=["p"])
     async def play(self, ctx, *, to_play):
@@ -244,7 +291,9 @@ class Music(commands.Cog):
             first_song = playlist_info.pop(0)
             first_song = await self.transform_single_song(first_song)
             self.enqueue(ctx.guild, first_song)
-            self.called_from[ctx.guild.id] = ctx.channel
+            callers = self.data.get("called_from", {})
+            callers[str(ctx.guild.id)] = ctx.channel.id
+            self.data["called_from"] = callers
             if not ctx.voice_client.is_playing():
                 self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
             first_song_name = await self.title_from_url(first_song)
@@ -268,7 +317,7 @@ class Music(commands.Cog):
         if successfully_added != "":
             await self.send_queue(ctx.channel, ctx)
 
-    @commands.command(asliases=["shuff"])
+    @commands.command(aliases=["shuff", "mix"])
     async def shuffle(self, ctx):
         all_queued = self.data.get("song_queues", {})
         guild_queued = all_queued.get(str(ctx.guild.id), [])
@@ -313,39 +362,71 @@ class Music(commands.Cog):
         embed = self.bot.create_completed_embed("Playing next song!", "Playing **[{}]({})**".format(title,
                                                                                                     next_song_url))
         embed.set_thumbnail(url=self.thumbnail_from_url(next_song_url))
-        history = await self.called_from[voice_client.guild.id].history(limit=1).flatten()
+        called_channel = self.bot.get_channel(self.data["called_from"][str(voice_client.guild.id)])
+        history = await called_channel.history(limit=1).flatten()
         if len(history) > 0 and history[0].author.id == self.bot.user.id:
             old_message = history[0]
             if len(old_message.embeds) > 0:
                 if old_message.embeds[0].title == "Playing next song!":
                     await old_message.edit(embed=embed)
                     return
-        await self.called_from[voice_client.guild.id].send(embed=embed)
+        await called_channel.send(embed=embed)
 
     @commands.command(aliases=["res", "r", "continue"])
     async def resume(self, ctx):
         self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
         await ctx.reply(embed=self.bot.create_completed_embed("Resumed!", "Resumed playing."))
 
+    async def post_restart_resume(self):
+        for voice_channel_id in self.data.get("resume_voice", []):
+            voice_channel = self.bot.get_channel(voice_channel_id)
+            voice_client = await voice_channel.connect()
+            self.bot.loop.create_task(self.play_next_queued(voice_client))
+
+    async def pause_voice_client(self, voice_client):
+        currently_playing_url = voice_client.source.webpage_url
+        current_time = int(time.time() - voice_client.source.start_time)
+        self.enqueue(voice_client.guild, currently_playing_url, int(current_time), start=True)
+        resume_from = self.data.get("resume_voice", [])
+        resume_from.append(voice_client.channel.id)
+        self.data["resume_voice"] = resume_from
+        voice_client.stop()
+        await voice_client.disconnect()
+
     @commands.command(aliases=["stop", "s", "leave"])
     async def pause(self, ctx):
-        currently_playing_url = ctx.voice_client.source.webpage_url
-        current_time = int(time.time() - ctx.voice_client.source.start_time)
-        self.enqueue(ctx.guild, currently_playing_url, int(current_time), start=True)
-        ctx.voice_client.stop()
-        await ctx.voice_client.disconnect()
+        await self.pause_voice_client(ctx.voice_client)
         await ctx.reply(embed=self.bot.create_completed_embed("Successfully paused.", "Song paused successfully."))
+
+    async def skip_guild(self, guild):
+        if guild.voice_client.is_playing():
+            try:
+                song = f" \"{guild.voice_client.source.title}\""
+            except AttributeError:
+                song = ""
+            guild.voice_client.stop()
+        else:
+            all_queued = self.data.get("song_queues", {})
+            guild_queued = all_queued.get(str(guild.id), [])
+            if len(guild_queued) == 0:
+                return None
+            song_url = guild_queued.pop(0)
+            all_queued[str(guild.id)] = guild_queued
+            self.data["song_queues"] = all_queued
+            song = f" \"{self.title_from_url(song_url)}\""
+        return song
 
     @commands.command(aliases=["next"])
     async def skip(self, ctx):
-        ctx.voice_client.stop()
-        await ctx.reply(embed=self.bot.create_completed_embed("Song skipped.", "Song skipped successfully."))
+        song = await self.skip_guild(ctx.guild)
+        if song is None:
+            await ctx.reply(embed=self.bot.create_error_embed("There is no song playing or queued!"))
+        await ctx.reply(embed=self.bot.create_completed_embed("Song skipped.", f"Song{song} skipped successfully."))
 
-    @commands.command(asliases=["vol"])
+    @commands.command(aliases=["vol"])
     async def volume(self, ctx, volume: float):
-        if volume > 1:
-            volume = volume / 100
-        elif volume < 0:
+        volume = volume / 100
+        if volume < 0:
             volume = 0
         all_guilds = self.data.get("song_volumes", {})
         all_guilds[str(ctx.guild.id)] = volume
@@ -357,13 +438,20 @@ class Music(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
                                                                                  f"{volume * 100}% for this guild!"))
 
+    # async def queue(self, ctx):
+    #     self.bot.add_listener()
+    #     guild_queue = self.data.get("song_queues", {}).get(str(ctx.guild.id), [])
+    #     queue_message = ""
+    #     for index in range(len(guild_queue)):
+    #         link = guild_queue[index]
+    #         if index % 5 == 0:
     @commands.command()
     async def mute(self, ctx):
         all_guilds = self.data.get("song_volumes", {})
         all_guilds[str(ctx.guild.id)] = 0
         self.data["song_volumes"] = all_guilds
         ctx.voice_client.source.volume = 0
-        await ctx.reply(embed=self.bot.create_completed_embed(f"{config.mute_emoji}Muted bot!", f"muted bot for"
+        await ctx.reply(embed=self.bot.create_completed_embed(f"{config.mute_emoji}Muted bot!", f"muted bot for" 
         f" this guild!\nTo undo this, just type {config.prefix}unmute or {config.prefix}volume <new volume>"))
 
     @commands.command()
@@ -375,10 +463,11 @@ class Music(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
 
     @clear_queue.before_invoke
-    @queue.before_invoke
-    @mute.before_invoke
-    @unmute.before_invoke
+    @dequeue.before_invoke
     @shuffle.before_invoke
+    @unmute.before_invoke
+    @mute.before_invoke
+    @queue.before_invoke
     @volume.before_invoke
     @pause.before_invoke
     @play.before_invoke
@@ -395,7 +484,6 @@ class Music(commands.Cog):
             await ctx.reply(embed=self.bot.create_error_embed("You have to be connected to the voice channel to "
                                                               "execute these commands!"))
             raise commands.CommandError("Author not connected to the correct voice channel.")
-
 
 def setup(bot: FinBot):
     bot.add_cog(Music(bot))
