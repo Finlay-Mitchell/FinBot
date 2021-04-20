@@ -389,9 +389,10 @@ class Music(commands.Cog):
             self.bot.loop.create_task(self.play_next_queued(voice_client))
 
     async def pause_voice_client(self, voice_client):
-        currently_playing_url = voice_client.source.webpage_url
-        current_time = int(time.time() - voice_client.source.start_time)
-        self.enqueue(voice_client.guild, currently_playing_url, int(current_time), start=True)
+        if voice_client.source is not None:
+            currently_playing_url = voice_client.source.webpage_url
+            current_time = int(time.time() - voice_client.source.start_time)
+            self.enqueue(voice_client.guild, currently_playing_url, int(current_time), start=True)
         voice_client.stop()
         await voice_client.disconnect()
 
@@ -472,9 +473,11 @@ class Music(commands.Cog):
         if ctx.voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
+
             else:
                 await ctx.reply(embed=self.bot.create_error_embed("You are not connected to a voice channel."))
                 raise commands.CommandError("Author not connected to a voice channel.")
+
         elif not ctx.author.voice or ctx.voice_client.channel != ctx.author.voice.channel:
             await ctx.reply(embed=self.bot.create_error_embed("You have to be connected to the voice channel to "
                                                               "execute these commands!"))
