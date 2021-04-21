@@ -205,5 +205,4 @@ class Audit(commands.Cog):
 
 
 def setup(bot):
-    cog = Audit(bot)
-    bot.add_cog(cog)
+    bot.add_cog(Audit(bot))

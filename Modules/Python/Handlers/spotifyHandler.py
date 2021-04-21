@@ -19,6 +19,53 @@ class SpotifySearcher:
         self.spotify = spotipy.Spotify(client_credentials_manager=credentials)
         self.ready = True
 
+    # def get_playlist(self, playlist):
+    #     try:
+    #         response = self.spotify.playlist_items(playlist)
+    #     except (requests.exceptions.HTTPError, spotipy.SpotifyException):
+    #         return None
+    #     items_response = response["items"]
+    #     playlist_as_names = []
+    #     for item in items_response:
+    #         name = item.get("track").get("name")
+    #         first_artist = item.get("track").get("artists")[0].get("name")
+    #         all_artists = ', '.join([artist["name"] for artist in item.get("track").get("artists")])
+    #         url = item.get("track").get("external_urls").get("spotify")
+    #         album = item.get("track").get("album", {}).get("name", "")
+    #         if album != "":
+    #             album = "from " + album
+    #         else:
+    #             album = "by " + first_artist
+    #         playlist_as_names.append((url, f"{name} {album} High Quality".replace(":", "").replace("\"", "")))
+    #     return playlist_as_names
+    #
+    # def get_track(self, track):
+    #     try:
+    #         response = self.spotify.track(track)
+    #     except (requests.exceptions.HTTPError, spotipy.SpotifyException):
+    #         return None
+    #     name = response.get("name")
+    #     first_artist = response.get("artists")[0].get("name")
+    #     all_artists = ', '.join([artist["name"] for artist in response.get("artists")])
+    #     album = response.get("album", {}).get("name", "")
+    #     if album != "":
+    #         album = "from " + album
+    #     else:
+    #         album = "by " + first_artist
+    #     return (response.get('external_urls').get('spotify'),
+    #             f"{name} {album} High Quality".replace(":", "").replace("\"", ""))
+    #
+    # async def handle_spotify(self, media_identifier):
+    #     while not self.ready:
+    #         await asyncio.sleep(1)
+    #     playlist = await self.bot.loop.run_in_executor(None, partial(self.get_playlist, media_identifier))
+    #     if playlist is None:
+    #         track = await self.bot.loop.run_in_executor(None, partial(self.get_track, media_identifier))
+    #         if track is None:
+    #             return None
+    #         return [track]
+    #     return playlist
+
     def get_playlist(self, playlist):
         try:
             response = self.spotify.playlist_items(playlist)
@@ -30,10 +77,7 @@ class SpotifySearcher:
             name = item.get("track").get("name")
             first_artist = item.get("track").get("artists")[0].get("name")
             url = item.get("track").get("external_urls").get("spotify")
-            # album = item.get("track").get("album", {}).get("name", "")
-            # if album != "":
-            #     album = "from " + album
-            playlist_as_names.append((url, f"{name} - {first_artist}"))  #  {album}"))
+            playlist_as_names.append((url, f"{name} - {first_artist}"))
         return playlist_as_names
 
     def get_track(self, track):
@@ -43,10 +87,7 @@ class SpotifySearcher:
             return None
         name = response.get("name")
         first_artist = response.get("artists")[0].get("name")
-        # album = response.get("album", {}).get("name", "")
-        # if album != "":
-          #   album = "from " + album
-        return response.get('external_urls').get('spotify'), f"{name} - {first_artist}"  # {album}"
+        return response.get('external_urls').get('spotify'), f"{name} - {first_artist}"
 
     async def handle_spotify(self, media_identifier):
         while not self.ready:

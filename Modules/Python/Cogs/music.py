@@ -1,4 +1,5 @@
 import asyncio
+
 import discord
 import youtube_dl
 import aiohttp
@@ -6,15 +7,18 @@ import json.decoder
 import re
 import time
 import random
+import youtubesearchpython.__future__ as youtube_search
+
 from discord.ext import commands
 from pytube import Playlist
 from functools import partial
 
+from Checks.Permission_check import is_staff
 from main import FinBot
 from Handlers.storageHandler import DataHelper
 from Handlers.spotifyHandler import SpotifySearcher
 from Handlers.PaginationHandler import Paginator
-from Checks.Permission_check import is_staff
+from Data import config
 
 # TODO:
 """1. Add a true pagination system to the bot as a whole to allow !queue DONE
@@ -74,28 +78,37 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(discord.FFmpegPCMAudio(data["url"], **ffmpeg_options), data=data)
 
     @staticmethod
-    async def get_video_data(url, loop=None):
+    async def get_video_data(url, loop=None, search=False):
         loop = loop or asyncio.get_event_loop()
-        try:
-            attempts = 0
-            while True:
-                if attempts > 10:
-                    return None
-                attempts += 1
-                future = loop.run_in_executor(None,
-                                              lambda: youtube_dl.YoutubeDL(
-                                                  ytdl_format_options).extract_info(url, download=False))
-                try:
-                    data = await asyncio.wait_for(future, 3)
-                    if data is not None:
-                        break
-                except asyncio.TimeoutError:
-                    pass
-        except youtube_dl.utils.DownloadError:
-            return None
-        if 'entries' in data and len(data['entries']) > 0:
-            # take first item from a playlist
-            data = data['entries'][0]
+        if search:
+            query = youtube_search.CustomSearch(url, youtube_search.VideoSortOrder.relevance, limit=1)
+            data = await query.next()
+            return data.get("result")[0].get("link")
+        else:
+            try:
+                attempts = 0
+                while True:
+                    if attempts > 10:
+                        return None
+                    attempts += 1
+                    ydl = youtube_dl.YoutubeDL(ytdl_format_options)
+                    # ydl._ies = [ydl.get_info_extractor('Youtube')]
+                    future = loop.run_in_executor(None, lambda: ydl.extract_info(url, download=False))
+                    try:
+                        data = await asyncio.wait_for(future, 10)
+                        if data is not None:
+                            break
+                    except asyncio.TimeoutError:
+                        pass
+            except youtube_dl.utils.DownloadError:
+                return None
+            if 'entries' in data and len(data['entries']) > 0:
+                # print(url)
+                # print([(x["title"], x["view_count"]) for x in sorted(data['entries'], key=lambda x:
+                # x.get("view_count", 0), reverse=True)])
+                data = sorted(data['entries'], key=lambda x: x.get("view_count", 0), reverse=True)[0]
+                # take first item from a playlist
+                # data = data['entries'][0]
         if data.get('url', None) is None:
             return None
         return data
@@ -110,30 +123,31 @@ class Music(commands.Cog):
             self.data["called_from"] = {}
         self.spotify = SpotifySearcher(self.bot)
         self.url_to_title_cache = {}
-    #     self.bot.loop.create_task(self.restart_watcher())
-    #
-    # async def restart_watcher(self):
-    #     while True:
-    #         try:
-    #             await self.bot.wait_until_ready()
-    #             await self.post_restart_resume()
-    #             await self.bot.restart_event.wait()
-    #             async with self.bot.restart_waiter_lock:
-    #                 self.bot.restart_waiters += 1
-    #             for voice_client in self.bot.voice_clients:
-    #                 if not isinstance(voice_client, discord.VoiceClient):
-    #                     continue
-    #                 if not isinstance(voice_client.source, YTDLSource):
-    #                     continue
-    #                 await self.pause_voice_client(voice_client)
-    #             resume_from = self.data.get("resume_voice", [])
-    #             resume_from.append(voice_client.channel.id)
-    #             self.data["resume_voice"] = resume_from
-    #             async with self.bot.restart_waiter_lock:
-    #                 self.bot.restart_waiters -= 1
-    #             return
-    #         except RuntimeError:
-    #             pass
+        self.bot.loop.create_task(self.restart_watcher())
+
+    async def restart_watcher(self):
+        self.bot.restart_event = asyncio.Event()
+        while True:
+            try:
+                await self.bot.wait_until_ready()
+                await self.post_restart_resume()
+                await self.bot.restart_event.wait()
+                async with self.bot.restart_waiter_lock:
+                    self.bot.restart_waiters += 1
+                for voice_client in self.bot.voice_clients:
+                    if not isinstance(voice_client, discord.VoiceClient):
+                        continue
+                    if not isinstance(voice_client.source, YTDLSource):
+                        continue
+                    await self.pause_voice_client(voice_client)
+                    resume_from = self.data.get("resume_voice", [])
+                    resume_from.append(voice_client.channel.id)
+                    self.data["resume_voice"] = resume_from
+                async with self.bot.restart_waiter_lock:
+                    self.bot.restart_waiters -= 1
+                return
+            except RuntimeError:
+                pass
 
     def enqueue(self, guild, song_url, time=None, start=False):
         all_queues = self.data.get("song_queues", {})
@@ -191,7 +205,9 @@ class Music(commands.Cog):
                 print(f"{song} failed after 3 attempts")
                 return None
             attempts += 1
-            youtube_song = await YTDLSource.get_video_data(song, self.bot.loop)
+            youtube_song = await YTDLSource.get_video_data(song, self.bot.loop, search=True)
+            if isinstance(youtube_song, str):
+                return youtube_song
             if youtube_song is not None and youtube_song.get("webpage_url") is not None:
                 return youtube_song.get("webpage_url")
             await asyncio.sleep(2)
@@ -345,14 +361,17 @@ class Music(commands.Cog):
             # await voice_client.disconnect()
             return
         next_song_url = guild_queued.pop(0)
+        all_queued[str(voice_client.guild.id)] = guild_queued
+        self.data["song_queues"] = all_queued
         local_ffmpeg_options = ffmpeg_options.copy()
         resume_from = 0
         if type(next_song_url) == tuple or type(next_song_url) == list:
             next_song_url, resume_from = next_song_url
             local_ffmpeg_options['options'] = "-vn -ss {}".format(resume_from)
-        all_queued[str(voice_client.guild.id)] = guild_queued
-        self.data["song_queues"] = all_queued
         volume = self.data.get("song_volumes", {}).get(str(voice_client.guild.id), 0.5)
+        if next_song_url is None:
+            self.bot.loop.create_task(self.play_next_queued(voice_client))
+            return
         next_song_url = await self.transform_single_song(next_song_url)
         if next_song_url is None:
             self.bot.loop.create_task(self.play_next_queued(voice_client))
@@ -385,8 +404,12 @@ class Music(commands.Cog):
     async def post_restart_resume(self):
         for voice_channel_id in self.data.get("resume_voice", []):
             voice_channel = self.bot.get_channel(voice_channel_id)
-            voice_client = await voice_channel.connect()
+            try:
+                voice_client = await voice_channel.connect()
+            except AttributeError:
+                continue
             self.bot.loop.create_task(self.play_next_queued(voice_client))
+        self.data["resume_voice"] = []
 
     async def pause_voice_client(self, voice_client):
         if voice_client.source is not None:
@@ -424,6 +447,7 @@ class Music(commands.Cog):
         song = await self.skip_guild(ctx.guild)
         if song is None:
             await ctx.reply(embed=self.bot.create_error_embed("There is no song playing or queued!"))
+            return
         await ctx.reply(embed=self.bot.create_completed_embed("Song skipped.", f"Song{song} skipped successfully."))
 
     @commands.command(aliases=["vol"])
@@ -447,8 +471,8 @@ class Music(commands.Cog):
         all_guilds[str(ctx.guild.id)] = 0
         self.data["song_volumes"] = all_guilds
         ctx.voice_client.source.volume = 0
-        await ctx.reply(embed=self.bot.create_completed_embed(f"{config.mute_emoji}Muted bot!", f"muted bot for" 
-        f" this guild!\nTo undo this, just type {config.prefix}unmute or {config.prefix}volume <new volume>"))
+        await ctx.reply(embed=self.bot.create_completed_embed(f"{config.mute_emoji}Muted bot!", f"muted bot for"
+                                                                                                f" this guild!\nTo undo this, just type {config.prefix}unmute or {config.prefix}volume <new volume>"))
 
     @commands.command()
     async def unmute(self, ctx):
@@ -458,7 +482,6 @@ class Music(commands.Cog):
         ctx.voice_client.source.volume = 1 - 0
         await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
 
-    @clear_queue.before_invoke
     @dequeue.before_invoke
     @shuffle.before_invoke
     @unmute.before_invoke
@@ -473,11 +496,9 @@ class Music(commands.Cog):
         if ctx.voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
-
             else:
                 await ctx.reply(embed=self.bot.create_error_embed("You are not connected to a voice channel."))
                 raise commands.CommandError("Author not connected to a voice channel.")
-
         elif not ctx.author.voice or ctx.voice_client.channel != ctx.author.voice.channel:
             await ctx.reply(embed=self.bot.create_error_embed("You have to be connected to the voice channel to "
                                                               "execute these commands!"))

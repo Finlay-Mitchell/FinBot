@@ -59,5 +59,4 @@ class API(commands.Cog):
 
 
 def setup(bot):
-    cog = API(bot)
-    bot.add_cog(cog)
+    bot.add_cog(API(bot))

@@ -410,7 +410,7 @@ namespace FinBot.Modules
             EmbedBuilder eb = new EmbedBuilder();
             eb.AddField("Developer:", "Finlay Mitchell");
             eb.AddField("Version: ", Global.Version);
-            eb.AddField("Language", "C# - Discord.net API");
+            eb.AddField("Languages", "C# - Discord.net API\nPython - Discord.py");
             eb.WithAuthor(Context.Message.Author);
             eb.WithColor(Color.Gold);
             eb.WithTitle("Bot info");

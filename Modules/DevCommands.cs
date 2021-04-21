@@ -18,16 +18,27 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using FinBot.Handlers;
+using System.Timers;
 
 namespace FinBot.Modules
 {
     public class DevCommands : ModuleBase<ShardedCommandContext>
     {
         private DiscordShardedClient _client;
+        Timer T;
 
         public DevCommands(IServiceProvider service)
         {
             _client = service.GetRequiredService<DiscordShardedClient>();
+           
+            //T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 30).TotalMilliseconds, Enabled = true };
+            //T.Elapsed += HandleTopicAsync;
+        }
+
+        private async void HandleTopicAsync(object sender, ElapsedEventArgs e)
+        {
+            await _client.GetGuild(725886999646437407).GetTextChannel(725896089542197278).SendMessageAsync($"Here's yer fucking latency, bitch {_client.Latency}");
+            Global.ConsoleLog($"Here's your fucking latency, bitchass {_client.Latency}");
         }
 
         [Command("restart")]

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
+using System.Diagnostics;
 
 namespace FinBot
 {
@@ -33,6 +34,8 @@ namespace FinBot
 
         public async Task RunBotAsync()
         {
+            Process process1 = new Process();
+
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
             Global.ReadConfig();

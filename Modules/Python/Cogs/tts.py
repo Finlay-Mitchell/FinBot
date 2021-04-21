@@ -239,5 +239,4 @@ class TTS(commands.Cog):
                     await voice_client.disconnect()
 
 def setup(bot):
-    cog = TTS(bot)
-    bot.add_cog(cog)
+    bot.add_cog(TTS(bot))

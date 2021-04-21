@@ -27,5 +27,4 @@ class Executer(commands.Cog):
 
 
 def setup(bot):
-    cog = Executer(bot)
-    bot.add_cog(cog)
+    bot.add_cog(Executer(bot))
