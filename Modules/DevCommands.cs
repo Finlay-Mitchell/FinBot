@@ -19,6 +19,11 @@ using System.Net;
 using System.Web;
 using FinBot.Handlers;
 using System.Timers;
+using Discord.Audio;
+
+using VideoLibrary;
+using MediaToolkit.Model;
+using MediaToolkit;
 
 namespace FinBot.Modules
 {
@@ -30,9 +35,10 @@ namespace FinBot.Modules
         public DevCommands(IServiceProvider service)
         {
             _client = service.GetRequiredService<DiscordShardedClient>();
-           
+
             //T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 30).TotalMilliseconds, Enabled = true };
             //T.Elapsed += HandleTopicAsync;
+
         }
 
         private async void HandleTopicAsync(object sender, ElapsedEventArgs e)
@@ -103,6 +109,76 @@ namespace FinBot.Modules
         public Task exec(params string[] args)
         {
             return Task.CompletedTask;
+        }
+
+        [Command("ayst")]
+        public async Task ARST(IVoiceChannel channel = null)
+        {
+            if (Global.IsDev(Context.User))
+            {
+                try
+                {
+                    channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
+
+                    if (channel == null)
+                    {
+                        await Context.Message.ReplyAsync("User must be in a voice channel, or you must parse in a voice channel");
+                        return;
+                    }
+
+                    var audioClient = await channel.ConnectAsync();
+
+                    SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "test");
+
+                    await SendAsync(audioClient, $"{Environment.CurrentDirectory}/test.mp3");
+                }
+
+                catch (Exception ex)
+                {
+                    await ReplyAsync("You fucking failure at life, look at what you've done! No reason your parents hate you. Here's your fucking error, not just talking about your existance\n" + ex.Message);
+                }
+            }
+        }
+
+        private void SaveMP3(string SaveToFolder, string VideoURL, string MP3Name)
+        {
+            var source = @SaveToFolder;
+            var youtube = YouTube.Default;
+            var vid = youtube.GetVideo(VideoURL);
+            File.WriteAllBytes(source + vid.FullName, vid.GetBytes());
+
+            var inputFile = new MediaFile { Filename = source + vid.FullName };
+            var outputFile = new MediaFile { Filename = $"{MP3Name}.mp3" };
+
+            using (var engine = new Engine())
+            {
+                engine.GetMetadata(inputFile);
+
+                engine.Convert(inputFile, outputFile);
+            }
+        }
+
+        private Process CreateStream(string path)
+        {
+            return Process.Start(new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+            });
+        }
+
+        private async Task SendAsync(IAudioClient client, string path)
+        {
+            // Create FFmpeg using the previous example
+            using (var ffmpeg = CreateStream(path))
+            using (var output = ffmpeg.StandardOutput.BaseStream)
+            using (var discord = client.CreatePCMStream(AudioApplication.Mixed))
+            {
+                try { await output.CopyToAsync(discord); }
+                finally { await discord.FlushAsync(); }
+            }
         }
     }
 }

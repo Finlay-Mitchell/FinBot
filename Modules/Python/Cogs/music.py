@@ -396,7 +396,7 @@ class Music(commands.Cog):
                     return
         await called_channel.send(embed=embed)
 
-    @commands.command(aliases=["res", "r", "continue"])
+    @commands.command(aliases=["res", "continue"])
     async def resume(self, ctx):
         self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
         await ctx.reply(embed=self.bot.create_completed_embed("Resumed!", "Resumed playing."))
@@ -496,6 +496,8 @@ class Music(commands.Cog):
         if ctx.voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
+                await ctx.guild.change_voice_state(channel=ctx.author.voice.channel, self_mute=False, self_deaf=True)
+
             else:
                 await ctx.reply(embed=self.bot.create_error_embed("You are not connected to a voice channel."))
                 raise commands.CommandError("Author not connected to a voice channel.")

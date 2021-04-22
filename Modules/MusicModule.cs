@@ -17,7 +17,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("resume"), Summary("Resumes the currently paused track"), Remarks("(PREFIX)resume"), Alias("res", "r", "continue")]
+        [Command("resume"), Summary("Resumes the currently paused track"), Remarks("(PREFIX)resume"), Alias("res", "continue")]
         public Task resume(params string[] args)
         {
             return Task.CompletedTask;
