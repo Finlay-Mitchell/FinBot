@@ -316,10 +316,8 @@ class Music(commands.Cog):
     @commands.command(aliases=["p"])
     async def play(self, ctx, *, to_play):
         async with ctx.typing():
-
-            if(to_play is None):
+            if to_play is None:
                 await ctx.reply(embed=self.bot.create_error_embed("You need to provide an argument"))
-
             if "spotify" in to_play:
                 playlist_info = await self.transform_spotify(to_play)
                 if playlist_info is None:
