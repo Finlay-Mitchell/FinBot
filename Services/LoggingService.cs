@@ -28,8 +28,8 @@ namespace FinBot.Services
             _commands.Log += OnLogAsync;
             _discord.ShardReady += OnShardReady;
             _discord.MessageReceived += OnLogMessage;
-         //   _discord.MessageDeleted += OnMessageDelete;
-         //   _discord.MessageReceived += AddToDB;
+            _discord.MessageDeleted += OnMessageDelete;
+            _discord.MessageReceived += AddToDB;
         }
 
         public async Task AddToDB(SocketMessage arg)

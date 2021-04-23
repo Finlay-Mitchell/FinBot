@@ -126,31 +126,28 @@ namespace FinBot.Modules
                         return;
                     }
 
-                    var audioClient = await channel.ConnectAsync();
-
+                    IAudioClient audioClient = await channel.ConnectAsync();
                     SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "test");
-
                     await SendAsync(audioClient, $"{Environment.CurrentDirectory}/test.mp3");
                 }
 
                 catch (Exception ex)
                 {
-                    await ReplyAsync("You fucking failure at life, look at what you've done! No reason your parents hate you. Here's your fucking error, not just talking about your existance\n" + ex.Message);
+                    await ReplyAsync("Uh oh, stinkie! error poop:\n" + ex.Message);
                 }
             }
         }
 
         private void SaveMP3(string SaveToFolder, string VideoURL, string MP3Name)
         {
-            var source = @SaveToFolder;
-            var youtube = YouTube.Default;
-            var vid = youtube.GetVideo(VideoURL);
+            string source = @SaveToFolder;
+            YouTube youtube = YouTube.Default;
+            YouTubeVideo vid = youtube.GetVideo(VideoURL);
             File.WriteAllBytes(source + vid.FullName, vid.GetBytes());
+            MediaFile inputFile = new MediaFile { Filename = source + vid.FullName };
+            MediaFile outputFile = new MediaFile { Filename = $"{MP3Name}.mp3" };
 
-            var inputFile = new MediaFile { Filename = source + vid.FullName };
-            var outputFile = new MediaFile { Filename = $"{MP3Name}.mp3" };
-
-            using (var engine = new Engine())
+            using (Engine engine = new Engine())
             {
                 engine.GetMetadata(inputFile);
 
@@ -171,13 +168,20 @@ namespace FinBot.Modules
 
         private async Task SendAsync(IAudioClient client, string path)
         {
-            // Create FFmpeg using the previous example
-            using (var ffmpeg = CreateStream(path))
-            using (var output = ffmpeg.StandardOutput.BaseStream)
-            using (var discord = client.CreatePCMStream(AudioApplication.Mixed))
+            using (Process ffmpeg = CreateStream(path))
+            using (Stream output = ffmpeg.StandardOutput.BaseStream)
+            
+            using (AudioOutStream discord = client.CreatePCMStream(AudioApplication.Mixed))
             {
-                try { await output.CopyToAsync(discord); }
-                finally { await discord.FlushAsync(); }
+                try 
+                {
+                    await output.CopyToAsync(discord); 
+                }
+
+                finally
+                {
+                    await discord.FlushAsync(); 
+                }
             }
         }
     }
