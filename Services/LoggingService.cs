@@ -32,8 +32,10 @@ namespace FinBot.Services
             //_discord.MessageDeleted += OnMessageDelete;
             //_discord.MessageReceived += AddToDB;
 
-            Thread thread = new Thread(CallService);
-            thread.Start();
+            //Thread thread = new Thread(CallService);
+            //thread.Start();
+
+            // Parallel.Invoke(CallService);
         }
 
 
