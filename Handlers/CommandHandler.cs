@@ -114,7 +114,7 @@ namespace FinBot.Handlers
                 if(!result.IsSuccess)
                 {
                     var logTxt = $"Command: Failed to execute \"{context.Message.Content}\" for {context.User.Username} in {context.Guild.Name}/{context.Channel} with reason: {result.Error}/{result.ErrorReason}";
-                    _logger.LogInformation(logTxt);
+                    _logger.LogError(logTxt);
                 }
             });
         }
