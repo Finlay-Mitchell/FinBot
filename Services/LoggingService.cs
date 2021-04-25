@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace FinBot.Services
 {
@@ -28,9 +29,20 @@ namespace FinBot.Services
             _commands.Log += OnLogAsync;
             _discord.ShardReady += OnShardReady;
             _discord.MessageReceived += OnLogMessage;
+            //_discord.MessageDeleted += OnMessageDelete;
+            //_discord.MessageReceived += AddToDB;
+
+            Thread thread = new Thread(CallService);
+            thread.Start();
+        }
+
+
+        private void CallService()
+        {
             _discord.MessageDeleted += OnMessageDelete;
             _discord.MessageReceived += AddToDB;
         }
+
 
         public async Task AddToDB(SocketMessage arg)
         {
@@ -75,7 +87,8 @@ namespace FinBot.Services
                         {
                             level += 1;
                             XP = XP - xpToNextLevel;
-                            await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                            //await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                            await _discord.GetUser(305797476290527235).SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
                         }
 
                         queryConn.Open();
@@ -251,7 +264,7 @@ namespace FinBot.Services
 
             else
             {
-                string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] unknown channel: [{arg.Channel}] -> [{arg.Content}]";
+                string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] Channel type [{arg.GetType()}]: [{arg.Channel}] -> [{arg.Content}]";
                 _logger.LogDebug(logMessage);
             }
 
