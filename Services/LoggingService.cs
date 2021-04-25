@@ -264,7 +264,7 @@ namespace FinBot.Services
 
             else
             {
-                string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] Channel type [{arg.GetType()}]: [{arg.Channel}] -> [{arg.Content}]";
+                string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] Channel type [{arg.Channel.GetType()}]: [{arg.Channel}] -> [{arg.Content}]";
                 _logger.LogDebug(logMessage);
             }
 
