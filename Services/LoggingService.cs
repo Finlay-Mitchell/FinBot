@@ -242,10 +242,16 @@ namespace FinBot.Services
                 _logger.LogDebug(logMessage);
             }
 
-            else
+            else if (arg.Channel.GetType() == typeof(SocketDMChannel))
             {
                 SocketDMChannel gC = (SocketDMChannel)arg.Channel;
                 string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] DM channel: [{arg.Channel}] -> [{arg.Content}]";
+                _logger.LogDebug(logMessage);
+            }
+
+            else
+            {
+                string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] unknown channel: [{arg.Channel}] -> [{arg.Content}]";
                 _logger.LogDebug(logMessage);
             }
 
