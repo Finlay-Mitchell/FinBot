@@ -106,6 +106,15 @@ namespace FinBot.Handlers
                             });
                             break;
 
+                        case "MinecraftCommands":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Minecraft commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
+
                         default:
                             builder.AddField(x =>
                             {

@@ -11,7 +11,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("pause"), Summary("Stops the currently playing track"), Remarks("(PREFIX)pause"), Alias("stop", "s", "leave")]
+        [Command("pause"), Summary("Stops the currently playing track"), Remarks("(PREFIX)pause"), Alias("stop", "leave", "quit")]
         public Task pause(params string[] args)
         {
             return Task.CompletedTask;
@@ -77,7 +77,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("lyricSearch"), Summary("Tries to match a song to the provided lyrics"), Remarks("(PREFIX)")]
+        [Command("lyricSearch"), Summary("Tries to match a song to the provided lyrics"), Remarks("(PREFIX)lyricsearch <your lyrics>")]
         public Task lyricSearch(params string[] args)
         {
             return Task.CompletedTask;

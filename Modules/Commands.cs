@@ -1136,6 +1136,7 @@ namespace FinBot.Modules
                     var byteContent = new ByteArrayContent(buffer);
                     byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                     HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
+                    HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://api.thom.club/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json")); // Very much broken `Severity Code Description Project File Line Suppression State Error CS1503 Argument 2: cannot convert from 'System.Net.Http.StringContent' to 'System.Net.Http.HttpCompletionOption'`
                     //This next line is so I can test my failover embed in case Thomas's website doesn't want to work with me.
                     //HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/failovertest", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
                     string resp = await HTTPResponse.Content.ReadAsStringAsync();
