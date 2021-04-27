@@ -13,6 +13,7 @@ from Data import config
 from Checks.speak_check import speak_changer_check
 from Checks.Permission_check import is_high_staff
 from Checks.User_check import is_owner
+from Data.config import prefix
 
 
 class TTS(commands.Cog):
@@ -39,7 +40,7 @@ class TTS(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed("Disconnect success.", "Disconnected from voice."))
 
     @commands.command(pass_context=True, name="speak_perms",
-                      description="Gives other people access to the !speak command.")
+                      description=f"Gives other people access to the {prefix}speak command.")
     @is_high_staff()
     async def speak_perms(self, ctx, member: discord.Member):
         all_guilds = self.data.get("speak_changer", {})
