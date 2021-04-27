@@ -1131,14 +1131,17 @@ namespace FinBot.Modules
                     Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>>();
                     final_object.Add("scores", scores);
                     HttpClient HTTPClient = new HttpClient();
-                    var content = JsonConvert.SerializeObject(final_object);
-                    var buffer = Encoding.UTF8.GetBytes(content);
-                    var byteContent = new ByteArrayContent(buffer);
+                    string content = JsonConvert.SerializeObject(final_object);
+                    byte[] buffer = Encoding.UTF8.GetBytes(content);
+                    ByteArrayContent byteContent = new ByteArrayContent(buffer);
                     byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
-                    HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://api.thom.club/format_leaderboard", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json")); // Very much broken `Severity Code Description Project File Line Suppression State Error CS1503 Argument 2: cannot convert from 'System.Net.Http.StringContent' to 'System.Net.Http.HttpCompletionOption'`
-                    //This next line is so I can test my failover embed in case Thomas's website doesn't want to work with me.
-                    //HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync("http://thom.club:8080/failovertest", new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"));
+                    HttpRequestMessage request = new HttpRequestMessage
+                    {
+                        Method = HttpMethod.Get,
+                        RequestUri = new Uri("https://api.thom.club/format_leaderboard"),
+                        Content = new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"),
+                    };
+                    HttpResponseMessage HTTPResponse = await HTTPClient.SendAsync(request);
                     string resp = await HTTPResponse.Content.ReadAsStringAsync();
                     Dictionary<string, string> APIData = JsonConvert.DeserializeObject<Dictionary<string, string>>(resp);
                     b.WithCurrentTimestamp();
@@ -1149,7 +1152,7 @@ namespace FinBot.Modules
                 catch (Exception)
                 {
                     b.WithCurrentTimestamp();
-                    b.Description = format + "```";
+                    b.Description = format + "Test```";
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
             }
