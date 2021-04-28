@@ -12,7 +12,8 @@ class Minecraft(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot = bot
 
-    @commands.command(aliases=["bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats"])
+    @commands.command(aliases=["bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats", "bw_info",
+                               "bwinfo", "bw-info"])
     async def bw_stats(self, ctx, arg):
         async with aiohttp.ClientSession() as session:
             uuid = await mc_uuid(arg, session)

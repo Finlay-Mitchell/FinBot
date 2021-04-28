@@ -1235,7 +1235,7 @@ namespace FinBot.Modules
                     eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
                     eb.WithCurrentTimestamp();
                     eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     return eb.Build();
                 }
             }
@@ -1431,7 +1431,7 @@ namespace FinBot.Modules
                         eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
                         eb.WithCurrentTimestamp();
                         eb.WithColor(Color.Red);
-                        eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                        eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                         await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                     }
                 }
@@ -1517,7 +1517,7 @@ namespace FinBot.Modules
                     eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
                     eb.WithCurrentTimestamp();
                     eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                 }
             }
@@ -1612,18 +1612,10 @@ namespace FinBot.Modules
                     eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
                     eb.WithCurrentTimestamp();
                     eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                 }
             }
-        }
-
-        [Command("Trump"), Summary("Puts your parsed text into a image manipulation function to make it look like Trump is saying it via Twitter"), Remarks("(PREFIX)Trump <text>")]
-        public async Task test([Remainder] string text)
-        {
-            string txt = $"https://api.no-api-key.com/api/v2/trump?message={HttpUtility.UrlEncode(text)}";
-
-            await ReplyAsync(txt);
         }
     }
 }

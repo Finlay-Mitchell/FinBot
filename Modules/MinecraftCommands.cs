@@ -5,7 +5,7 @@ namespace FinBot.Modules
 {
     public class MinecraftCommands : ModuleBase<ShardedCommandContext> // Guess who's back back? back again-gain. Template commands' back back. Tell a friend friend.
     {
-        [Command("bw_stats"), Summary("Gets the statistics of a players bedwars information"), Remarks("(PREFIX)bw_stats <Minecraft username"), Alias("bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats")]
+        [Command("bw_stats"), Summary("Gets the statistics of a players bedwars information"), Remarks("(PREFIX)bw_stats <Minecraft username"), Alias("bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats", "bw_info", "bwinfo", "bw-info")]
         public Task bw_stats(params string[] arg)
         {
             return Task.CompletedTask;
