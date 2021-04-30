@@ -837,7 +837,8 @@ namespace FinBot.Modules
             {
                 searchFor = args;
                 embed.WithColor(new Color(0, 255, 0));
-                results = await SearchChannelsAsync(searchFor);
+                YouTubeSearcher YouTubesearcher = new YouTubeSearcher();
+                results = await YouTubesearcher.SearchChannelsAsync(searchFor);
             }
 
             if (results != null)
@@ -878,57 +879,6 @@ namespace FinBot.Modules
                 embed.Description = sb.ToString();
                 await Context.Message.ReplyAsync("", false, embed.Build());
             }
-        }
-
-        private string getYouTubeApiRequest(string url)
-        {
-            string reponse = string.Empty;
-            string fullUrl = $"https://www.googleapis.com/youtube/v3/search?key={Global.YouTubeAPIKey}{url}";
-            Console.WriteLine($"YouTube API Request {fullUrl}");
-            string response = string.Empty;
-            using (HttpClient httpClient = new HttpClient())
-            {
-                httpClient.DefaultRequestHeaders
-                    .Accept
-                    .Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                response = httpClient.GetStringAsync(url).Result;
-            }
-            return response;
-        }
-
-        public string getLatestVideoByID(string id, int numVideos = 1)
-        {
-            string videoURL = string.Empty;
-            string url = $"&channelId={id}&part=snippet,id&order=date&maxResults={numVideos}";
-            YouTubeModel.Video videos = JsonConvert.DeserializeObject<YouTubeModel.Video>(getYouTubeApiRequest(url));
-            videoURL = $"https://www.youtube.com/watch?v={videos.items[0].id.videoId}";
-            return videoURL;
-        }
-
-        public string getRandomVideoByID(string id, int numVideos = 50)
-        {
-            string videoURL = string.Empty;
-            string url = $"&channelId={id}&part=snippet,id&order=date&maxResults={numVideos}";
-            YouTubeModel.Video videos = JsonConvert.DeserializeObject<YouTubeModel.Video>(getYouTubeApiRequest(url));
-            Random getRandom = new Random();
-            int random = getRandom.Next(0, numVideos);
-            videoURL = $"https://www.youtube.com/watch?v={videos.items[random].id.videoId}";
-            return videoURL;
-        }
-
-        public async Task<List<Google.Apis.YouTube.v3.Data.SearchResult>> SearchChannelsAsync(string keyword = "space", int maxResults = 5)
-        {
-            YouTubeService youtubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                ApiKey = Global.YouTubeAPIKey,
-                ApplicationName = this.GetType().ToString()
-
-            });
-            SearchResource.ListRequest searchListRequest = youtubeService.Search.List("snippet");
-            searchListRequest.Q = keyword;
-            searchListRequest.MaxResults = maxResults;
-            SearchListResponse searchListResponse = await searchListRequest.ExecuteAsync();
-            return searchListResponse.Items.ToList();
         }
 
         [Command("TranslateTo"), Summary("Translates the input text to the language you specify"), Remarks("(PREFIX)TranslateTo <language code> <text>"), Alias("trto", "tto")]
@@ -1152,7 +1102,7 @@ namespace FinBot.Modules
                 catch (Exception)
                 {
                     b.WithCurrentTimestamp();
-                    b.Description = format + "Test```";
+                    b.Description = format + "```";
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
             }
@@ -1167,7 +1117,7 @@ namespace FinBot.Modules
                     eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
                     eb.WithCurrentTimestamp();
                     eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Channel.SendMessageAsync("", false, eb.Build());
                     return;
                 }
@@ -1310,7 +1260,7 @@ namespace FinBot.Modules
                     eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
                     eb.WithCurrentTimestamp();
                     eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                 }
             }

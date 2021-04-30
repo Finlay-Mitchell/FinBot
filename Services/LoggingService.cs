@@ -31,8 +31,6 @@ namespace FinBot.Services
             _discord.MessageReceived += OnLogMessage;
             _discord.MessageDeleted += OnMessageDelete;
             _discord.MessageReceived += OnMessageReceived;
-
-            //Task.Factory.StartNew(CallService);
         }
 
 

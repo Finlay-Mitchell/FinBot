@@ -3,6 +3,7 @@ from discord.ext import commands
 
 import aiohttp
 import asyncio
+import secrets
 
 from Handlers.MinecraftHandler import *
 from main import *
@@ -21,7 +22,9 @@ class Minecraft(commands.Cog):
                 ctx.reply(embed=self.create_error_embed(title="Minecraft User Not found"))
                 return
             else:
-                await ctx.reply(f"https://hypixel.thom.club/{arg}")
+                # await ctx.reply(f"https://hypixel.thom.club/{arg}")
+                random_string = secrets.token_urlsafe(16).replace("-", "")
+                await ctx.reply(f"https://hypixel.thom.club/{arg}-{random_string}.png") # stops cached messages
 
     @commands.command(aliases=["skin", "mc_skin", "minecraft_skin", "mcskin", "minecraftskin", "mc-skin",
                                "minecraft-skin", "get-skin", "getskin"])

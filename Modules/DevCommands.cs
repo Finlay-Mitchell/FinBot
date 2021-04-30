@@ -30,21 +30,37 @@ namespace FinBot.Modules
     public class DevCommands : ModuleBase<ShardedCommandContext>
     {
         private DiscordShardedClient _client;
+        private IAudioClient _audioClient;
         Timer T;
+        private IAudioClient _userVoiceClient;
+        private IAudioChannel _userVoiceChannel;
+
+        bool ready = false;
 
         public DevCommands(IServiceProvider service)
         {
             _client = service.GetRequiredService<DiscordShardedClient>();
 
-            //T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 30).TotalMilliseconds, Enabled = true };
-            //T.Elapsed += HandleTopicAsync;
+            if (ready)
+            {
+                _audioClient.SpeakingUpdated += StartAYSTTimer;
+                T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 10).TotalMilliseconds, Enabled = true };
+                T.Elapsed += SendAYST;
 
+            }
         }
 
-        private async void HandleTopicAsync(object sender, ElapsedEventArgs e)
+        private async void SendAYST(object sender, ElapsedEventArgs e)
         {
-            await _client.GetGuild(725886999646437407).GetTextChannel(725896089542197278).SendMessageAsync($"Here's yer fucking latency, bitch {_client.Latency}");
-            Global.ConsoleLog($"Here's your fucking latency, bitchass {_client.Latency}");
+            _userVoiceClient = await _userVoiceChannel.ConnectAsync();
+            SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "AYST");
+            await SendAsync(_userVoiceClient, $"{Environment.CurrentDirectory}/AYST.mp3", Context.Message);
+        }
+
+        private async Task StartAYSTTimer(ulong userId, bool isSpeaking)
+        {
+            T.Stop();
+            T.Start();
         }
 
         [Command("restart")]
@@ -127,8 +143,8 @@ namespace FinBot.Modules
                     }
 
                     IAudioClient audioClient = await channel.ConnectAsync();
-                    SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "test");
-                    await SendAsync(audioClient, $"{Environment.CurrentDirectory}/test.mp3");
+                    SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "AYST");
+                    await SendAsync(audioClient, $"{Environment.CurrentDirectory}/AYST.mp3", Context.Message);
                 }
 
                 catch (Exception ex)
@@ -166,7 +182,7 @@ namespace FinBot.Modules
             });
         }
 
-        private async Task SendAsync(IAudioClient client, string path)
+        private async Task SendAsync(IAudioClient client, string path, IUserMessage message)
         {
             using (Process ffmpeg = CreateStream(path))
             using (Stream output = ffmpeg.StandardOutput.BaseStream)
@@ -183,6 +199,33 @@ namespace FinBot.Modules
                     await discord.FlushAsync(); 
                 }
             }
+
+            try
+            {
+                File.Delete(path);
+            }
+
+            catch(Exception ex)
+            {
+                await message.ReplyAsync($"You numpty, you've only gone and found yourself an error!\n\n {ex.Message}");
+            }
+        }
+
+        [Command("Speaking")]
+        public async Task speaking()
+        {
+            IVoiceChannel channel = (Context.User as IGuildUser)?.VoiceChannel;
+            IAudioClient audioClient = await channel.ConnectAsync();
+            await Context.Message.ReplyAsync($"{audioClient.ConnectionState}");
+            await audioClient.SetSpeakingAsync(true);
+        }
+
+        [Command("setAudioClient")]
+        public async Task setAudioClient()
+        {
+            _audioClient = await (Context.User as IGuildUser)?.VoiceChannel.ConnectAsync();
+            ready = true;
+            await ReplyAsync("Success");
         }
     }
 }

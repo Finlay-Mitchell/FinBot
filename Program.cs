@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
 using System.Diagnostics;
+using Discord.Audio;
 
 namespace FinBot
 {
