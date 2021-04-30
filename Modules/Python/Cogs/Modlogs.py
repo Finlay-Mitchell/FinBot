@@ -50,7 +50,7 @@ class Modlogs(commands.Cog):
                         run = False
 
                     paginator = Paginator(self.bot, ctx.channel, f"Total infractions: {cursor.rowcount}", logstr, 450,
-                                          reply_message=ctx)
+                                          reply_message=ctx, colour=0x00ff00)
 
                 if run:
                     await paginator.start()

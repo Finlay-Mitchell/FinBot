@@ -2,6 +2,7 @@ from main import FinBot
 from discord.ext import commands
 from Handlers.GeniusHandler import GeniusSearcher
 from Handlers.PaginationHandler import Paginator
+import discord
 
 # TODO:
 """
@@ -26,7 +27,7 @@ class Lyrics(commands.Cog):
             for song in results.lyrics:
                 song_lyrics += song
                 paginator = Paginator(self.bot, ctx.channel, f"{results.artist} - {results.title}", song_lyrics, 1000,
-                                      reply_message=ctx)
+                                      reply_message=ctx, colour=discord.Colour.orange())
             await paginator.start()
 
     @commands.command()

@@ -6,7 +6,7 @@ from Data import config
 
 class Paginator:
     def __init__(self, bot: FinBot, channel: discord.TextChannel, title=None, full_text=None, max_length=2000,
-                 reply_message=None):
+                 reply_message=None, colour=None):
         self.bot = bot
         self.reply_message = reply_message
         self.channel = channel
@@ -17,6 +17,7 @@ class Paginator:
         self.page_index = 0
         self.pages = []
         self.message = None
+        self.colour = colour
 
     async def start(self):
         self.fill_pages()
@@ -66,6 +67,6 @@ class Paginator:
         await self.message.edit(embed=self.create_page())
 
     def create_page(self):
-        embed = discord.Embed(title=self.title, colour=discord.Colour.orange())
+        embed = discord.Embed(title=self.title, colour=self.colour)
         embed.description = self.pages[self.page_index]
         return embed

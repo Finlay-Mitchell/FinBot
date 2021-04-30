@@ -268,7 +268,8 @@ class Music(commands.Cog):
         successfully_added = ""
         for index, title in enumerate(titles):
             successfully_added += f"{index + 1}. **{title}**\n"
-        paginator = Paginator(self.bot, channel, "Queued Songs", successfully_added, 500, reply_message=reply_message)
+        paginator = Paginator(self.bot, channel, "Queued Songs", successfully_added, 500, reply_message=reply_message,
+                              colour=0x00ff00)
         await paginator.start()
         return True
 
