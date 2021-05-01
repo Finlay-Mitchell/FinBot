@@ -128,7 +128,7 @@ namespace FinBot.Handlers
             }
 
             builder.WithCurrentTimestamp();
-            builder.AddField("Help support me", "[To support the development & hosting fees of building FinBot, please help out by donating!](http://ec2-35-176-187-24.eu-west-2.compute.amazonaws.com/donate.html)");
+            builder.AddField("Help support me", "[To support the development & hosting fees of building FinBot, please help out by donating!](http://donate.finlaymitchell.ml/)");
             await Context.Message.ReplyAsync("", false, builder.Build());
         }
 

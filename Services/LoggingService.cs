@@ -8,8 +8,6 @@ using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
 
 namespace FinBot.Services
 {
