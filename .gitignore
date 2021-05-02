@@ -13,3 +13,4 @@ __pycache__
 response.json
 *.json
 node_modules
+*.web.config

@@ -26,18 +26,10 @@ app.post('/test/:id', (request, response) => {
     });
 });
 
-// app.post('/test/:id', (request, response) => {
-//     const { id } = request.params;
-//     const { oblong } = request.body;
-
-//     if(!oblong)
-//     {
-//         response.status(418).send({message: 'we need a testing paramater' })
-//     }
-
-//     response.send({
-//         test: `test with param ${oblong} and id of ${id}`,
-//     });
-// });
+app.get('/doesitwork', (request, response) => {
+    response.status(200).send({
+        test: "I am working",
+    })
+});
 
 app.listen(PORT, () => console.log(`It's alive on http://localhost:${PORT}`))
