@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
+//const PORT = 8080;
 const PORT = 80;
-
 app.use(express.json())
 
 
@@ -27,9 +27,7 @@ app.post('/test/:id', (request, response) => {
 });
 
 app.get('/doesitwork', (request, response) => {
-    response.status(200).send({
-        test: "I am working",
-    })
+    response.status(200).send('yes, I am working')
 });
 
 app.listen(PORT, () => console.log(`It's alive on http://localhost:${PORT}`))
