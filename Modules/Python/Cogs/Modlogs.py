@@ -8,7 +8,7 @@ import mysql.connector
 from main import FinBot
 from Data.config import data
 from Checks.Permission_check import is_staff
-from Handlers.PaginationHandler import Paginator
+from Handlers.PaginationHandler import *
 
 
 class Modlogs(commands.Cog):
@@ -49,8 +49,7 @@ class Modlogs(commands.Cog):
 
                         run = False
 
-                    paginator = Paginator(self.bot, ctx.channel, f"Total infractions: {cursor.rowcount}", logstr, 450,
-                                          reply_message=ctx, colour=0x00ff00)
+                    paginator = Paginator(self.bot, ctx.channel, f"Infractions({Paginator.getcurrpage()}/{Paginator.getPages()})Total infractions: {cursor.rowcount}", logstr, 450, reply_message=ctx, colour=0x00ff00)
 
                 if run:
                     await paginator.start()

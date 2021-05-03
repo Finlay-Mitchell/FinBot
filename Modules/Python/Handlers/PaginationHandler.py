@@ -3,7 +3,6 @@ import re
 from main import FinBot
 from Data import config
 
-
 class Paginator:
     def __init__(self, bot: FinBot, channel: discord.TextChannel, title=None, full_text=None, max_length=2000,
                  reply_message=None, colour=None):
@@ -18,6 +17,12 @@ class Paginator:
         self.pages = []
         self.message = None
         self.colour = colour
+
+    def getPages(self):
+        return len(self.pages)
+
+    def getcurrpage(self):
+        return self.page_index
 
     async def start(self):
         self.fill_pages()
