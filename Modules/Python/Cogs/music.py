@@ -1,7 +1,7 @@
 import asyncio
 
 import discord
-import youtube_dl
+from youtube_dl import YoutubeDL, utils
 import aiohttp
 import json.decoder
 import re
@@ -9,7 +9,6 @@ import time
 import random
 import youtubesearchpython.__future__ as youtube_search
 import youtubesearchpython
-
 from discord.ext import commands
 from pytube import Playlist
 from concurrent.futures import ProcessPoolExecutor
@@ -31,7 +30,7 @@ from Data import config
 8. <FUTURE> Start on web help page and change help handler to fully custom help handler."""
 
 
-youtube_dl.utils.bug_reports_message = lambda: ''
+utils.bug_reports_message = lambda: ''
 
 ytdl_format_options = {
     'format': 'bestaudio/best',
@@ -51,9 +50,6 @@ ffmpeg_options = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
-
-ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
-
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5, resume_from=0):
@@ -111,7 +107,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                     if attempts > 10:
                         return None
                     attempts += 1
-                    ydl = youtube_dl.YoutubeDL(ytdl_format_options)
+                    ydl = YoutubeDL(ytdl_format_options)
                     future = loop.run_in_executor(None, lambda: ydl.extract_info(url, download=False))
                     try:
                         data = await asyncio.wait_for(future, 10)
@@ -119,7 +115,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                             break
                     except asyncio.TimeoutError:
                         pass
-            except youtube_dl.utils.DownloadError:
+            except utils.DownloadError:
                 return None
             if 'entries' in data and len(data['entries']) > 0:
                 data = sorted(data['entries'], key=lambda x: x.get("view_count", 0), reverse=True)[0]

@@ -64,6 +64,11 @@ namespace FinBot.Services
             {
                 long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
 
+                if (message == null)
+                {
+                    return;
+                }
+
                 if (type == 0)
                 {
                     MySqlCommand cmd = new MySqlCommand($"UPDATE SnipeLogs SET MessageTimestamp = {Now}, message = '{content}', author = {message.Author.Id} WHERE guildId = {socketGuildChannel.Guild.Id}", conn);
@@ -129,8 +134,8 @@ namespace FinBot.Services
                             {
                                 level += 1;
                                 XP = XP - xpToNextLevel;
-                                //await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
-                                await _discord.GetUser(305797476290527235).SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                //await _discord.GetUser(305797476290527235).SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
                             }
 
                             queryConn.Open();
@@ -189,7 +194,6 @@ namespace FinBot.Services
              * author BIGINT
              */
 
-            int MySqlSuccess = -9;
             SocketUserMessage author = (SocketUserMessage)await msg.GetOrDownloadAsync();
             SocketGuildChannel sGC = (SocketGuildChannel)arg2;
             string messagecontent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
@@ -270,18 +274,10 @@ namespace FinBot.Services
                 }
             }
 
-            //if (MySqlSuccess != 1)
-            //{
-            //    EmbedBuilder eb = new EmbedBuilder();
-            //    eb.WithAuthor(author.Author);
-            //    eb.WithTitle("Error logging deleted message:");
-            //    eb.WithDescription($"The database returned a {MySqlSuccess} error code");
-            //    eb.WithCurrentTimestamp();
-            //    eb.WithColor(Color.Red);
-            //    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
-            //    await arg2.SendMessageAsync("", false, eb.Build());
-            //    return;
-            //}
+            if(author == null)
+            {
+                return;
+            }
 
             string logMessage = $"[DELETED]User: [{author.Author.Username}]<->[{author.Author.Id}] Discord Server: [{sGC.Guild.Name}/{arg2}] -> [{messagecontent}]";
             _logger.LogDebug(logMessage);

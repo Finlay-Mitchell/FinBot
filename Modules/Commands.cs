@@ -117,7 +117,7 @@ namespace FinBot.Modules
                     HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                     HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
                     string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                    Regex r = new Regex("title=\"Search\" value=\"(.*?)\" aria-label=\"Search\"");
+                    Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\"");
 
                     if (r.IsMatch(resp))
                     {
@@ -150,7 +150,7 @@ namespace FinBot.Modules
                 HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                 HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
                 string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                Regex r = new Regex("title=\"Search\" value=\"(.*?)\" aria-label=\"Search\"");
+                Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\"");
 
                 if (r.IsMatch(resp))
                 {
@@ -418,12 +418,12 @@ namespace FinBot.Modules
             eb.AddField("Runtime", $"{RuntimeInformation.FrameworkDescription} {RuntimeInformation.OSArchitecture}");
             eb.AddField($"Heap size", $"{Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString()} MB");
             eb.AddField("How many servers am I in?", Context.Client.Guilds.Count());
-            eb.AddField("Invite to your server", "[Invite link](https://discord.com/api/oauth2/authorize?client_id=811919327086903307&permissions=8&scope=bot)"); 
-            eb.AddField("Join the support server", "[here](https://discord.com/invite/j345G7RuF6)");
+            eb.AddField("Invite to your server", "[Invite link](http://bot.finlaymitchell.ml)"); 
+            eb.AddField("Join the support server", "[here](http://server.finlaymitchell.ml)");
             eb.AddField($"Special thanks", "Thomas_Waffles#0001");
             eb.WithDescription($"Here's some info on me");
             eb.WithCurrentTimestamp();
-            eb.WithDescription("To support the developers, [please feel free to donate](http://ec2-35-176-187-24.eu-west-2.compute.amazonaws.com/donate.html)!");
+            eb.WithDescription("To support the developers, [please feel free to donate](http://donate.finlaymitchell.ml)!");
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 

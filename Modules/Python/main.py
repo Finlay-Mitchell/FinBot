@@ -99,6 +99,8 @@ def get_bot():
 
     @bot.event
     async def on_command_error(ctx, error):
+        if ctx.kwargs.get("error_handled", False):
+            return
         if isinstance(error, commands.CommandNotFound) or isinstance(error, commands.DisabledCommand):
             return
 
