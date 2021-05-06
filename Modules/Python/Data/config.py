@@ -12,6 +12,7 @@ client_secret = data["SpotifySecret"]
 client_Id = data["SpotifyId"]
 genius_id = data["GeniusId"]
 HypixelAPIKey = data["HypixelAPIKey"]
+mongo_connection_uri = data["mongoconnstr"]
 
 fast_forward_emoji = u"\u23E9"
 rewind_emoji = u"\u23EA"
@@ -27,5 +28,7 @@ error_channel_id = 795057163768037376
 dev_uids = [305797476290527235, 368095722442194945, 230778630597246983, 279323004087959552]  # last one is an alt, lol
 
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
-extensions = ["Audit", "Executer", "API", "TTS", "Lyrics", "Minecraft", "Modlogs", "Music"]  # This is because we are
+extensions = ["Audit", "Executer", "TTS", "Lyrics", "Minecraft", "Modlogs", "Music", "Misc"]  # This is because we are
 # temp removing Mee6Levels
+
+api_port = 9987

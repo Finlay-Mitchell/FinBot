@@ -159,7 +159,7 @@ namespace FinBot.Modules
                 cmd.ExecuteNonQuery();
             }
 
-            catch(Exception ex)
+            catch
             {
 
             }
@@ -182,7 +182,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch (Exception ex)
+            catch
             {
 
             }
@@ -236,7 +236,7 @@ namespace FinBot.Modules
                     queryConn.Close();
                 }
 
-                catch (Exception ex)
+                catch
                 {
                     //do stuffs
                 }
@@ -247,7 +247,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch
             {
                 // do more stuffs
             }
@@ -321,7 +321,7 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch(Exception ex)
+                catch
                 {
                     // do stuff
                 }
@@ -332,7 +332,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch
             {
                 // do stuff
             }
@@ -396,7 +396,7 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch(Exception ex)
+                catch
                 {
 
                 }
@@ -407,110 +407,10 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch
             {
 
             }
-        }
-
-        [Command("modlogs"), Summary("Shows infractions of a user"), Remarks("(PREFIX)modlogs <user>"), Alias("logs", "modlog", "mod-logs")]
-        public async Task Modlogs(string mention = null)
-        {
-            SocketGuildUser user = Context.User as SocketGuildUser;
-            IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
-
-            if (!user.GuildPermissions.ManageMessages)
-            {
-                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                {
-                    Author = new EmbedAuthorBuilder()
-                    {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                    },
-                    Title = "You do not have permission to execute this command",
-                    Description = "You do not have the valid permission to execute this command",
-                    Color = Color.Red
-                }.Build());
-
-                return;
-            }
-
-            if (mentions.Count == 0)
-            {
-                EmbedBuilder noUser = new EmbedBuilder();
-                noUser.WithTitle("Error");
-                noUser.WithDescription("Please mention a user!");
-                noUser.WithColor(Color.Red);
-                noUser.WithAuthor(Context.Message.Author);
-                await Context.Message.ReplyAsync("", false, noUser.Build());
-
-                return;
-            }
-
-            SocketUser user1 = mentions.First();
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            conn.Open();
-            string stm = $"SELECT * FROM modlogs WHERE guildId = '{Context.Guild.Id}' AND userId = '{user1.Id}'";
-            MySqlCommand cmd = new MySqlCommand(stm, conn);
-            MySqlDataReader rdr = cmd.ExecuteReader();
-            string usrnm = Context.Guild.GetUser(user1.Id) == null ? user1.Username : Context.Guild.GetUser(user1.Id).ToString();
-            EmbedBuilder b = new EmbedBuilder()
-            {
-                Author = new EmbedAuthorBuilder()
-                {
-                    Name = Context.Message.Author.ToString(),
-                    IconUrl = Context.Message.Author.GetAvatarUrl(),
-                },
-                Title = $"Modlogs for **{usrnm}** ({user1.Id})",
-                Description = $"To remove a log type `{Global.Prefix}clearlog <user> <log number>`",
-                Color = Color.Green,
-                Fields = new List<EmbedFieldBuilder>()
-            };
-
-            while (rdr.Read())
-            {
-                b.Fields.Add(new EmbedFieldBuilder()
-                {
-                    IsInline = false,
-                    Name = $"**{rdr.GetString(1)}** \nReason: {rdr.GetString(3)}\nModerator: <@{rdr.GetInt64(2)}>\nDate: {Global.UnixTimeStampToDateTime(rdr.GetInt64(5))}\nIndex number: **{rdr.GetInt32(6)}**",
-                    Value = $"Reason: {rdr.GetString(3)}\nModerator: <@{rdr.GetInt64(2)}>\nDate: {Global.UnixTimeStampToDateTime(rdr.GetInt64(5))}\nIndex number: **{rdr.GetInt32(6)}**"
-                });
-            }
-
-            if (b.Fields.Count != 0)
-            {
-                await SendToLogger(b, Context.Guild.Id);
-            }
-
-            else
-            {
-                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                {
-                    Author = new EmbedAuthorBuilder()
-                    {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                    },
-                    Title = $"Modlogs for ({user1.Id})",
-                    Description = "This user has no logs! :D",
-                    Color = Color.Green
-                }.Build());
-
-                return;
-            }
-        }
-
-        public async Task SendToLogger(EmbedBuilder b, ulong GuildId)
-        {
-            InfractionMessageHandler infractionMessageHandler = new InfractionMessageHandler(_client, GuildId, b.Build());
-            var msg = await Context.Message.ReplyAsync("", false, infractionMessageHandler.InfractionEmbedBuilder(1, InfractionMessageHandler.CalcInfractionPage(Context.Guild.GetUser(Context.Message.Author.Id))));
-            var emote1 = new Emoji("\U000027A1");
-            var emote2 = new Emoji("\U00002B05");
-            await msg.AddReactionAsync(emote2);
-            await msg.AddReactionAsync(emote1);
-            InfractionMessageHandler.CurrentInfractionMessages.Add(msg.Id, Context.Message.Author.Id);
-            Global.SaveInfractionMessageCards();
         }
 
         [Command("ban"), Summary("bans user from the guild"), Remarks("(PREFIX)ban <user> (optional)prune days (optional)reason")]

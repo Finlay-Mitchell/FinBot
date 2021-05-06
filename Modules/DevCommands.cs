@@ -1,26 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using FinBot;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Discord.Rest;
-using MySql.Data.MySqlClient;
-using FinBot.Services;
-using System.Net.Http;
-using Newtonsoft.Json;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Web;
-using FinBot.Handlers;
 using System.Timers;
 using Discord.Audio;
-
 using VideoLibrary;
 using MediaToolkit.Model;
 using MediaToolkit;
@@ -57,10 +44,11 @@ namespace FinBot.Modules
             await SendAsync(_userVoiceClient, $"{Environment.CurrentDirectory}/AYST.mp3", Context.Message);
         }
 
-        private async Task StartAYSTTimer(ulong userId, bool isSpeaking)
+        private Task StartAYSTTimer(ulong userId, bool isSpeaking)
         {
             T.Stop();
             T.Start();
+            return Task.CompletedTask;
         }
 
         [Command("restart")]

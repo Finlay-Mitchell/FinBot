@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
 using System.Diagnostics;
-using Discord.Audio;
 
 namespace FinBot
 {
@@ -74,7 +73,6 @@ namespace FinBot
                 .AddSingleton<RedditHandler>()
                 .AddSingleton<YouTubeModel>()
                 .AddSingleton<ChatFilter>()
-                .AddSingleton<InfractionMessageHandler>()
                 .AddSingleton<HelpHandler>()
                 .AddSingleton<LoggingService>();
 

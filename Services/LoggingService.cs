@@ -31,7 +31,6 @@ namespace FinBot.Services
             _discord.MessageReceived += OnMessageReceived;
         }
 
-
         private async Task AddToDatabase(uint type, MySqlConnection conn, SocketMessage arg, long level, long XP, long totalXP)
         {
             try
@@ -148,7 +147,6 @@ namespace FinBot.Services
                             return;
                         }
                     }
-
                 }
 
                 finally

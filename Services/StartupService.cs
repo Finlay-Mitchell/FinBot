@@ -40,7 +40,7 @@ namespace FinBot.Services
 
         public void OpenPyMod()
         {
-            bool hasRanSuccessfully = false;
+            //bool hasRanSuccessfully = false;
 
             try
             {

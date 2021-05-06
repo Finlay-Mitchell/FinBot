@@ -13,6 +13,9 @@ from traceback import format_exc, print_tb
 # from Data.config import monkey_guild_id
 # from mee6_py_api import API
 import re
+import motor.motor_asyncio
+
+from Handlers.MongoHandler import MongoDB
 
 
 class FinBot(commands.Bot):
@@ -26,6 +29,7 @@ class FinBot(commands.Bot):
         self.error_channel = None
         self.data = DataHelper()
         self.database_handler = None
+        self.mongo: Union[MongoDB, None] = None
 
     @staticmethod
     def create_completed_embed(title, text):
@@ -63,6 +67,8 @@ def get_bot():
         print("Ready!")
         bot.guild = bot.get_guild(config.monkey_guild_id)
         bot.error_channel = bot.get_channel(config.error_channel_id)
+        bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(config.mongo_connection_uri)
+        bot.mongo = MongoDB()
 
         for extension_name in config.extensions:
             print("Loading Cog named {}...".format(extension_name))

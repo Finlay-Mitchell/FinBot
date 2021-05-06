@@ -117,17 +117,6 @@ namespace FinBot
             Console.BackgroundColor = ConsoleColor.Black;
         }
 
-        public static void SaveInfractionMessageCards()
-        {
-            string s = "";
-            
-            foreach (KeyValuePair<ulong, ulong> item in InfractionMessageHandler.CurrentInfractionMessages)
-            {
-                s += item.Key + "," + item.Value + "\n";
-            }
-
-            File.WriteAllText(infractionMessagefilepath, s);
-        }
 
         public static Dictionary<ulong, ulong> LoadInfractionMessageCards()
         {

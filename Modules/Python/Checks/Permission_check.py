@@ -30,3 +30,10 @@ def logs_perms():
         member: discord.Member = ctx.message.author
         return member.guild_permissions.manage_messages or member.id == config.owner_id or member.id in config.dev_uids
     return commands.check(predicate)
+
+
+def is_developer():
+    async def predicate(ctx: commands.Context):
+        member: discord.Member = ctx.message.author
+        return member.id in config.dev_uids
+    return commands.check(predicate)
