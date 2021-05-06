@@ -75,8 +75,14 @@ class Misc(commands.Cog):
     @commands.command()
     @is_developer()
     async def testing(self, ctx):
-        collections = await self.bot.mongo.client.discord.list_collections()
+        collections = await self.bot.mongo.client.finlay.list_collections()
         await ctx.reply([x for x in collections])
+
+    @commands.command()
+    @is_developer()
+    async def dantest(self, ctx):
+        cont = ctx.message.content[len(config.prefix):]
+        await ctx.send(cont[::-1])
 
 
 def setup(bot):
