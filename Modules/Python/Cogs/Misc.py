@@ -67,22 +67,10 @@ class Misc(commands.Cog):
             #     json.dump(data, outfile, indent=2)
 
     @commands.command()
-    @is_developer()
-    async def test(self, ctx):
-        async for message in self.bot.mongo.client.discord.messages.find():
-            print(message)
-
-    @commands.command()
-    @is_developer()
-    async def testing(self, ctx):
-        collections = await self.bot.mongo.client.finlay.list_collections()
-        await ctx.reply([x for x in collections])
-
-    @commands.command()
-    @is_developer()
-    async def dantest(self, ctx):
-        cont = ctx.message.content[len(config.prefix):]
-        await ctx.send(cont[::-1])
+    # @is_developer()
+    async def ban(self, ctx, member: discord.Member, *, reason=None):
+        if ctx.message.author == member:
+            await member.ban(reason=reason)
 
 
 def setup(bot):
