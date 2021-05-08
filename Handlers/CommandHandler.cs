@@ -65,6 +65,16 @@ namespace FinBot.Handlers
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(Global.Prefix, ref argPos)))
             {
+		if(message.HasStringPrefix("~", ref argPos))
+		{
+		    if(message.HasStringPrefix("~~", ref argPos))
+		    {
+			 return;
+		    }
+
+		    await message.ReplyAsync("This prefix has been replaced with the &(ampersand) prefix.");
+		}
+
                 return;
             }
 

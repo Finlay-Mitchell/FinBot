@@ -408,7 +408,7 @@ namespace FinBot.Modules
         {
             await Context.Channel.TriggerTypingAsync();
             EmbedBuilder eb = new EmbedBuilder();
-            eb.AddField("Developer:", "Finlay Mitchell");
+            eb.AddField("Developers:", "Finlay Mitchell, Thomas Waffles");
             eb.AddField("Version: ", Global.Version);
             eb.AddField("Languages", "C# - Discord.net API\nPython - Discord.py");
             eb.WithAuthor(Context.Message.Author);
@@ -420,7 +420,6 @@ namespace FinBot.Modules
             eb.AddField("How many servers am I in?", Context.Client.Guilds.Count());
             eb.AddField("Invite to your server", "[Invite link](http://bot.finlaymitchell.ml)"); 
             eb.AddField("Join the support server", "[here](http://server.finlaymitchell.ml)");
-            eb.AddField($"Special thanks", "Thomas_Waffles#0001");
             eb.WithDescription($"Here's some info on me");
             eb.WithCurrentTimestamp();
             eb.WithDescription("To support the developers, [please feel free to donate](http://donate.finlaymitchell.ml)!");
