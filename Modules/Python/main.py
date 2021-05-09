@@ -14,8 +14,10 @@ from traceback import format_exc, print_tb
 # from mee6_py_api import API
 import re
 import motor.motor_asyncio
-
 from Handlers.MongoHandler import MongoDB
+import aiml
+
+STARTUP_FILE = "std-startup.xml"
 
 
 class FinBot(commands.Bot):
@@ -30,6 +32,13 @@ class FinBot(commands.Bot):
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
+        self.aiml_kernel = aiml.Kernel()
+        if os.path.isfile("bot_brain.brn"):
+            self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
+        else:
+            self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
+            self.aiml_kernel.saveBrain("bot_brain.brn")
+
 
     @staticmethod
     def create_completed_embed(title, text):
@@ -118,6 +127,28 @@ def get_bot():
         except Exception as e:
             print("Error in sending error to discord. Error was {}".format(error))
             print("Error sending to discord was {}".format(e))
+
+    @bot.event
+    async def on_message(message):
+        if message.author.bot or str(message.channel.id) != "840922321266016286":
+            await bot.process_commands(message)
+            return
+
+        if message.content is None:
+            return
+
+        if message.content.startswith(config.prefix):
+            return
+
+        elif 'shutdown' in message.content and message.author.id in config.dev_uids:
+            await bot.logout()
+
+        else:
+            aiml_response = bot.aiml_kernel.respond(message.content)
+            if aiml_response == '':
+                await message.channel.send("I don't have a response for that, sorry.")
+            else:
+                await message.channel.send(aiml_response)
 
     # @bot.event
     # async def on_member_join(member):
