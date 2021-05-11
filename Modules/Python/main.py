@@ -16,7 +16,9 @@ import re
 import motor.motor_asyncio
 from Handlers.MongoHandler import MongoDB
 import aiml
+import sys
 
+sys.setrecursionlimit(10**4)
 STARTUP_FILE = "std-startup.xml"
 
 
@@ -25,20 +27,31 @@ class FinBot(commands.Bot):
         # Initialises the actual commands.Bot class
         intents = discord.Intents.all()
         intents.members = True
-        super().__init__(command_prefix=config.prefix, description=config.description, loop=asyncio.new_event_loop(),
-                         intents=intents, case_insensitive=True, help_command=None)
+        super().__init__(command_prefix=self.determine_prefix, description=config.description,
+                         loop=asyncio.new_event_loop(), intents=intents, case_insensitive=True, help_command=None)
         self.guild = None
         self.error_channel = None
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
-        self.aiml_kernel = aiml.Kernel()
-        if os.path.isfile("bot_brain.brn"):
-            self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
-        else:
-            self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
-            self.aiml_kernel.saveBrain("bot_brain.brn")
+        # self.aiml_kernel = aiml.Kernel()
+        # if os.path.isfile("bot_brain.brn"):
+        #     self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
+        # else:
+        #     self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
+        #     self.aiml_kernel.saveBrain("bot_brain.brn")
 
+    async def determine_prefix(self, bot, message):
+        if not hasattr(message, "guild") or message.guild is None:
+            return ""
+        if self.mongo is None:
+            return f"a{config.prefix}"
+        guild_document = await self.mongo.find_by_id(self.mongo.client.finlay.guilds, message.guild.id)
+        if guild_document is None or guild_document.get("prefix") is None:
+            return commands.when_mentioned_or(config.prefix)(bot, message)
+        else:
+            guild_prefix = guild_document.get("prefix")
+            return commands.when_mentioned_or(guild_prefix)(bot, message)
 
     @staticmethod
     def create_completed_embed(title, text):
@@ -128,27 +141,27 @@ def get_bot():
             print("Error in sending error to discord. Error was {}".format(error))
             print("Error sending to discord was {}".format(e))
 
-    @bot.event
-    async def on_message(message):
-        if message.author.bot or str(message.channel.id) != "840922321266016286":
-            await bot.process_commands(message)
-            return
-
-        if message.content is None:
-            return
-
-        if message.content.startswith(config.prefix):
-            return
-
-        elif 'shutdown' in message.content and message.author.id in config.dev_uids:
-            await bot.logout()
-
-        else:
-            aiml_response = bot.aiml_kernel.respond(message.content)
-            if aiml_response == '':
-                await message.channel.send("I don't have a response for that, sorry.")
-            else:
-                await message.channel.send(aiml_response)
+    # @bot.event
+    # async def on_message(message):
+    #     if message.author.bot or str(message.channel.id) != "840922321266016286":
+    #         await bot.process_commands(message)
+    #         return
+    #
+    #     if message.content is None:
+    #         return
+    #
+    #     if message.content.startswith(config.prefix):
+    #         return
+    #
+    #     elif 'shutdown' in message.content and message.author.id in config.dev_uids:
+    #         await bot.logout()
+    #
+    #     else:
+    #         aiml_response = bot.aiml_kernel.respond(message.content)
+    #         if aiml_response == '':
+    #             await message.channel.send("I don't have a response for that, sorry.")
+    #         else:
+    #             await message.channel.send(aiml_response)
 
     # @bot.event
     # async def on_member_join(member):

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using MongoDB.Driver;
 
 namespace FinBot.Handlers
 {
@@ -23,6 +24,11 @@ namespace FinBot.Handlers
             _commands = services.GetRequiredService<CommandService>();
             _client.MessageReceived += HandleCommandAsync;
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
+        }
+
+        private async Task DeterminePrefix(SocketMessage message)
+        {
+            
         }
 
         public async Task HandleCommandAsync(SocketMessage s)

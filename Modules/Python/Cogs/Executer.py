@@ -1,4 +1,6 @@
 from discord.ext import commands
+
+from Data import config
 from main import FinBot
 
 
@@ -10,7 +12,7 @@ class Executer(commands.Cog):
     async def exec(self, ctx):
         author = ctx.message.author
 
-        if author.id != 305797476290527235:
+        if author.id not in config.dev_uids:
             return
 
         else:

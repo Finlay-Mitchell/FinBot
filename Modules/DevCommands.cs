@@ -11,6 +11,7 @@ using Discord.Audio;
 using VideoLibrary;
 using MediaToolkit.Model;
 using MediaToolkit;
+using MongoDB.Driver;
 
 namespace FinBot.Modules
 {
@@ -214,6 +215,19 @@ namespace FinBot.Modules
             _audioClient = await (Context.User as IGuildUser)?.VoiceChannel.ConnectAsync();
             ready = true;
             await ReplyAsync("Success");
+        }
+
+        [Command("testing")]
+        public async Task test()
+        {
+            MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
+
+            var dbList = MongoClient.ListDatabases().ToList();
+
+            foreach (var db in dbList)
+            {
+                await ReplyAsync($"{db}");
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using MongoDB.Driver;
 
 namespace FinBot
 {
@@ -36,6 +37,9 @@ namespace FinBot
             public static string MySQLPassword { get; set; }
             public static string connStr { get; set; }
         }
+        
+        public static string mongoconnstr { get; set; }
+
 
         private static string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
         public static DiscordShardedClient Client { get; set; }
@@ -81,6 +85,7 @@ namespace FinBot
             Pythoninterpreter = data.Pythoninterpreter;
             SupportChannelId = data.SupportChannelId;
             SupportGuildId = data.SupportGuildId;
+            mongoconnstr = data.mongoconnstr;
 
             MySQL.connStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}";
         }
@@ -106,6 +111,7 @@ namespace FinBot
             public string Pythoninterpreter { get; set; }
             public ulong SupportChannelId { get; set; }
             public ulong SupportGuildId { get; set; }
+            public string mongoconnstr { get; set; }
         }
 
         public static void ConsoleLog(string ConsoleMessage, ConsoleColor FColor = ConsoleColor.Green, ConsoleColor BColor = ConsoleColor.Black)
