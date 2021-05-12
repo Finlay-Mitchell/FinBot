@@ -11,9 +11,6 @@ using Discord.Audio;
 using VideoLibrary;
 using MediaToolkit.Model;
 using MediaToolkit;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using Newtonsoft.Json;
 
 namespace FinBot.Modules
 {
