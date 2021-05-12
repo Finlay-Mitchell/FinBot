@@ -12,6 +12,8 @@ using VideoLibrary;
 using MediaToolkit.Model;
 using MediaToolkit;
 using MongoDB.Driver;
+using MongoDB.Bson;
+using Newtonsoft.Json;
 
 namespace FinBot.Modules
 {
@@ -216,18 +218,6 @@ namespace FinBot.Modules
             ready = true;
             await ReplyAsync("Success");
         }
-
-        [Command("testing")]
-        public async Task test()
-        {
-            MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
-
-            var dbList = MongoClient.ListDatabases().ToList();
-
-            foreach (var db in dbList)
-            {
-                await ReplyAsync($"{db}");
-            }
-        }
     }
+
 }

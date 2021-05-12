@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace FinBot.Handlers
 {
@@ -16,6 +17,7 @@ namespace FinBot.Handlers
         private DiscordShardedClient _client;
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
+        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
 
         public CommandHandler(IServiceProvider services)
         {
@@ -26,9 +28,21 @@ namespace FinBot.Handlers
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
         }
 
-        private async Task DeterminePrefix(SocketMessage message)
+        private async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            
+            try
+            {
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                return item.GetValue("prefix").ToString();
+            }
+
+            catch
+            {
+                return Global.Prefix;
+            }
         }
 
         public async Task HandleCommandAsync(SocketMessage s)
@@ -69,24 +83,15 @@ namespace FinBot.Handlers
                 }
             }
 
-            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(Global.Prefix, ref argPos)))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await DeterminePrefix(context), ref argPos)))
             {
-		if(message.HasStringPrefix("~", ref argPos))
-		{
-		    if(message.HasStringPrefix("~~", ref argPos))
-		    {
-			 return;
-		    }
-
-		    await message.ReplyAsync("This prefix has been replaced with the &(ampersand) prefix.");
-		}
-
                 return;
             }
 
-            if(s.Channel.GetType() == typeof(SocketDMChannel) && message.Author.Id != 305797476290527235)
+            if(s.Channel.GetType() == typeof(SocketDMChannel) && !Global.IsDev(message.Author))
             {
                 await message.ReplyAsync("Sorry, but commands are not enabled in DM's. Please try using bot commands in a server.");
+                return;
             }
 
             IResult result = await _commands.ExecuteAsync(context, argPos, _services);

@@ -5,7 +5,7 @@ An advanced Discord utility/commands bot with:
 - levelling
 - chatbot/image guessing
 - customisable behaviour 
-  * Custom guild prefix (in the works)
+  * Custom guild prefix
   * Cusrom welcome messages (in the works)
   * ability to turn on and off commands (in the works)
   * custom member counts (in the works)
@@ -33,7 +33,7 @@ An advanced Discord utility/commands bot with:
  * ICanHazDadJoke.met
  * Serilog
  * Microsoft.Extensions.Logging
- * 
+ * MongoDB.Driver
  
  # Python
  ### Packages
