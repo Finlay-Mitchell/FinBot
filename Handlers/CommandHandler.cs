@@ -36,7 +36,17 @@ namespace FinBot.Handlers
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
                 ulong _id = context.Guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                return item.GetValue("prefix").ToString();
+                string itemVal = item?.GetValue("prefix").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return Global.Prefix;
+                }
             }
 
             catch
