@@ -45,22 +45,22 @@ class Misc(commands.Cog):
     @commands.command(Pass_Context=True)
     @is_developer()
     async def getlevels(self, ctx):
-        mee6API = API(ctx.message.guild.id)
+        mee6_api = API(ctx.message.guild.id)
         index = 0
         embed = self.bot.create_completed_embed("Getting user stats...", "generating embed....")
         msg = await ctx.reply(embed=embed)
         for users in [m for m in ctx.guild.members if not m.bot]:
             index += 1
-            Xp = await mee6API.levels.get_user_level(users.id)
-            Level = await mee6API.levels.get_user_xp(users.id)
-            # if not Xp == "None" and not Level == "None":
+            xp = await mee6_api.levels.get_user_level(users.id)
+            level = await mee6_api.levels.get_user_xp(users.id)
+            # if not xp == "None" and not Level == "None":
             #     data["Users"].append({
             #         "UserId": f"{users.id}",
-            #         "Level": f"{Level}",
-            #         "Xp": f"{Xp}"
+            #         "Level": f"{level}",
+            #         "Xp": f"{xp}"
             #     })
             embed.set_footer(text=f"Getting user {index}/{ctx.message.guild.member_count}")
-            embed.description = f"{users.name}#{users.discriminator}({users.id})\n{Xp}\n{Level}"
+            embed.description = f"{users.name}#{users.discriminator}({users.id})\n{xp}\n{level}"
             await msg.edit(text="", embed=embed)
             await asyncio.sleep(1)
             # with open(path, "a") as outfile:

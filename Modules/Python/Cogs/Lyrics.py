@@ -1,3 +1,5 @@
+from typing import Any
+
 from main import FinBot
 from discord.ext import commands
 from Handlers.GeniusHandler import GeniusSearcher
@@ -26,8 +28,8 @@ class Lyrics(commands.Cog):
         else:
             for song in results.lyrics:
                 song_lyrics += song
-                paginator = Paginator(self.bot, ctx.channel, f"{results.artist} - {results.title}", song_lyrics, 1000,
-                                      reply_message=ctx, colour=discord.Colour.orange())
+                paginator: Any = Paginator(self.bot, ctx.channel, f"{results.artist} - {results.title}", song_lyrics,
+                                           1000, reply_message=ctx, colour=discord.Colour.orange())
             await paginator.start()
 
     @commands.command()

@@ -22,7 +22,6 @@ from Handlers.PaginationHandler import Paginator
 from Data import config
 
 
-
 # TODO:
 """1. Add a true pagination system to the bot as a whole to allow !queue DONE
 2. Add !queue DONE, !clearqueue, !dequeue <index>

@@ -6,6 +6,7 @@ from Data import config
 import discord
 import motor.motor_asyncio
 
+
 class MongoDB:
     def __init__(self):
         self.client = motor.motor_asyncio.AsyncIOMotorClient(config.mongo_connection_uri)
@@ -28,4 +29,3 @@ class MongoDB:
         guild_document = {"_id": guild.id, "name": guild.name, "removed": False}
         await self.force_insert(self.client.finlay.guilds, guild_document)
         return guild_document
-
