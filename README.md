@@ -22,7 +22,7 @@ An advanced Discord utility/commands bot with:
   * [Genius API documentation](https://genius.com/api-clients)
  
  # C#
- ###NuGet packages
+ ### NuGet packages
  * Discord.net
  * DependancyInjection
  * wiki.net
@@ -33,7 +33,8 @@ An advanced Discord utility/commands bot with:
  * ICanHazDadJoke.met
  * Serilog
  * Microsoft.Extensions.Logging
- * 
+ * MongoDB
+ * System.configuration
  
  # Python
  ### Packages
