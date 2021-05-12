@@ -22,7 +22,7 @@ An advanced Discord utility/commands bot with:
   * [Genius API documentation](https://genius.com/api-clients)
  
  # C#
- ###NuGet packages
+ ### NuGet packages
  * Discord.net
  * DependancyInjection
  * wiki.net
@@ -34,6 +34,7 @@ An advanced Discord utility/commands bot with:
  * Serilog
  * Microsoft.Extensions.Logging
  * MongoDB.Driver
+ * System.configuration
  
  # Python
  ### Packages
@@ -81,3 +82,4 @@ Check License.md for license information.
 Thomas is a walking talking God.
 
 The YouTube searching alogrithm is in development still. It should work completely fine without any/many miss-named videos.
+This also requires ffmpeg to run for python and C#, and opus/libsodum for C#
