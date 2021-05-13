@@ -418,7 +418,7 @@ namespace FinBot.Modules
             eb.AddField("Runtime", $"{RuntimeInformation.FrameworkDescription} {RuntimeInformation.OSArchitecture}");
             eb.AddField($"Heap size", $"{Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString()} MB");
             eb.AddField("How many servers am I in?", Context.Client.Guilds.Count());
-            eb.AddField("Invite to your server", "[Invite link](http://bot.finlaymitchell.ml)"); 
+            eb.AddField("Invite to your server", "[Invite link](http://bot.finlaymitchell.ml)");
             eb.AddField("Join the support server", "[here](http://server.finlaymitchell.ml)");
             eb.WithDescription($"Here's some info on me");
             eb.WithCurrentTimestamp();
@@ -524,7 +524,7 @@ namespace FinBot.Modules
             else
             {
                 await Context.Channel.TriggerTypingAsync();
-                await ReminderService.setReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);           
+                await ReminderService.setReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);
             }
         }
 
@@ -819,7 +819,7 @@ namespace FinBot.Modules
             EmbedBuilder embed = new EmbedBuilder();
             string embedThumb = Context.User.GetAvatarUrl();
             StringBuilder sb = new StringBuilder();
-            List<Google.Apis.YouTube.v3.Data.SearchResult > results = null;
+            List<Google.Apis.YouTube.v3.Data.SearchResult> results = null;
             embed.ThumbnailUrl = embedThumb;
 
             if (string.IsNullOrEmpty(args))
@@ -1146,7 +1146,7 @@ namespace FinBot.Modules
         public Embed GetRank(SocketUser user, ulong guild)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            
+
             try
             {
                 conn.Open();
@@ -1174,7 +1174,7 @@ namespace FinBot.Modules
                 return b.Build();
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (ex.Message.GetType() != typeof(NullReferenceException))
                 {
@@ -1213,7 +1213,7 @@ namespace FinBot.Modules
                     string username = "";
                     string avurl = "";
                     ulong uId = Convert.ToUInt64(reader[3]);
-                    
+
                     if (Context.Guild.GetUser(uId) == null || Context.Guild.GetUser(uId).GetType() == typeof(SocketUnknownUser))
                     {
                         username = $"<@{reader[3]}>";
@@ -1249,7 +1249,7 @@ namespace FinBot.Modules
                 await Context.Message.ReplyAsync("", false, b.Build());
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (ex.Message.GetType() != typeof(NullReferenceException))
                 {
@@ -1370,7 +1370,7 @@ namespace FinBot.Modules
                     }
                 }
 
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     if (ex.Message.GetType() != typeof(NullReferenceException))
                     {
@@ -1456,7 +1456,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (ex.Message.GetType() != typeof(NullReferenceException))
                 {
@@ -1551,7 +1551,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (ex.Message.GetType() != typeof(NullReferenceException))
                 {
@@ -1567,19 +1567,70 @@ namespace FinBot.Modules
             }
         }
 
+        //[Command("test")]
+        //public async Task test()
+        //{
+        //    HttpClient HTTPClient = new HttpClient();
+        //    HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://api.finlaymitchell.ml/test");
+        //    string resp = await HTTPResponse.Content.ReadAsStringAsync();
+        //    APIResults data = JsonConvert.DeserializeObject<APIResults>(resp);
+        //    await ReplyAsync(data.test + "\n\n\n" + data.check);
+        //}
 
-        /*
-         * 
-         * 
-         * BOILERPLACE CODE FOR PYTHON MODULE
-         * 
-         * 
-         */
 
-        [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
-        public Task chatbot(params string[] arg)
-        {
-            return Task.CompletedTask;
-        }
+        //class APIResults
+        //{
+        //    public string test { get; set; }
+        //    public string check { get; set; }
+        //}
+
+
+        //[Command("APITest")]
+        //public async Task APITest(string type = "Get")
+        //{
+        //    if (type == "Get")
+        //    {
+        //        HttpClient HTTPClient = new HttpClient();
+        //        HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://api.finlaymitchell.ml");
+        //        string resp = await HTTPResponse.Content.ReadAsStringAsync();
+        //        await ReplyAsync(resp);
+        //    }
+
+        //    else
+        //    {
+        //        HttpClient HTTPClient = new HttpClient();
+        //        string final_object = "{\"testing\":\"yes\"}";
+        //        string content = JsonConvert.SerializeObject(final_object);
+        //        byte[] buffer = Encoding.UTF8.GetBytes(content);
+        //        ByteArrayContent byteContent = new ByteArrayContent(buffer);
+        //        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        //        HttpRequestMessage request = new HttpRequestMessage
+        //        {
+        //            Method = HttpMethod.Post,
+        //            RequestUri = new Uri("https://api.finlaymitchell.ml/test/"),
+        //            Content = new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"),
+        //        };
+        //        HttpResponseMessage HTTPResponse = await HTTPClient.SendAsync(request);
+        //        string resp = await HTTPResponse.Content.ReadAsStringAsync();
+
+        //        await ReplyAsync(request.ToString());
+        //        await ReplyAsync(resp);
+        //    }
+        //}
+
+
+        ///*
+        // * 
+        // * 
+        // * BOILERPLACE CODE FOR PYTHON MODULE
+        // * 
+        // * 
+        // */
+
+        //[Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
+        //public Task chatbot(params string[] arg)
+        //{
+        //    return Task.CompletedTask;
+        //}
     }
 }
