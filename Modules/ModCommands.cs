@@ -1231,5 +1231,13 @@ namespace FinBot.Modules
         //        if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
         //        {
         //            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
+
+
+
+        [Command("ModLogs"), Summary("Gets the modlogs for the current user"), Remarks("(PREFIX)modlogs <user>")]
+        public Task Modlogs(params string[] arg)
+        {
+            return Task.CompletedTask;
+        }
     }
 }   
