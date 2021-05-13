@@ -24,7 +24,7 @@ class Minecraft(commands.Cog):
             else:
                 # await ctx.reply(f"https://hypixel.thom.club/{arg}")
                 random_string = secrets.token_urlsafe(16).replace("-", "")
-                await ctx.reply(f"https://hypixel.thom.club/{arg}-{random_string}.png") # stops cached messages
+                await ctx.reply(f"https://hypixel.thom.club/{arg}-{random_string}.png")  # stops cached messages
 
     @commands.command(aliases=["skin", "mc_skin", "minecraft_skin", "mcskin", "minecraftskin", "mc-skin",
                                "minecraft-skin", "get-skin", "getskin"])

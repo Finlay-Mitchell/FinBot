@@ -3,6 +3,7 @@ from discord.ext import commands
 
 from main import FinBot
 
+
 class chatbot(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot = bot

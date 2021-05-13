@@ -4,9 +4,9 @@ import discord
 
 
 def is_staff_backend(member):
-    return (member.guild_permissions.administrator or member.id == config.owner_id or
-            member.guild_permissions.manage_guild or member.guild_permissions.manage_roles or
-            member.guild_permissions.manage_channels or member.id not in config.dev_uids)
+    return (member.guild_permissions.administrator or member.guild_permissions.manage_guild or
+            member.guild_permissions.manage_roles or member.guild_permissions.manage_channels or
+            member.id in config.dev_uids)
 
 
 def is_staff():
@@ -19,8 +19,7 @@ def is_staff():
 def is_high_staff():
     async def predicate(ctx: commands.Context):
         member: discord.Member = ctx.message.author
-        return (member.guild_permissions.administrator or member.id == config.owner_id or
-                member.id not in config.dev_uids)
+        return member.guild_permissions.administrator or member.id in config.dev_uids
 
     return commands.check(predicate)
 

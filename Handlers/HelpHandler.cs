@@ -115,6 +115,15 @@ namespace FinBot.Handlers
                             });
                             break;
 
+                        case "ConfigCommands":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Config commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
+
                         default:
                             builder.AddField(x =>
                             {

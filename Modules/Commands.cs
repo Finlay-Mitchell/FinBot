@@ -1566,5 +1566,20 @@ namespace FinBot.Modules
                 }
             }
         }
+
+
+        /*
+         * 
+         * 
+         * BOILERPLACE CODE FOR PYTHON MODULE
+         * 
+         * 
+         */
+
+        [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
+        public Task chatbot(params string[] arg)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

@@ -35,15 +35,16 @@ class Audit(commands.Cog):
             await ctx.reply(self.bot.create_error_embed("No channel mentioned!"))
             return
         sent_message = await ctx.reply("Searching... check this message for updates when completed.")
-        embed = await self.create_channel_updates_embed(channel)
-        embed.set_author(name=ctx.message.author.id)
+        embed = await self.create_channel_updates_embed(channel, ctx.author)
         await sent_message.edit(content=None, embed=embed)
         await sent_message.add_reaction("⏩")
 
-    async def create_channel_updates_embed(self, channel: discord.TextChannel):
+    @staticmethod
+    async def create_channel_updates_embed(channel: discord.TextChannel, author: discord.Member):
         embed = discord.Embed(timestamp=datetime.datetime.utcnow())
         embed.colour = discord.Colour.blue()
         embed.title = "Channel updates for {} - {}".format(channel.id, channel.name)
+        embed.set_author(name=author.id)
 
     async def audit_roles(self, ctx, member: Optional[discord.Member]):
         if member is None:
@@ -80,22 +81,6 @@ class Audit(commands.Cog):
             first_time_string = str(first_time.timestamp())
         embed.set_footer(text="{}\n{}".format(first_time_string, last_time_string))
         return embed
-
-    @staticmethod
-    async def get_channel_overwrites(channel: discord.TextChannel, before=None, after=None):
-        guild = channel.guild
-        action = discord.AuditLogAction.overwrite_update
-        entries = []
-        if before is None and after is None:
-            audit_search = guild.audit_logs(action=action, limit=None)
-        elif after is None:
-            audit_search = guild.audit_logs(action=action, limit=None, before=before)
-        elif before is None:
-            audit_search = guild.audit_logs(action=action, limit=None, after=after)
-        else:
-            return [], None
-        last_time = None
-        first_time = None
 
     @staticmethod
     async def get_role_updates(member: discord.Member, before=None, after=None):
