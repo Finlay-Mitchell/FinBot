@@ -1,7 +1,6 @@
-const express = require('express');
-const app = express();
-const PORT = 8080;
-//const PORT = 80;
+var express = require("express");
+var app = express();
+
 app.use(express.json())
 
 
@@ -30,4 +29,7 @@ app.get('/doesitwork', (request, response) => {
     response.status(200).send('yes, I am working')
 });
 
-app.listen(PORT, () => console.log(`It's alive on http://localhost:${PORT}`))
+// This is REQUIRED for IISNODE to work
+app.listen(process.env.PORT, () => {
+  console.log("listening");
+});
