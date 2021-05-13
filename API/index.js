@@ -3,6 +3,9 @@ var app = express();
 
 app.use(express.json())
 
+app.get('/', (request, response) => {
+    response.status(200).send('yes, I am working')
+});
 
 app.get('/test', (request, response) => {
     response.status(200).send({
@@ -17,7 +20,7 @@ app.post('/test/:id', (request, response) => {
 
     if(!testing)
     {
-        response.status(418).send({message: "You need to parse a paramater!"})
+        response.status(200).send({message: "You need to parse a paramater!"})
     }
 
     response.send({
