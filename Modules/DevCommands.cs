@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using DiscColour = Discord.Color;
 using System;
 using System.Threading.Tasks;
 using System.Diagnostics;
@@ -11,6 +12,13 @@ using Discord.Audio;
 using VideoLibrary;
 using MediaToolkit.Model;
 using MediaToolkit;
+using System.Drawing;
+using System.Drawing.Imaging;
+
+using Colour = System.Drawing.Color;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace FinBot.Modules
 {
@@ -35,6 +43,40 @@ namespace FinBot.Modules
                 T.Elapsed += SendAYST;
 
             }
+        }
+
+        [Command("testing")]
+        public async Task testing()
+        {
+            string rand = "";
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                int bit_count = (16 * 6);
+                int byte_count = ((bit_count + 7) / 8); // rounded up
+                byte[] bytes = new byte[byte_count];
+                rng.GetBytes(bytes);
+                rand = Convert.ToBase64String(bytes);
+            }
+
+            rand = Regex.Replace(rand, "[\"/]", "");
+            rand = Regex.Replace(rand, @"[\\]", "");
+            await ReplyAsync(rand);
+            //2000, 510
+            //Bitmap bitmap = new Bitmap(2000, 1000, PixelFormat.Format32bppPArgb);
+            Bitmap bitmap = new Bitmap(1050, 550);
+            Graphics graphics = Graphics.FromImage(bitmap);
+            //Pen pen = new Pen(Colour.FromKnownColor(KnownColor.Blue), 2);
+            Pen pen = new Pen(Colour.FromArgb(255, 0, 0, 0), 5);
+            //1000, 500
+            graphics.DrawRectangle(pen, 10, 10, 750, 500);
+
+
+            //Pen pen1 = new Pen(Colour.FromKnownColor(KnownColor.Red), 2);
+            //graphics.DrawEllipse(pen1, 10, 10, 900, 700);
+            string file = $"image_{rand}.png";
+            bitmap.Save(file);
+            await Context.Channel.SendFileAsync(file);
+            File.Delete(file);
         }
 
         private async void SendAYST(object sender, ElapsedEventArgs e)
@@ -91,7 +133,7 @@ namespace FinBot.Modules
                     eb.WithFooter($"Support ticket update for {msgId}");
                     eb.WithCurrentTimestamp();
                     eb.WithDescription(msg);
-                    eb.WithColor(Color.Purple);
+                    eb.WithColor(DiscColour.Purple);
                     await chn.SendMessageAsync("", false, eb.Build());
                     await Context.Message.ReplyAsync("Sent support message response successfully");
                 }
@@ -202,19 +244,24 @@ namespace FinBot.Modules
         [Command("Speaking")]
         public async Task speaking()
         {
-            IVoiceChannel channel = (Context.User as IGuildUser)?.VoiceChannel;
-            IAudioClient audioClient = await channel.ConnectAsync();
-            await Context.Message.ReplyAsync($"{audioClient.ConnectionState}");
-            await audioClient.SetSpeakingAsync(true);
+            if (Global.IsDev(Context.User))
+            {
+                IVoiceChannel channel = (Context.User as IGuildUser)?.VoiceChannel;
+                IAudioClient audioClient = await channel.ConnectAsync();
+                await Context.Message.ReplyAsync($"{audioClient.ConnectionState}");
+                await audioClient.SetSpeakingAsync(true);
+            }
         }
 
         [Command("setAudioClient")]
         public async Task setAudioClient()
         {
-            _audioClient = await (Context.User as IGuildUser)?.VoiceChannel.ConnectAsync();
-            ready = true;
-            await ReplyAsync("Success");
+            if (Global.IsDev(Context.User))
+            {
+                _audioClient = await (Context.User as IGuildUser)?.VoiceChannel.ConnectAsync();
+                ready = true;
+                await ReplyAsync("Success");
+            }
         }
     }
-
 }

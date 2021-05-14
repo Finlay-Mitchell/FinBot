@@ -1124,7 +1124,7 @@ namespace FinBot.Modules
 
         }
 
-        [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("rank")]
+        [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("level")]
         public async Task Rank(params string[] arg)
         {
             if (arg.Length == 0)
@@ -1165,10 +1165,10 @@ namespace FinBot.Modules
 
                 while (reader.Read())
                 {
-                    b.Description = $"**{user.Username} - __{reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}__**\nLevel - {reader.GetInt64(3)}";
+                    b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
+                    $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
                 }
-
-
+                
                 conn.Close();
                 b.WithCurrentTimestamp();
                 return b.Build();

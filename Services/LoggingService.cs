@@ -133,8 +133,8 @@ namespace FinBot.Services
                             {
                                 level += 1;
                                 XP = XP - xpToNextLevel;
-                                await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
-                                //await _discord.GetUser(305797476290527235).SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                //await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                await _discord.GetUser(305797476290527235).SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
                             }
 
                             queryConn.Open();
