@@ -58,7 +58,7 @@ namespace FinBot
                             new Emoji("✅"),
                             new Emoji("❌")
                         };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "ayst", "Speaking", "setAudioClient" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "ayst", "Speaking", "setAudioClient", "testing" };
         public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 368095722442194945, 230778630597246983 };
 
         public static void ReadConfig()
@@ -120,68 +120,6 @@ namespace FinBot
             Console.WriteLine("[ - Internal - ] - " + ConsoleMessage);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.BackgroundColor = ConsoleColor.Black;
-        }
-
-
-        public static Dictionary<ulong, ulong> LoadInfractionMessageCards()
-        {
-            string t = File.ReadAllText(infractionMessagefilepath);
-            Dictionary<ulong, ulong> ulist = new Dictionary<ulong, ulong>();
-          
-            if (t == "")
-            {
-                return ulist;
-            }
-
-            foreach (string i in t.Split("\n"))
-            {
-                if (i != "")
-                {
-                    string[] spl = i.Split(",");
-                    ulist.Add(ulong.Parse(spl[0]), ulong.Parse(spl[1]));
-                }
-            }
-
-            return ulist;
-        }
-
-        public static void SaveCenssor(string word)
-        {
-            File.AppendAllText(CensoredWordsPath, $"{word}\n");
-        }
-
-        public static void SaveLeetRules(string leet, string value)
-        {
-            File.AppendAllText(LeetRulesPath, $"{leet}, {value}\n");
-        }
-
-        public static Dictionary<string, string> LoadLeetRules()
-        {
-            string t = File.ReadAllText(LeetRulesPath);
-            Dictionary<string, string> list = new Dictionary<string, string>();
-           
-            if (t == "")
-            {
-                return list;
-            }
-
-            foreach (string i in t.Split("\n"))
-            {
-                if (i != "")
-                {
-                    string[] spl = i.Split(",");
-                    list.Add(spl[0], spl[1]);
-                }
-            }
-
-            return list;
-        }
-
-        public static void RemoveCensor(string word)
-        {
-            string[] oldLines = File.ReadAllLines(CensoredWordsPath);
-            IEnumerable<string> newLines = oldLines.Where(line => !line.Contains(word));
-            File.WriteAllLines(CensoredWordsPath, newLines);
         }
 
         public static long ConvertToTimestamp(DateTime value)

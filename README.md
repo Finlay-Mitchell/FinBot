@@ -6,12 +6,12 @@ An advanced Discord utility/commands bot with:
 - chatbot/image guessing
 - customisable behaviour 
   * Custom guild prefix
-  * Cusrom welcome messages (in the works)
+  * Cusrom welcome messages
   * ability to turn on and off commands (in the works)
   * custom member counts (in the works)
  - polling
  - text to speech
- - custom API(in the works)
+ - custom API
  - and a lot more
  
  # APIs

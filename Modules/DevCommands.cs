@@ -19,6 +19,9 @@ using Colour = System.Drawing.Color;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using FinBot.Handlers;
 
 namespace FinBot.Modules
 {
@@ -29,11 +32,13 @@ namespace FinBot.Modules
         Timer T;
         private IAudioClient _userVoiceClient;
         private IAudioChannel _userVoiceChannel;
+        private IServiceProvider _service;
 
         bool ready = false;
 
         public DevCommands(IServiceProvider service)
         {
+            _service = service;
             _client = service.GetRequiredService<DiscordShardedClient>();
 
             if (ready)

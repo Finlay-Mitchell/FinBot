@@ -28,7 +28,7 @@ namespace FinBot.Handlers
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
         }
 
-        private async Task<string> DeterminePrefix(SocketCommandContext context)
+        public async Task<string> DeterminePrefix(SocketCommandContext context)
         {
             try
             {
