@@ -347,7 +347,7 @@ namespace FinBot.Modules
             eb.AddField("Nickname?", nickState == "" ? "None" : nickState);
             eb.AddField("ID:", $"{user.Id}");
             eb.AddField("Status", user.Status);
-            eb.AddField("Active clients", String.IsNullOrEmpty(String.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) ? ClientError : String.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
+            eb.AddField("Active clients", String.IsNullOrEmpty(String.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) || user.IsBot ? ClientError : String.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
             eb.AddField("Created at UTC", user.CreatedAt.UtcDateTime.ToString("r"));
             eb.AddField("Joined at UTC?", SGU.JoinedAt.HasValue ? SGU.JoinedAt.Value.UtcDateTime.ToString("r") : "No value :/");
             eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{String.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
