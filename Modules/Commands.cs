@@ -253,7 +253,7 @@ namespace FinBot.Modules
 
             else
             {
-                await Context.Message.ReplyAsync($"What do you want me to say? please do {Global.DeterminePrefix(Context)}say <msg>.");
+                await Context.Message.ReplyAsync($"What do you want me to say? please do {await Global.DeterminePrefix(Context)}say <msg>.");
                 tp.Dispose();
             }
 
@@ -263,7 +263,7 @@ namespace FinBot.Modules
         public string SayText(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
-            final = Regex.Replace(final, $"([{Global.DeterminePrefix(context)}-])", "");
+            final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-])", "");
             final = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
             final = Regex.Replace(final, "@", "");
 
@@ -1170,7 +1170,7 @@ namespace FinBot.Modules
                         IconUrl = Context.Message.Author.GetAvatarUrl(),
                     },
                     Title = $"Please enable levelling",
-                    Description = $"Please enable levelling by using the {Global.DeterminePrefix(Context).Result}enablelevelling <true/on> command!",
+                    Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
                     Color = Color.Orange,
                 };
 
@@ -1188,7 +1188,7 @@ namespace FinBot.Modules
                         IconUrl = Context.Message.Author.GetAvatarUrl(),
                     },
                     Title = $"Please enable levelling",
-                    Description = $"Please enable levelling by using the {Global.DeterminePrefix(Context).Result}enablelevelling <true/on> command!",
+                    Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
                     Color = Color.Orange,
                 };
 
@@ -1485,7 +1485,7 @@ namespace FinBot.Modules
                     {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.Title = "Poll already active";
-                        eb.Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {Global.DeterminePrefix(Context)}endpoll";
+                        eb.Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {await Global.DeterminePrefix(Context)}endpoll";
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
@@ -1598,7 +1598,7 @@ namespace FinBot.Modules
                     {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.Title = "Poll not active";
-                        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.DeterminePrefix(Context)}poll command";
+                        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command";
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
@@ -1612,7 +1612,7 @@ namespace FinBot.Modules
                 {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.Title = "Poll not active";
-                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.DeterminePrefix(Context)}poll command";
+                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command";
                     eb.WithAuthor(Context.Message.Author);
                     eb.WithCurrentTimestamp();
                     eb.Color = Color.Red;

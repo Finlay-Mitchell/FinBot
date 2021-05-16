@@ -49,7 +49,7 @@ namespace FinBot.Handlers
             {
                 string msg = s.ToString();
 
-                if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"{Global.DeterminePrefix(context)}support") || msg.ToLower().StartsWith($"{Global.DeterminePrefix(context)}support "))
+                if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"{Global.Prefix}support") || msg.ToLower().StartsWith($"{Global.Prefix}support "))
                 {
                     msg = Regex.Replace(msg, "support", "");
                     IUserMessage reply = (IUserMessage)s;
@@ -66,7 +66,7 @@ namespace FinBot.Handlers
                 }
             }
 
-            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(Global.DeterminePrefix(context).Result, ref argPos)))
             {
                 return;
             }

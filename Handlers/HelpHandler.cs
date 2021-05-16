@@ -62,7 +62,7 @@ namespace FinBot.Handlers
 
                     if (result.IsSuccess)
                     {
-                        description += $"{Global.DeterminePrefix(Context)}{cmd.Aliases.First()}, \t";
+                        description += $"{await Global.DeterminePrefix(Context)}{cmd.Aliases.First()}, \t";
                     }
                 }
 
@@ -160,10 +160,10 @@ namespace FinBot.Handlers
             foreach (CommandMatch match in result.Commands)
             {
                 CommandInfo cmd = match.Command;
-                builder.AddField(x =>
+                builder.AddField(async x =>
                 {
                     x.Name = $"_ _";
-                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{Global.DeterminePrefix(Context)}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{Global.DeterminePrefix(Context)}")}";
+                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{await Global.DeterminePrefix(Context)}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{await Global.DeterminePrefix(Context)}")}";
                     x.IsInline = true;
                 });
             }
