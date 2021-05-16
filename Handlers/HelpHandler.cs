@@ -162,8 +162,8 @@ namespace FinBot.Handlers
                 CommandInfo cmd = match.Command;
                 builder.AddField(x =>
                 {
-                    x.Name = string.Join(", ", cmd.Aliases);
-                    x.Value = $"Summary: {cmd.Summary.Replace("(PREFIX)", ($"{Global.Prefix}"))}\nSyntax: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
+                    x.Name = $"_ _";
+                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{Global.Prefix}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
                     x.IsInline = true;
                 });
             }
