@@ -92,7 +92,7 @@ class guild_config(commands.Cog):
             await ctx.reply(embed=self.bot.create_error_embed("Sorry, but that channel was not found"))
             ctx.kwargs["resolved"] = True
 
-    @commands.command()
+    @commands.command(aliases=["enable_levelling", "levelling"])
     @is_high_staff()
     async def enableLevelling(self, ctx, *, toggle: str):
 
@@ -125,7 +125,7 @@ class guild_config(commands.Cog):
                                                               f"/on or false/off"))
             ctx.kwargs["resolved"] = True
 
-    @commands.command()
+    @commands.command(aliases=["levelling_channel"])
     @is_high_staff()
     async def levellingchannel(self, ctx, *, channel: discord.TextChannel):
         guild_document = await self.bot.mongo.find_by_id(self.guild_db, ctx.guild.id)

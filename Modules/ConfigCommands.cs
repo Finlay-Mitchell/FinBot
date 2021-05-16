@@ -11,16 +11,28 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("setwelcomechannel"), Summary("Sets the channel where welcome messages for new members/leaving members are sent"), 
+        [Command("setwelcomechannel"), Summary("Sets the channel where welcome messages for new members/leaving members are sent"),
             Remarks("(PREFIX)setwelcomechannel <channel>"), Alias("set_welcome_channel", "welcomechannel", "welcome_channel", "welcomemessages", "welcome_messages")]
         public Task setwelcomemessage(params string[] arg)
         {
             return Task.CompletedTask;
         }
 
-        [Command("setmembercountchannel"), Summary("Sets the membercount channel"), Remarks("(PREFIX)setmembercountchannel <voice_channel>"), 
+        [Command("setmembercountchannel"), Summary("Sets the membercount channel"), Remarks("(PREFIX)setmembercountchannel <voice_channel>"),
             Alias("membercountchannel", "membercount_channel", "set_membercount_channel", "setmembercount")]
         public Task setmembercountchannel(params string[] arg)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("enablelevelling"), Summary("Enables guild user levelling"), Remarks("(PREFIX)enablelevelling <on/off/true/false>"), Alias("enable_levelling", "levelling")]
+        public Task enableLevelling(params string[] arg)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("levellingchannel"), Summary("Sets the channel where users level up messages are setn"), Remarks("(PREFIX)levellingchannel <channel>"), Alias("levelling_channel")]
+        public Task levellingChannel(params string[] arg)
         {
             return Task.CompletedTask;
         }
