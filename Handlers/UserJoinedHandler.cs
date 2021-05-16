@@ -63,6 +63,19 @@ namespace FinBot.Handlers
 
                 else
                 {
+                    try
+                    {
+                        await arg.SendMessageAsync("", false, new EmbedBuilder()
+                        {
+                            Title = $"***Sorry to see you leave!***",
+                            Description = "Sorry to see you leave the server, Hope to see you soon!",
+                            Color = Color.Green
+
+                        }.Build());
+                    }
+
+                    catch {}
+
                     EmbedBuilder eb = new EmbedBuilder()
                     {
                         Title = $"***Sorry to see you go!***",
@@ -78,14 +91,6 @@ namespace FinBot.Handlers
 
                     SocketTextChannel Channel = (SocketTextChannel)arg.Guild.GetChannel(GuildWelcomeChannel);
                     await Channel.SendMessageAsync("", false, eb.Build());
-
-                    await arg.SendMessageAsync("", false, new EmbedBuilder()
-                    {
-                        Title = $"***Sorry to see you leave!***",
-                        Description = "Sorry to see you leave the server, Hope to see you soon!",
-                        Color = Color.Green
-
-                    }.Build());
                 }
             }
 
