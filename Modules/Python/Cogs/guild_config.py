@@ -84,6 +84,10 @@ class guild_config(commands.Cog):
             await ctx.reply(embed=self.bot.create_error_embed(f"Usage: {config.prefix}setwelcomechannel <channel>"))
             ctx.kwargs["resolved"] = True
 
+        if isinstance(error, commands.ChannelNotFound):
+            await ctx.reply(embed=self.bot.create_error_embed("Sorry, but that channel was not found"))
+            ctx.kwargs["resolved"] = True
+
 
 def setup(bot):
     bot.add_cog(guild_config(bot))
