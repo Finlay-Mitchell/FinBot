@@ -27,11 +27,15 @@ using ICanHazDadJoke.NET;
 using System.Data;
 using MySql.Data.MySqlClient;
 using Google.Apis.YouTube.v3.Data;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace FinBot.Modules
 {
     public class Commands : ModuleBase<ShardedCommandContext>
     {
+        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
+
         [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r")]
         public async Task Reddit(string subreddit)
         {
@@ -243,23 +247,23 @@ namespace FinBot.Modules
 
             if (echo.Length != 0)
             {
-                await Context.Channel.SendMessageAsync(SayText(string.Join(' ', echo)));
+                await Context.Channel.SendMessageAsync(SayText(string.Join(' ', echo), Context));
                 tp.Dispose();
             }
 
             else
             {
-                await Context.Message.ReplyAsync($"What do you want me to say? please do {Global.Prefix}say <msg>.");
+                await Context.Message.ReplyAsync($"What do you want me to say? please do {Global.DeterminePrefix(Context)}say <msg>.");
                 tp.Dispose();
             }
 
             tp.Dispose();
         }
 
-        public string SayText(string text)
+        public string SayText(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
-            final = Regex.Replace(final, $"([{Global.Prefix}-])", "");
+            final = Regex.Replace(final, $"([{Global.DeterminePrefix(context)}-])", "");
             final = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
             final = Regex.Replace(final, "@", "");
 
@@ -1124,9 +1128,74 @@ namespace FinBot.Modules
 
         }
 
+        public async Task<string> DetermineLevel(SocketGuild guild)
+        {
+            try
+            {
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("levelling").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return "False";
+                }
+            }
+
+            catch
+            {
+                return "False";
+            }
+        }
+
         [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("level")]
         public async Task Rank(params string[] arg)
         {
+            string toLevel = DetermineLevel(Context.Guild).Result;
+
+            if (toLevel.ToLower() == "false")
+            {
+                EmbedBuilder b = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Please enable levelling",
+                    Description = $"Please enable levelling by using the {Global.DeterminePrefix(Context).Result}enablelevelling <true/on> command!",
+                    Color = Color.Orange,
+                };
+
+                await Context.Message.ReplyAsync("", false, b.Build());
+                return;
+            }
+
+            else if (toLevel.ToLower() == "off")
+            {
+                EmbedBuilder b = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Please enable levelling",
+                    Description = $"Please enable levelling by using the {Global.DeterminePrefix(Context).Result}enablelevelling <true/on> command!",
+                    Color = Color.Orange,
+                };
+
+                await Context.Message.ReplyAsync("", false, b.Build());
+                return;
+            }
+
             if (arg.Length == 0)
             {
                 await Context.Channel.TriggerTypingAsync();
@@ -1416,7 +1485,7 @@ namespace FinBot.Modules
                     {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.Title = "Poll already active";
-                        eb.Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {Global.Prefix}endpoll";
+                        eb.Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {Global.DeterminePrefix(Context)}endpoll";
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
@@ -1529,7 +1598,7 @@ namespace FinBot.Modules
                     {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.Title = "Poll not active";
-                        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
+                        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.DeterminePrefix(Context)}poll command";
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
@@ -1543,7 +1612,7 @@ namespace FinBot.Modules
                 {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.Title = "Poll not active";
-                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.Prefix}poll command";
+                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {Global.DeterminePrefix(Context)}poll command";
                     eb.WithAuthor(Context.Message.Author);
                     eb.WithCurrentTimestamp();
                     eb.Color = Color.Red;

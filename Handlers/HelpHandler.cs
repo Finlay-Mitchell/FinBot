@@ -62,7 +62,7 @@ namespace FinBot.Handlers
 
                     if (result.IsSuccess)
                     {
-                        description += $"{Global.Prefix}{cmd.Aliases.First()}, \t";
+                        description += $"{Global.DeterminePrefix(Context)}{cmd.Aliases.First()}, \t";
                     }
                 }
 
@@ -163,7 +163,7 @@ namespace FinBot.Handlers
                 builder.AddField(x =>
                 {
                     x.Name = $"_ _";
-                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{Global.Prefix}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{Global.Prefix}")}";
+                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{Global.DeterminePrefix(Context)}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{Global.DeterminePrefix(Context)}")}";
                     x.IsInline = true;
                 });
             }

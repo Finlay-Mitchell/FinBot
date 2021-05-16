@@ -28,33 +28,6 @@ namespace FinBot.Handlers
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
         }
 
-        public async Task<string> DeterminePrefix(SocketCommandContext context)
-        {
-            try
-            {
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("prefix").ToString();
-
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
-
-                else
-                {
-                    return Global.Prefix;
-                }
-            }
-
-            catch
-            {
-                return Global.Prefix;
-            }
-        }
-
         public async Task HandleCommandAsync(SocketMessage s)
         {
             SocketUserMessage message = s as SocketUserMessage;
@@ -76,7 +49,7 @@ namespace FinBot.Handlers
             {
                 string msg = s.ToString();
 
-                if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"{Global.Prefix}support") || msg.ToLower().StartsWith($"{Global.Prefix}support "))
+                if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"{Global.DeterminePrefix(context)}support") || msg.ToLower().StartsWith($"{Global.DeterminePrefix(context)}support "))
                 {
                     msg = Regex.Replace(msg, "support", "");
                     IUserMessage reply = (IUserMessage)s;
@@ -93,7 +66,7 @@ namespace FinBot.Handlers
                 }
             }
 
-            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await DeterminePrefix(context), ref argPos)))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
                 return;
             }

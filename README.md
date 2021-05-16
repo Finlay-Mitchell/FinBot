@@ -2,13 +2,13 @@
 An advanced Discord utility/commands bot with:
 - music features/lyric searching
 - mod logging
-- levelling
+- levelling with ability to turn on and off
 - chatbot/image guessing
 - customisable behaviour 
   * Custom guild prefix
   * Cusrom welcome messages
   * ability to turn on and off commands (in the works)
-  * custom member counts (in the works)
+  * custom guild member count
  - polling
  - text to speech
  - custom API

@@ -8,6 +8,8 @@ using MySql.Data.MySqlClient;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Collections.Generic;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace FinBot.Services
 {
@@ -16,6 +18,7 @@ namespace FinBot.Services
         private readonly ILogger _logger;
         private readonly DiscordShardedClient _discord;
         private readonly CommandService _commands;
+        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
 
         public LoggingService(ILogger<LoggingService> logger, DiscordShardedClient discord, CommandService commands)
         {
@@ -87,6 +90,60 @@ namespace FinBot.Services
             }
         }
 
+        public async Task<string> DetermineLevel(SocketGuild guild)
+        {
+            try
+            {
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("levelling").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return "False";
+                }
+            }
+
+            catch
+            {
+                return "False";
+            }
+        }
+
+        public async Task<string> GetLevellingChannel(SocketGuild guild)
+        {
+            try
+            {
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("levellingchannel").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return "0";
+                }
+            }
+
+            catch
+            {
+                return "0";
+            }
+        }
+
         public async Task OnMessageReceived(SocketMessage arg)
         {
             if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
@@ -97,70 +154,100 @@ namespace FinBot.Services
             try
             {
                 SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
-                long Now = Global.ConvertToTimestamp(arg.Timestamp.UtcDateTime);
-                MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-                MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+                string toLevel = DetermineLevel(chan.Guild).Result;
 
-                conn.Open();
-                long TimeStamp = 0;
-                long XP = 0;
-                long level = 0;
-                bool ran = false;
-                long xpToNextLevel = 0;
-                long totalXP = 0;
-
-                MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Levels WHERE userId = {arg.Author.Id} AND guildId = {chan.Guild.Id}", conn);
-                MySqlDataReader reader = cmd1.ExecuteReader();
-
-                try
+                if (toLevel.ToLower() == "false")
                 {
+                    return;
+                }
 
-                    while (reader.Read())
+                else if(toLevel.ToLower() == "off")
+                {
+                    return;
+                }
+
+                else
+                {
+                    ulong Levelchannel = Convert.ToUInt64(GetLevellingChannel(chan.Guild).Result);
+                    long Now = Global.ConvertToTimestamp(arg.Timestamp.UtcDateTime);
+                    MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+                    MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+
+                    conn.Open();
+                    long TimeStamp = 0;
+                    long XP = 0;
+                    long level = 0;
+                    bool ran = false;
+                    long xpToNextLevel = 0;
+                    long totalXP = 0;
+
+                    MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Levels WHERE userId = {arg.Author.Id} AND guildId = {chan.Guild.Id}", conn);
+                    MySqlDataReader reader = cmd1.ExecuteReader();
+
+                    try
                     {
-                        ran = true;
-                        TimeStamp = Now - reader.GetInt64(2);
-
-                        if (TimeStamp >= Global.MinMessageTimestamp || Global.IsDev(arg.Author))
+                        while (reader.Read())
                         {
-                            XP = reader.GetInt64(4);
-                            level = reader.GetInt64(3);
-                            Random r = new Random();
-                            XP += r.Next(15, 25);
-                            totalXP += XP;
-                            xpToNextLevel = (long)(5 * Math.Pow(level, 2) + 50 * level + 100);
+                            ran = true;
+                            TimeStamp = Now - reader.GetInt64(2);
 
-                            if (XP >= xpToNextLevel)
+                            if (TimeStamp >= Global.MinMessageTimestamp || Global.IsDev(arg.Author))
                             {
-                                level += 1;
-                                XP = XP - xpToNextLevel;
-                                //await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
-                                await _discord.GetUser(305797476290527235).SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                XP = reader.GetInt64(4);
+                                level = reader.GetInt64(3);
+                                Random r = new Random();
+                                XP += r.Next(15, 25);
+                                totalXP += XP;
+                                xpToNextLevel = (long)(5 * Math.Pow(level, 2) + 50 * level + 100);
+
+                                if (XP >= xpToNextLevel)
+                                {
+                                    level += 1;
+                                    XP = XP - xpToNextLevel;
+                                    //await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                    SocketTextChannel Channel = (SocketTextChannel)chan.Guild.GetChannel(Levelchannel);
+
+                                    if (Channel != null)
+                                    {
+                                        await Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
+                                    }
+
+                                    else { }
+                                }
+
+                                queryConn.Open();
+                                await AddToDatabase(0, queryConn, arg, level, XP, totalXP);
+                                queryConn.Close();
                             }
 
+                            else
+                            {
+                                return;
+                            }
+                        }
+                    }
+
+                    finally
+                    {
+                        conn.Close();
+                    }
+
+                    if (!ran)
+                    {
+                        try
+                        {
+                            Random r = new Random();
+                            totalXP = +r.Next(15, 25);
                             queryConn.Open();
-                            await AddToDatabase(0, queryConn, arg, level, XP, totalXP);
+                            await AddToDatabase(1, queryConn, arg, 0, XP, totalXP);
                             queryConn.Close();
                         }
 
-                        else
+                        finally
                         {
-                            return;
+                            queryConn.Close();
                         }
                     }
-                }
-
-                finally
-                {
-                    conn.Close();
-                }
-
-                if (!ran)
-                {
-                    Random r = new Random();
-                    totalXP = +r.Next(15, 25);
-                    queryConn.Open();
-                    await AddToDatabase(1, queryConn, arg, 0, XP, totalXP);
-                    queryConn.Close();
                 }
             }
 

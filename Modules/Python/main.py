@@ -17,6 +17,7 @@ import motor.motor_asyncio
 from Handlers.MongoHandler import MongoDB
 import aiml
 import sys
+from typing import Union
 
 sys.setrecursionlimit(10**4)
 STARTUP_FILE = "std-startup.xml"

@@ -1,12 +1,10 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace FinBot.Handlers
 {

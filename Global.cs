@@ -8,11 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Driver;
+using Discord.Commands;
+using MongoDB.Bson;
 
 namespace FinBot
 {
     public class Global
     {
+
         public static string Token { get; set; }
         public static string Prefix { get; set; }
         public static string Version { get; set; }
@@ -176,6 +179,34 @@ namespace FinBot
         public static void UpdatePIDValue(int PID)
         {
             File.WriteAllText(@$"{Environment.CurrentDirectory}\Data\PID.txt", $"{PID}");
-        }    
+        }
+
+        public static async Task<string> DeterminePrefix(SocketCommandContext context)
+        {
+            try
+            {
+                MongoClient MongoClient = new MongoClient(mongoconnstr);
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("prefix").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return Prefix;
+                }
+            }
+
+            catch
+            {
+                return Prefix;
+            }
+        }
     }
 }
