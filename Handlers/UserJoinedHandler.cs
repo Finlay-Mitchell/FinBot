@@ -6,20 +6,21 @@ using MongoDB.Driver;
 using System;
 using System.Threading.Tasks;
 
+using Discord.Commands;
+
 namespace FinBot.Handlers
 {
-    public class UserJoinedHandler
+    public class UserJoinedHandler : ModuleBase<SocketCommandContext>
     {
 
         private DiscordShardedClient _client;
-        private readonly IServiceProvider _services;
         MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
 
         public UserJoinedHandler(IServiceProvider services)
         {
-            _services = services;
             _client = services.GetRequiredService<DiscordShardedClient>();
             _client.UserJoined += HandleWelcomeAsync;
+            _client.UserLeft += HandleGoodbyeAsync;
         }
 
         public async Task<string> GetWelcomeChannel(SocketGuild guild)
