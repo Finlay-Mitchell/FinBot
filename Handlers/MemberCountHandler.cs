@@ -2,52 +2,78 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
+using System.Threading.Tasks;
 using System.Timers;
 
 namespace FinBot.Handlers
 {
-    class MemberCountHandler
+    public class MemberCountHandler : ModuleBase<SocketCommandContext>
     {
-        private CommandService _commands;
         private DiscordShardedClient _client;
-        private readonly ILogger _logger;
-        private readonly IServiceProvider _services;
         MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
 
         public MemberCountHandler(IServiceProvider services)
         {
-            Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 7, 5).TotalMilliseconds, Enabled = true };
-            _services = services;
             _client = services.GetRequiredService<DiscordShardedClient>();
-            _commands = services.GetRequiredService<CommandService>();
-            _logger = services.GetRequiredService<ILogger<CommandHandler>>();
-
-
-            t.Enabled = true;
-            t.Elapsed += HandleUserCount;
-            t.Start();
+            _client.UserJoined += HandleUserCount;
+            _client.UserLeft += HandleUserCount;
         }
 
 
-        private async void HandleUserCount(object sender, ElapsedEventArgs e)
+        public async Task<string> GetUserCountChannel(SocketGuild guild)
         {
             try
             {
-                SocketGuild guild = _client.GetGuild(0000);
-                SocketVoiceChannel chn = guild.GetVoiceChannel(0000);
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("membercountchannel").ToString();
 
-                if (chn == null)
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return "0";
+                }
+            }
+
+            catch
+            {
+                return "0";
+            }
+        }
+        
+        public async Task HandleUserCount(SocketGuildUser arg)
+        {
+            try
+            {
+                ulong MemberCountChannel = Convert.ToUInt64(GetUserCountChannel(arg.Guild).Result);
+
+                if (MemberCountChannel == 0)
                 {
                     return;
                 }
 
-                string msg = $"Total Users: {guild.Users.Count}";
-
-                if (chn.Name != msg)
+                else
                 {
-                    await chn.ModifyAsync(x => x.Name = msg);
+                    SocketVoiceChannel channel = arg.Guild.GetVoiceChannel(MemberCountChannel);
+                    SocketGuild guild = (channel as SocketGuildChannel)?.Guild;
+
+                    //string msg = $"Total Users: {arg.Guild.Users.Count}";
+                    string msg = $"Total Users: {guild.MemberCount}";
+
+
+                    if (channel.Name != msg)
+                    {
+                        await channel.ModifyAsync(x => x.Name = msg);
+                    }
                 }
             }
 

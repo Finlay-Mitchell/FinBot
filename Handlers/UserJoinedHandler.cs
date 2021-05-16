@@ -40,13 +40,13 @@ namespace FinBot.Handlers
 
                 else
                 {
-                    return Global.Prefix;
+                    return "0";
                 }
             }
 
             catch
             {
-                return Global.Prefix;
+                return "0";
             }
         }
 

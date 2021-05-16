@@ -17,5 +17,12 @@ namespace FinBot.Modules
         {
             return Task.CompletedTask;
         }
+
+        [Command("setmembercountchannel"), Summary("Sets the membercount channel"), Remarks("(PREFIX)setmembercountchannel <voice_channel>"), 
+            Alias("membercountchannel", "membercount_channel", "set_membercount_channel", "setmembercount")]
+        public Task setmembercountchannel(params string[] arg)
+        {
+            return Task.CompletedTask;
+        }
     }
 }
