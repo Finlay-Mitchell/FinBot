@@ -151,6 +151,8 @@ namespace FinBot.Handlers
                 return;
             }
 
+            string guild_prefix = await Global.DeterminePrefix(Context);
+
             EmbedBuilder builder = new EmbedBuilder()
             {
                 Color = new Color(114, 137, 218),
@@ -163,7 +165,7 @@ namespace FinBot.Handlers
                 builder.AddField(async x =>
                 {
                     x.Name = $"_ _";
-                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{await Global.DeterminePrefix(Context)}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{await Global.DeterminePrefix(Context)}")}";
+                    x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{guild_prefix}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{guild_prefix}")}";
                     x.IsInline = true;
                 });
             }
