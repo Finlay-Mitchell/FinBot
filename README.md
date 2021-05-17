@@ -52,7 +52,6 @@ For this project, you will need to install the following libraries:
  * YoutubeDL
  * motor
  * mysql
- * aspell
  
 # If you want to copy and expand this bot
 First, give me credit.
