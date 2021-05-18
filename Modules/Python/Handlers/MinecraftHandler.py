@@ -1,6 +1,5 @@
 import json
 from base64 import b64decode
-
 import requests
 
 from Data.config import HypixelAPIKey
@@ -73,6 +72,7 @@ async def bw_info(name, session):
             fkd = round((final_kills / final_deaths), 2)
             stats = {'level': player_level, 'wins': wins, 'fkd': fkd, 'kills': kills, 'deaths': deaths}
             return stats
+        
         except Exception:
             print("player not found on hypixel or has not played enough games got enough kills etc")
             return False
