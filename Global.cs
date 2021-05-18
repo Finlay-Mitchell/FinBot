@@ -62,7 +62,7 @@ namespace FinBot
                             new Emoji("❌")
                         };
         public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "ayst", "Speaking", "setAudioClient", "testing" };
-        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 368095722442194945, 230778630597246983 };
+        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 };
 
         public static void ReadConfig()
         {
