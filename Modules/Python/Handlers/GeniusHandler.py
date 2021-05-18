@@ -2,11 +2,6 @@ from main import FinBot
 import lyricsgenius as genius
 from Data import config
 
-# TODO:
-"""
-Neaten up get_track_by_lyrics error handling
-"""
-
 
 class GeniusSearcher:
     def __init__(self, bot: FinBot):
@@ -32,9 +27,6 @@ class GeniusSearcher:
             return None
 
     def get_track_by_lyrics(self, lyrics):
-        """
-        This really isn't pretty at the moment, but it stops errors from being thrown.
-        """
         try:
             request = self.Genius.search_all(lyrics)
             first_run = True
