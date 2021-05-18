@@ -1,12 +1,13 @@
 import asyncio
 import requests
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from functools import partial
-from main import FinBot
-from Data import config
 from difflib import SequenceMatcher
 
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+from main import FinBot
+from Data import config
 
 def find_closest(title, fulltext, options):
     sorted_options = []
