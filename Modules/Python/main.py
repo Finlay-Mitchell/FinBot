@@ -10,7 +10,6 @@ from discord.ext import commands
 from Data import config
 from Handlers.storageHandler import DataHelper
 from traceback import format_exc, print_tb
-# from Data.config import monkey_guild_id
 # from mee6_py_api import API
 import re
 import motor.motor_asyncio
@@ -35,6 +34,9 @@ class FinBot(commands.Bot):
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
+            
+        # COMMENTED OUT UNTIL KERNEL FIXES
+            
         # self.aiml_kernel = aiml.Kernel()
         # if os.path.isfile("bot_brain.brn"):
         #     self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
@@ -141,7 +143,8 @@ def get_bot():
         except Exception as e:
             print("Error in sending error to discord. Error was {}".format(error))
             print("Error sending to discord was {}".format(e))
-
+            
+     # COMMENTED UNTIL AIML KERNEL FIX
     # @bot.event
     # async def on_message(message):
     #     if message.author.bot or str(message.channel.id) != "840922321266016286":
