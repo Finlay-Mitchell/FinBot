@@ -30,3 +30,5 @@ dev_uids = [305797476290527235, 230778630597246983]  # last one is an alt, lol
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
 extensions = ["audit", "executer", "tts", "lyrics", "Minecraft", "music", "misc", "chatbot", "modlogs", "guild_config",
               "api"]
+
+api_port = 9987
