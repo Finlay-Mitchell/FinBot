@@ -1,4 +1,3 @@
-# Bare except doesn't conform to PEP-8.
 import json
 import os
 from Data.config import data_path
