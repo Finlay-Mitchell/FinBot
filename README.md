@@ -71,9 +71,6 @@ If you encounter an error, use this table of contents to try help you:
 | Other issue?          | Contact me and I will try help you       |
 | Failing to compile?   | You've copied something wrong, check all of your files |
 
-# Other features
-This bot as well as music support with YouTube, also supports music support with Spotify and includes custom TTS(text to speech). It also has lyric lookup with genius and song searching.
-
 # License
 Check License.md for license information.
 
