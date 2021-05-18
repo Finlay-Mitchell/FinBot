@@ -4,13 +4,13 @@ var app = express();
 app.use(express.json())
 
 app.get('/', (request, response) => {
-    response.status(200).send('yes, I am working')
+    response.status(200).send('API up and working')
 });
 
 app.get('/test', (request, response) => {
     response.status(200).send({
         test: 'working',
-        check: 'yep shes working'
+        check: 'yep, working'
     })
 });
 
