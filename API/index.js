@@ -1,10 +1,12 @@
 var express = require("express");
 var app = express();
 
+var config = require(`./discord/main.js`);
+
 app.use(express.json())
 
 app.get('/', (request, response) => {
-    response.status(200).send('API up and working')
+    response.status(200).send(`${config.test()}`)
 });
 
 app.get('/test', (request, response) => {
@@ -33,6 +35,8 @@ app.get('/doesitwork', (request, response) => {
 });
 
 // This is REQUIRED for IISNODE to work
-app.listen(process.env.PORT, () => {
-  console.log("listening");
+// app.listen(process.env.PORT, () => {
+    app.listen("8080", () => {
+
+console.log("listening");
 });

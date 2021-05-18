@@ -42,6 +42,7 @@ namespace FinBot
         }
         
         public static string mongoconnstr { get; set; }
+        public static string StatusPageAPIKey { get; set; }
 
 
         private static string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
@@ -61,7 +62,7 @@ namespace FinBot
                             new Emoji("✅"),
                             new Emoji("❌")
                         };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "ayst", "Speaking", "setAudioClient", "testing" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec" };
         public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 };
 
         public static void ReadConfig()
@@ -88,6 +89,7 @@ namespace FinBot
             SupportChannelId = data.SupportChannelId;
             SupportGuildId = data.SupportGuildId;
             mongoconnstr = data.mongoconnstr;
+            StatusPageAPIKey = data.StatusPageAPIKey;
 
             MySQL.connStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}";
         }
@@ -114,6 +116,7 @@ namespace FinBot
             public ulong SupportChannelId { get; set; }
             public ulong SupportGuildId { get; set; }
             public string mongoconnstr { get; set; }
+            public string StatusPageAPIKey { get; set; }
         }
 
         public static void ConsoleLog(string ConsoleMessage, ConsoleColor FColor = ConsoleColor.Green, ConsoleColor BColor = ConsoleColor.Black)
@@ -183,14 +186,43 @@ namespace FinBot
 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
+            //try
+            //{
+            //    MongoClient MongoClient = new MongoClient(mongoconnstr);
+            //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
+            //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+            //    ulong _id = context.Guild.Id;
+            //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+            //    string itemVal = item?.GetValue("prefix").ToString();
+
+            //    if (itemVal != null)
+            //    {
+            //        return itemVal;
+            //    }
+
+            //    else
+            //    {
+            //        return Prefix;
+            //    }
+            //}
+
+            //catch
+            //{
+            //    return Prefix;
+            //}
+            return "^";
+        }
+
+        public static async Task<string> DetermineLevel(SocketGuild guild)
+        {
             try
             {
                 MongoClient MongoClient = new MongoClient(mongoconnstr);
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
+                ulong _id = guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("prefix").ToString();
+                string itemVal = item?.GetValue("levelling").ToString();
 
                 if (itemVal != null)
                 {
@@ -199,13 +231,13 @@ namespace FinBot
 
                 else
                 {
-                    return Prefix;
+                    return "False";
                 }
             }
 
             catch
             {
-                return Prefix;
+                return "False";
             }
         }
     }

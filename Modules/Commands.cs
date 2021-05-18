@@ -29,6 +29,8 @@ using MySql.Data.MySqlClient;
 using Google.Apis.YouTube.v3.Data;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using UptimeSharp;
+using UptimeSharp.Models;
 
 namespace FinBot.Modules
 {
@@ -1010,6 +1012,44 @@ namespace FinBot.Modules
 
             try
             {
+                string toLevel = await Global.DetermineLevel(Context.Guild);
+
+                if (toLevel.ToLower() == "false")
+                {
+                    EmbedBuilder eb = new EmbedBuilder()
+                    {
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        },
+                        Title = $"Please enable levelling",
+                        Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
+                        Color = Color.Orange,
+                    };
+
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+                    return;
+                }
+
+                else if (toLevel.ToLower() == "off")
+                {
+                    EmbedBuilder eb = new EmbedBuilder()
+                    {
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        },
+                        Title = $"Please enable levelling",
+                        Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
+                        Color = Color.Orange,
+                    };
+
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+                    return;
+                }
+
                 conn.Open();
                 List<Dictionary<string, dynamic>> scores = new List<Dictionary<string, dynamic>>();
                 MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY totalXP DESC LIMIT 10", conn);
@@ -1128,37 +1168,10 @@ namespace FinBot.Modules
 
         }
 
-        public async Task<string> DetermineLevel(SocketGuild guild)
-        {
-            try
-            {
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("levelling").ToString();
-
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
-
-                else
-                {
-                    return "False";
-                }
-            }
-
-            catch
-            {
-                return "False";
-            }
-        }
-
         [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("level")]
         public async Task Rank(params string[] arg)
         {
-            string toLevel = DetermineLevel(Context.Guild).Result;
+            string toLevel = await Global.DetermineLevel(Context.Guild);
 
             if (toLevel.ToLower() == "false")
             {
@@ -1237,7 +1250,7 @@ namespace FinBot.Modules
                     b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
                     $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
                 }
-                
+
                 conn.Close();
                 b.WithCurrentTimestamp();
                 return b.Build();
@@ -1337,6 +1350,44 @@ namespace FinBot.Modules
         [Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
         public async Task stats(params string[] graph)
         {
+            string toLevel = await Global.DetermineLevel(Context.Guild);
+
+            if (toLevel.ToLower() == "false")
+            {
+                EmbedBuilder b = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Please enable levelling",
+                    Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
+                    Color = Color.Orange,
+                };
+
+                await Context.Message.ReplyAsync("", false, b.Build());
+                return;
+            }
+
+            else if (toLevel.ToLower() == "off")
+            {
+                EmbedBuilder b = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Please enable levelling",
+                    Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
+                    Color = Color.Orange,
+                };
+
+                await Context.Message.ReplyAsync("", false, b.Build());
+                return;
+            }
+
             if (graph.Length == 0)
             {
                 EmbedBuilder noOp = new EmbedBuilder();
@@ -1701,5 +1752,27 @@ namespace FinBot.Modules
         //{
         //    return Task.CompletedTask;
         //}
+
+        [Command("test")]
+        public async Task test()
+        {
+            UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);
+            List<Monitor> monitors = await _client.GetMonitors();
+
+            EmbedBuilder eb = new EmbedBuilder();
+            monitors.ForEach(item => eb.AddField(item.Name, $"Status: {item.Status}\nUptime: {item.Uptime}%"));
+            eb.Title = "Bot statuses";
+            eb.Author = new EmbedAuthorBuilder()
+            {
+                Name = Context.Message.Author.ToString(),
+                IconUrl = Context.Message.Author.GetAvatarUrl(),
+                Url = Context.Message.GetJumpUrl()
+            };
+            eb.Description = "[View status page](https://stats.uptimerobot.com/JX1M3H8Jzw)";
+            eb.WithCurrentTimestamp();
+            eb.WithFooter("Via UptimeRobot");
+            eb.Color = Color.Green;
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
     }
 }

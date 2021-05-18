@@ -56,6 +56,7 @@ namespace FinBot.Services
 
             catch (Exception ex)
             {
+                Global.ConsoleLog(ex.Message);
                 //implement later
             }
         }

@@ -90,33 +90,6 @@ namespace FinBot.Services
             }
         }
 
-        public async Task<string> DetermineLevel(SocketGuild guild)
-        {
-            try
-            {
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("levelling").ToString();
-
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
-
-                else
-                {
-                    return "False";
-                }
-            }
-
-            catch
-            {
-                return "False";
-            }
-        }
-
         public async Task<string> GetLevellingChannel(SocketGuild guild)
         {
             try
@@ -154,7 +127,7 @@ namespace FinBot.Services
             try
             {
                 SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
-                string toLevel = DetermineLevel(chan.Guild).Result;
+                string toLevel = await Global.DetermineLevel(chan.Guild);
 
                 if (toLevel.ToLower() == "false")
                 {
@@ -204,7 +177,6 @@ namespace FinBot.Services
                                 {
                                     level += 1;
                                     XP = XP - xpToNextLevel;
-                                    //await arg.Channel.SendMessageAsync($"Congratulations, {arg.Author.Mention} for reaching level {level}!");
                                     SocketTextChannel Channel = (SocketTextChannel)chan.Guild.GetChannel(Levelchannel);
 
                                     if (Channel != null)

@@ -162,7 +162,7 @@ namespace FinBot.Handlers
             foreach (CommandMatch match in result.Commands)
             {
                 CommandInfo cmd = match.Command;
-                builder.AddField(async x =>
+                builder.AddField(x =>
                 {
                     x.Name = $"_ _";
                     x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{guild_prefix}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{guild_prefix}")}";

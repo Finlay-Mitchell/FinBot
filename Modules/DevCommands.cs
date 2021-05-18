@@ -28,26 +28,10 @@ namespace FinBot.Modules
     public class DevCommands : ModuleBase<ShardedCommandContext>
     {
         private DiscordShardedClient _client;
-        private IAudioClient _audioClient;
-        Timer T;
-        private IAudioClient _userVoiceClient;
-        private IAudioChannel _userVoiceChannel;
-        private IServiceProvider _service;
-
-        bool ready = false;
 
         public DevCommands(IServiceProvider service)
         {
-            _service = service;
             _client = service.GetRequiredService<DiscordShardedClient>();
-
-            if (ready)
-            {
-                _audioClient.SpeakingUpdated += StartAYSTTimer;
-                T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 10).TotalMilliseconds, Enabled = true };
-                T.Elapsed += SendAYST;
-
-            }
         }
 
         [Command("testing")]
@@ -84,20 +68,6 @@ namespace FinBot.Modules
             File.Delete(file);
         }
 
-        private async void SendAYST(object sender, ElapsedEventArgs e)
-        {
-            _userVoiceClient = await _userVoiceChannel.ConnectAsync();
-            SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "AYST");
-            await SendAsync(_userVoiceClient, $"{Environment.CurrentDirectory}/AYST.mp3", Context.Message);
-        }
-
-        private Task StartAYSTTimer(ulong userId, bool isSpeaking)
-        {
-            T.Stop();
-            T.Start();
-            return Task.CompletedTask;
-        }
-
         [Command("restart")]
         public async Task Reset([Remainder] string reason = "No reason provided.")
         {
@@ -105,10 +75,8 @@ namespace FinBot.Modules
             {
                 Process currentProcess = Process.GetCurrentProcess();
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync($"Restarting bot with reason \"{reason}\"\nKilled Process {Process.GetProcessById(Global.processes.ProcessID).ProcessName}: {Global.processes.ProcessID}\n" +
-                    $"Killed process: {currentProcess.ProcessName}: {currentProcess.Id}");
+                await Context.Message.Channel.SendMessageAsync($"Restarting bot with reason \"{reason}\"\n");
                 Process.Start($"{AppDomain.CurrentDomain.FriendlyName}.exe");
-                Process.GetProcessById(Global.processes.ProcessID).Kill();
                 Environment.Exit(1);
             }
         }
@@ -118,9 +86,7 @@ namespace FinBot.Modules
         {
             if (Global.IsDev(Context.User))
             {
-                await Context.Message.ReplyAsync($"Shutting down services.\nShutting down {Process.GetProcessById(Global.processes.ProcessID).ProcessName}: PID[{Global.processes.ProcessID}]...\n" +
-                    $"Shutting down {Process.GetCurrentProcess().ProcessName}: PID[{Process.GetCurrentProcess().Id}]...");
-                Process.GetProcessById(Global.processes.ProcessID).Kill();
+                await Context.Message.ReplyAsync($"Shutting down services.");
                 Environment.Exit(1);
             }
         }
@@ -160,113 +126,6 @@ namespace FinBot.Modules
         public Task exec(params string[] args)
         {
             return Task.CompletedTask;
-        }
-
-        [Command("ayst")]
-        public async Task ARST(IVoiceChannel channel = null)
-        {
-            if (Global.IsDev(Context.User))
-            {
-                try
-                {
-                    channel = channel ?? (Context.User as IGuildUser)?.VoiceChannel;
-
-                    if (channel == null)
-                    {
-                        await Context.Message.ReplyAsync("User must be in a voice channel, or you must parse in a voice channel");
-                        return;
-                    }
-
-                    IAudioClient audioClient = await channel.ConnectAsync();
-                    SaveMP3($"{Environment.CurrentDirectory}", "https://www.youtube.com/watch?v=-ZReLaWESAE", "AYST");
-                    await SendAsync(audioClient, $"{Environment.CurrentDirectory}/AYST.mp3", Context.Message);
-                }
-
-                catch (Exception ex)
-                {
-                    await ReplyAsync("Uh oh, stinkie! error poop:\n" + ex.Message);
-                }
-            }
-        }
-
-        private void SaveMP3(string SaveToFolder, string VideoURL, string MP3Name)
-        {
-            string source = @SaveToFolder;
-            YouTube youtube = YouTube.Default;
-            YouTubeVideo vid = youtube.GetVideo(VideoURL);
-            File.WriteAllBytes(source + vid.FullName, vid.GetBytes());
-            MediaFile inputFile = new MediaFile { Filename = source + vid.FullName };
-            MediaFile outputFile = new MediaFile { Filename = $"{MP3Name}.mp3" };
-
-            using (Engine engine = new Engine())
-            {
-                engine.GetMetadata(inputFile);
-
-                engine.Convert(inputFile, outputFile);
-            }
-        }
-
-        private Process CreateStream(string path)
-        {
-            return Process.Start(new ProcessStartInfo
-            {
-                FileName = "ffmpeg",
-                Arguments = $"-hide_banner -loglevel panic -i \"{path}\" -ac 2 -f s16le -ar 48000 pipe:1",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-            });
-        }
-
-        private async Task SendAsync(IAudioClient client, string path, IUserMessage message)
-        {
-            using (Process ffmpeg = CreateStream(path))
-            using (Stream output = ffmpeg.StandardOutput.BaseStream)
-            
-            using (AudioOutStream discord = client.CreatePCMStream(AudioApplication.Mixed))
-            {
-                try 
-                {
-                    await output.CopyToAsync(discord); 
-                }
-
-                finally
-                {
-                    await discord.FlushAsync(); 
-                }
-            }
-
-            try
-            {
-                File.Delete(path);
-            }
-
-            catch(Exception ex)
-            {
-                await message.ReplyAsync($"You numpty, you've only gone and found yourself an error!\n\n {ex.Message}");
-            }
-        }
-
-        [Command("Speaking")]
-        public async Task speaking()
-        {
-            if (Global.IsDev(Context.User))
-            {
-                IVoiceChannel channel = (Context.User as IGuildUser)?.VoiceChannel;
-                IAudioClient audioClient = await channel.ConnectAsync();
-                await Context.Message.ReplyAsync($"{audioClient.ConnectionState}");
-                await audioClient.SetSpeakingAsync(true);
-            }
-        }
-
-        [Command("setAudioClient")]
-        public async Task setAudioClient()
-        {
-            if (Global.IsDev(Context.User))
-            {
-                _audioClient = await (Context.User as IGuildUser)?.VoiceChannel.ConnectAsync();
-                ready = true;
-                await ReplyAsync("Success");
-            }
         }
     }
 }

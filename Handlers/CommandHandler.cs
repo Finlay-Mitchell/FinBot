@@ -66,7 +66,7 @@ namespace FinBot.Handlers
                 }
             }
 
-            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(Global.DeterminePrefix(context).Result, ref argPos)))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
                 return;
             }
