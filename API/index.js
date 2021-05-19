@@ -1,12 +1,12 @@
 var express = require("express");
 var app = express();
 
-var config = require(`./discord/main.js`);
+var discord = require(`./discord/main.js`);
 
 app.use(express.json())
 
 app.get('/', (request, response) => {
-    response.status(200).send(`${config.test()}`)
+    response.status(200).send(`${discord.test()}`)
 });
 
 app.get('/test', (request, response) => {

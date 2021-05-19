@@ -1,22 +1,16 @@
-var config = require(`./Data/config.js`);
-const Discord = require('discord.js');
+const client = require('./startup.js')
 
-const client = new Discord.Client();
 var lastMessage = "No content set yet";
 
-client.login(config.token);
-
-client.on('ready', () => {
-    console.log("Bot online");
-});
-
-client.on('message', (message) => {
+client.client.on('message', (message) => {
     if(message.author.bot)
     {
         return;
     }
 
-    lastMessage = `${message.content} - ${message.author.username}`;
+    // lastMessage = `${message.content} - ${message.author.username}`;
+    lastMessage = `User: [${message.author.username}]<->[${message.author.id}] Discord server: [${message.guild.name}/${message.channel}]
+    Channel type: ${message.channel.type} -> [${message.content}]`
 });
 
 exports.test = function test()

@@ -1753,8 +1753,8 @@ namespace FinBot.Modules
         //    return Task.CompletedTask;
         //}
 
-        [Command("test")]
-        public async Task test()
+        [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime")]
+        public async Task uptime()
         {
             UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);
             List<Monitor> monitors = await _client.GetMonitors();
