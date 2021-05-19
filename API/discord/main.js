@@ -2,7 +2,7 @@ var config = require(`./Data/config.js`);
 const Discord = require('discord.js');
 
 const client = new Discord.Client();
-var lastMessage = "";
+var lastMessage = "No content set yet";
 
 client.login(config.token);
 
