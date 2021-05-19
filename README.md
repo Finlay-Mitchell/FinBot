@@ -35,6 +35,7 @@ An advanced Discord utility/commands bot with:
  * Microsoft.Extensions.Logging
  * MongoDB.Driver
  * System.configuration
+ * UptimeSharp
  
  # Python
  ### Packages
@@ -52,6 +53,11 @@ For this project, you will need to install the following libraries:
  * YoutubeDL
  * motor
  * mysql
+
+# Node.js
+### Packages
+* discord.js
+* express
  
 # If you want to copy and expand this bot
 First, give me credit.
