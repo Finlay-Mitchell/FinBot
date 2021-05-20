@@ -8,12 +8,11 @@ client.client.on('message', (message) => {
         return;
     }
 
-    // lastMessage = `${message.content} - ${message.author.username}`;
     lastMessage = `User: [${message.author.username}]<->[${message.author.id}] Discord server: [${message.guild.name}/${message.channel}]
     Channel type: ${message.channel.type} -> [${message.content}]`
 });
 
-exports.test = function test()
+exports.lastMessage = function lastMessage()
 {
     return lastMessage;
 }
