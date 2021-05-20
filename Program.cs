@@ -21,6 +21,7 @@ namespace FinBot
             {
                 try
                 {
+                    //Start the bot
                     new Program().RunBotAsync().GetAwaiter().GetResult();
                 }
 
@@ -34,6 +35,7 @@ namespace FinBot
 
         public async Task RunBotAsync()
         {
+            //states Intents, starts the client and adds singletons.
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
             Global.ReadConfig();
@@ -84,6 +86,7 @@ namespace FinBot
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            //configure levelling type.
             services.AddLogging(configure => configure.AddSerilog());
             Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Error;
 
