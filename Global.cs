@@ -15,7 +15,6 @@ namespace FinBot
 {
     public class Global
     {
-
         public static string Token { get; set; }
         public static string Prefix { get; set; }
         public static string Version { get; set; }
@@ -43,27 +42,18 @@ namespace FinBot
         
         public static string mongoconnstr { get; set; }
         public static string StatusPageAPIKey { get; set; }
-
+        
 
         private static string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
-        public static DiscordShardedClient Client { get; set; }
         public static string WelcomeMessageURL { get; set; }
         internal static JsonItems CurrentJsonData;
         public static string KickMessageURL { get; set; }
         public static string BanMessageURL { get; set; }
-        public static string infractionMessagefilepath = $"{Environment.CurrentDirectory}/Data/infractionCards.txt";
-        public static string CensoredWordsPath = $"{Environment.CurrentDirectory}/Data/Censored.txt";
-        public static string LeetRulesPath = $"{Environment.CurrentDirectory}/Data/LeetRules.txt";
-        public static bool AutoSlowmodeEnabled { get; set; }
         public static string TopicsPath = $"{Environment.CurrentDirectory}/Data/Topics.txt";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        public static List<IEmote> reactions = new List<IEmote>()
-                        {
-                            new Emoji("✅"),
-                            new Emoji("❌")
-                        };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec" };
-        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 };
+        public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec" }; // These are hidden from being shown in the help command in HelpHandler.cs
+        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 }; // Listed developer Ids
 
         public static void ReadConfig()
         {
@@ -130,6 +120,7 @@ namespace FinBot
 
         public static long ConvertToTimestamp(DateTime value)
         {
+            //converts datetime into unix timestamp.
             TimeSpan elapsedTime = value - Epoch;
             return (long)elapsedTime.TotalSeconds;
         }
@@ -144,48 +135,25 @@ namespace FinBot
 
         public static bool IsDev(SocketUser user)
         {
+            //checks if user is a listed bot developer
             return DevUIDs.Contains(user.Id);
         }
 
         public static async Task ModifyMessage(IUserMessage baseMessage, string newMessage)
         {
+            //Modifies plain text message
             await baseMessage.ModifyAsync(x => { x.Content = newMessage; });
         }
 
         public static async Task ModifyMessage(IUserMessage baseMessage, EmbedBuilder embed)
         {
+            //Modifies embed message
             await baseMessage.ModifyAsync(x => { x.Embed = embed.Build(); });
-        }
-
-        public class processes
-        {
-            public int MainBotPID { get; set; }
-            public int PyBotPID { get; set; }
-            public static int ProcessID { get; set; }
-        }
-
-        public static int GetPreviousProcessTaskPID()
-        {
-            string Data = File.ReadAllText(@$"{Environment.CurrentDirectory}\Data\PID.txt");
-
-            if (string.IsNullOrEmpty(Data))
-            {
-                return 0;
-            }
-
-            else
-            {
-                return Convert.ToInt32(Data);
-            }
-        }
-
-        public static void UpdatePIDValue(int PID)
-        {
-            File.WriteAllText(@$"{Environment.CurrentDirectory}\Data\PID.txt", $"{PID}");
         }
 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
+            //gets the prefix for the guild in question - add Dictionary support for first prefix test.
             try
             {
                 MongoClient MongoClient = new MongoClient(mongoconnstr);
@@ -214,6 +182,7 @@ namespace FinBot
 
         public static async Task<string> DetermineLevel(SocketGuild guild)
         {
+            // Determines whether guild user levelling is enabled or not.
             try
             {
                 MongoClient MongoClient = new MongoClient(mongoconnstr);
