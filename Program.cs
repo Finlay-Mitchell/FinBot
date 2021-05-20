@@ -34,8 +34,6 @@ namespace FinBot
 
         public async Task RunBotAsync()
         {
-            Process process1 = new Process();
-
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
             Global.ReadConfig();
