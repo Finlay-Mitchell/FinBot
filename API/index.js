@@ -1,12 +1,11 @@
 var express = require("express");
-var app = express();
-
 var discord = require(`./discord/main.js`);
 
+var app = express();
 app.use(express.json())
 
 app.get('/', (request, response) => {
-    response.status(200).send(`${discord.test()}`)
+    response.status(200).send(`${discord.lastMessage()}`)
 });
 
 app.get('/test', (request, response) => {
