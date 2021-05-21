@@ -57,6 +57,13 @@ class Misc(commands.Cog):
             embed.description = f"{users.name}#{users.discriminator}({users.id})\n{xp}\n{level}"
             await msg.edit(text="", embed=embed)
             await asyncio.sleep(1)
+    
+    # YES I NEED TO FIX FOR THIS COG
+    # @bot.event
+    # async def on_member_join(member):
+    #  mee6API = API(monkey_guild_id)
+    #   Xp = await mee6API.levels.get_user_level(member.id)
+    #   Level = await mee6API.levels.get_user_xp(member.id)
 
 
 def setup(bot):
