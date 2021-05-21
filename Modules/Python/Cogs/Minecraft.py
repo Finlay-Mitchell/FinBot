@@ -22,7 +22,6 @@ class Minecraft(commands.Cog):
                 ctx.reply(embed=self.create_error_embed(title="Minecraft User Not found"))
                 return
             else:
-                # await ctx.reply(f"https://hypixel.thom.club/{arg}")
                 random_string = secrets.token_urlsafe(16).replace("-", "")
                 await ctx.reply(f"https://hypixel.thom.club/{arg}-{random_string}.png")  # stops cached messages
 
