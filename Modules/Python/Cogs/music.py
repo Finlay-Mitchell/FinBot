@@ -23,14 +23,9 @@ from Data import config
 
 
 # TODO:
-"""1. Add a true pagination system to the bot as a whole to allow !queue DONE
-2. Add !queue DONE, !clearqueue, !dequeue <index>
-3. Add !volume DONE
-4. Add thumbnails (maybe) for "now playing" embeds. DONE
-5. Clean up help command for music related bot commands.
-6. Add variable prefix (set to something obscure at first) DONE
-7. Add !pause DONE
-8. <FUTURE> Start on web help page and change help handler to fully custom help handler."""
+"""
+1. <FUTURE> Start on web help page and change help handler to fully custom help handler.
+"""
 
 utils.bug_reports_message = lambda: ''
 
@@ -123,8 +118,6 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 return None
             if 'entries' in data and len(data['entries']) > 0:
                 data = sorted(data['entries'], key=lambda x: x.get("view_count", 0), reverse=True)[0]
-                # take first item from a playlist
-                # data = data['entries'][0]
         if data.get('url', None) is None:
             return None
         return data
@@ -133,36 +126,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
 class Music(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot = bot
-        # self.data = DataHelper()
         self.tts_cog = bot.get_cog("TTS")
         self.music_db = self.bot.mongo.client.finlay.music
-        # self.data["song_queues"] = {}
         self.spotify = SpotifySearcher(self.bot)
         self.url_to_title_cache = {}
-        # self.bot.loop.create_task(self.restart_watcher())
-
-    # async def restart_watcher(self):
-    #     if self.bot.restart_event is None:
-    #         self.bot.restart_event = asyncio.Event()
-    #     while True:
-    #         try:
-    #             await self.bot.wait_until_ready()
-    #             await self.post_restart_resume()
-    #             await self.bot.restart_event.wait()
-    #             async with self.bot.restart_waiter_lock:
-    #                 self.bot.restart_waiters += 1
-    #             for voice_client in self.bot.voice_clients:
-    #                 if not isinstance(voice_client, discord.VoiceClient):
-    #                     continue
-    #                 if not isinstance(voice_client.source, YTDLSource):
-    #                     continue
-    #                 await self.pause_voice_client(voice_client)
-    #                 await self.bot.mongo.force_insert(self.music_db.restart_resume, {"_id": voice_client.channel.id})
-    #             async with self.bot.restart_waiter_lock:
-    #                 self.bot.restart_waiters -= 1
-    #             return
-    #         except RuntimeError:
-    #             pass
 
     async def enqueue(self, guild, song_url, resume_time=None, start=False):
         guild_document = await self.guild_document_from_guild(guild)
