@@ -1,14 +1,13 @@
 import discord
 from discord.ext import commands
 from mee6_py_api import API
+import motor.motor_asyncio
 
 from io import BytesIO
 import asyncio
 
 from main import *
 from Checks.Permission_check import is_developer
-
-import motor.motor_asyncio
 
 
 class Misc(commands.Cog):
@@ -42,6 +41,7 @@ class Misc(commands.Cog):
         if len(full_text) > 0:
             await ctx.send(content=full_text)
 
+    # Later, append results to MySql levelling database.
     @commands.command(Pass_Context=True)
     @is_developer()
     async def getlevels(self, ctx):
@@ -53,24 +53,10 @@ class Misc(commands.Cog):
             index += 1
             xp = await mee6_api.levels.get_user_level(users.id)
             level = await mee6_api.levels.get_user_xp(users.id)
-            # if not xp == "None" and not Level == "None":
-            #     data["Users"].append({
-            #         "UserId": f"{users.id}",
-            #         "Level": f"{level}",
-            #         "Xp": f"{xp}"
-            #     })
             embed.set_footer(text=f"Getting user {index}/{ctx.message.guild.member_count}")
             embed.description = f"{users.name}#{users.discriminator}({users.id})\n{xp}\n{level}"
             await msg.edit(text="", embed=embed)
             await asyncio.sleep(1)
-            # with open(path, "a") as outfile:
-            #     json.dump(data, outfile, indent=2)
-
-    @commands.command()
-    # @is_developer()
-    async def ban(self, ctx, member: discord.Member, *, reason=None):
-        if ctx.message.author == member:
-            await member.ban(reason=reason)
 
 
 def setup(bot):
