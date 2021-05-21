@@ -1,6 +1,5 @@
 import discord
 import asyncio
-# import sys
 import json
 import os
 import datetime
@@ -34,9 +33,7 @@ class FinBot(commands.Bot):
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
-            
         # COMMENTED OUT UNTIL KERNEL FIXES
-            
         # self.aiml_kernel = aiml.Kernel()
         # if os.path.isfile("bot_brain.brn"):
         #     self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
@@ -138,52 +135,10 @@ def get_bot():
             error_channel = bot.get_channel(guild_error_channel_id)
             await error_channel.send(embed=embed)
             await ctx.reply(embed=embed)
-            # bot.restart()
 
         except Exception as e:
             print("Error in sending error to discord. Error was {}".format(error))
             print("Error sending to discord was {}".format(e))
-            
-     # COMMENTED UNTIL AIML KERNEL FIX
-    # @bot.event
-    # async def on_message(message):
-    #     if message.author.bot or str(message.channel.id) != "840922321266016286":
-    #         await bot.process_commands(message)
-    #         return
-    #
-    #     if message.content is None:
-    #         return
-    #
-    #     if message.content.startswith(config.prefix):
-    #         return
-    #
-    #     elif 'shutdown' in message.content and message.author.id in config.dev_uids:
-    #         await bot.logout()
-    #
-    #     else:
-    #         aiml_response = bot.aiml_kernel.respond(message.content)
-    #         if aiml_response == '':
-    #             await message.channel.send("I don't have a response for that, sorry.")
-    #         else:
-    #             await message.channel.send(aiml_response)
-
-    # @bot.event
-    # async def on_member_join(member):
-    #  mee6API = API(monkey_guild_id)
-    #   Xp = await mee6API.levels.get_user_level(member.id)
-    #   Level = await mee6API.levels.get_user_xp(member.id)
-    #
-    #   if not Xp == "None" and not Level == "None":
-    #       data = {}
-    #       data["Users"] = []
-    #       data["Users"].append({
-    #           "UserId": f"{member.id}",
-    #           "Level": f"{Level}",
-    #           "Xp": f"{Xp}"
-    #       })
-    #
-    #       with open("../../bin/Debug/netcoreapp3.1/Data/LEVELS.json", "a") as outfile:
-    #           json.dump(data, outfile, indent=2)
 
     return bot
 
