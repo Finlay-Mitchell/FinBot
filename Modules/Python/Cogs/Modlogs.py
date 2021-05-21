@@ -1,10 +1,9 @@
 import discord
 from discord.ext import commands
+import mysql.connector
 
 import datetime
 import traceback
-
-import mysql.connector
 
 from main import FinBot
 from Data.config import data
