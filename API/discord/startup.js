@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-var config = require(`../Data/config.js`);
+var config = require(`../data/config.js`);
 
 var client = new Discord.Client();
 exports.client = client;

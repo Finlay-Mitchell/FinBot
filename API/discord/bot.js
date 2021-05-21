@@ -1,8 +1,9 @@
-const client = require('./startup.js')
+var bot = require("../data/config.js")
 
 var lastMessage = "No content set yet";
+var client = bot.client;
 
-client.client.on('message', (message) => {
+client.on('message', (message) => {
     if(message.author.bot)
     {
         return;
@@ -12,7 +13,7 @@ client.client.on('message', (message) => {
     Channel type: ${message.channel.type} -> [${message.content}]`
 });
 
-exports.lastMessage = function lastMessage()
+exports.lastmessage = function lastmessage()
 {
     return lastMessage;
 }
