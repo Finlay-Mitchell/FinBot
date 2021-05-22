@@ -1,15 +1,12 @@
 import discord
 import asyncio
-import json
 import os
 import datetime
 import time
-import subprocess
 from discord.ext import commands
 from Data import config
 from Handlers.storageHandler import DataHelper
 from traceback import format_exc, print_tb
-# from mee6_py_api import API
 import re
 import motor.motor_asyncio
 from Handlers.MongoHandler import MongoDB
@@ -33,13 +30,13 @@ class FinBot(commands.Bot):
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
-        # COMMENTED OUT UNTIL KERNEL FIXES
-        # self.aiml_kernel = aiml.Kernel()
-        # if os.path.isfile("bot_brain.brn"):
-        #     self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
-        # else:
-        #     self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
-        #     self.aiml_kernel.saveBrain("bot_brain.brn")
+        self.aiml_kernel = aiml.Kernel()
+        if os.path.isfile("bot_brain.brn"):
+            self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
+        else:
+            self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
+            self.aiml_kernel.saveBrain("bot_brain.brn")
+        self.aiml_kernel.verbose(0)
 
     async def determine_prefix(self, bot, message):
         if not hasattr(message, "guild") or message.guild is None:
@@ -151,3 +148,9 @@ if __name__ == '__main__':
 
     except discord.errors.LoginFailure:
         time.sleep(18000)
+
+    except discord.errors.ConnectionClosed:
+        if not asyncio.get_event_loop().is_closed():
+            asyncio.get_event_loop().close()
+        print("Connection Closed, exiting...")
+        exit()

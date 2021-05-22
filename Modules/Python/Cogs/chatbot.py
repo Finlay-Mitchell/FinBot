@@ -1,43 +1,42 @@
-import discord
+import re
+
 from discord.ext import commands
 
 from main import FinBot
+from Data import config
 
 
 class chatbot(commands.Cog):
     def __init__(self, bot: FinBot):
         self.bot = bot
 
-    # @commands.command()
-    # async def chatbot(self, ctx, *, message):
-    #     aiml_response = self.bot.aiml_kernel.respond(message)
-    #     if aiml_response == '':
-    #         await ctx.reply("I don't have a response for that, sorry.")
-    #     else:
-    #         await ctx.reply(aiml_response)
+    @commands.command()
+    async def chatbot(self, ctx, *, message):
+        aiml_response = self.bot.aiml_kernel.respond(message)
+        if aiml_response == '':
+            await ctx.reply("I don't have a response for that, sorry.")
+        else:
+            response = re.sub(r"[@]", "", aiml_response)
+            await ctx.reply(response)
 
-    # YES I NEED TO FIX FOR THIS COG
-    # @bot.event
-    # async def on_message(message):
-    #     if message.author.bot or str(message.channel.id) != "840922321266016286":
-    #         await bot.process_commands(message)
-    #         return
-    #
-    #     if message.content is None:
-    #         return
-    #
-    #     if message.content.startswith(config.prefix):
-    #         return
-    #
-    #     elif 'shutdown' in message.content and message.author.id in config.dev_uids:
-    #         await bot.logout()
-    #
-    #     else:
-    #         aiml_response = bot.aiml_kernel.respond(message.content)
-    #         if aiml_response == '':
-    #             await message.channel.send("I don't have a response for that, sorry.")
-    #         else:
-    #             await message.channel.send(aiml_response)
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot or str(message.channel.id) != "840922321266016286":
+            return
+
+        if message.content is None:
+            return
+
+        if message.content.startswith(config.prefix):
+            return
+
+        else:
+            aiml_response = self.bot.aiml_kernel.respond(message.content)
+            if aiml_response == '':
+                await message.channel.send("I don't have a response for that, sorry.")
+            else:
+                response = re.sub(r"[@]", "", aiml_response)
+                await message.channel.send(response)
 
 
 def setup(bot):

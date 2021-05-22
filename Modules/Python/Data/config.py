@@ -28,7 +28,7 @@ error_channel_id = 795057163768037376
 dev_uids = [305797476290527235, 230778630597246983]  # last one is an alt, lol
 
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
-extensions = ["audit", "executer", "tts", "lyrics", "Minecraft", "music", "misc", "chatbot", "modlogs", "guild_config",
+extensions = ["audit", "executer", "tts", "lyrics", "Minecraft", "music", "Misc", "chatbot", "Modlogs", "guild_config",
               "api"]
 
 api_port = 9987

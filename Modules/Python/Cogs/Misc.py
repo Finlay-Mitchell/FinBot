@@ -1,10 +1,14 @@
 import discord
+import mysql.connector
 from discord.ext import commands
 from mee6_py_api import API
 import motor.motor_asyncio
+from Data.config import data
 
 from io import BytesIO
 import asyncio
+import time
+import traceback
 
 from main import *
 from Checks.Permission_check import is_developer
@@ -41,29 +45,78 @@ class Misc(commands.Cog):
         if len(full_text) > 0:
             await ctx.send(content=full_text)
 
-    # Later, append results to MySql levelling database.
     @commands.command(Pass_Context=True)
     @is_developer()
     async def getlevels(self, ctx):
-        mee6_api = API(ctx.message.guild.id)
-        index = 0
-        embed = self.bot.create_completed_embed("Getting user stats...", "generating embed....")
-        msg = await ctx.reply(embed=embed)
-        for users in [m for m in ctx.guild.members if not m.bot]:
-            index += 1
-            xp = await mee6_api.levels.get_user_level(users.id)
-            level = await mee6_api.levels.get_user_xp(users.id)
-            embed.set_footer(text=f"Getting user {index}/{ctx.message.guild.member_count}")
-            embed.description = f"{users.name}#{users.discriminator}({users.id})\n{xp}\n{level}"
-            await msg.edit(text="", embed=embed)
-            await asyncio.sleep(1)
-    
-    # YES I NEED TO FIX FOR THIS COG
-    # @bot.event
-    # async def on_member_join(member):
-    #  mee6API = API(monkey_guild_id)
-    #   Xp = await mee6API.levels.get_user_level(member.id)
-    #   Level = await mee6API.levels.get_user_xp(member.id)
+        try:
+            connection = self.auth()
+            cursor = connection.cursor()
+
+            mee6_api = API(ctx.message.guild.id)
+            index = 0
+            embed = self.bot.create_completed_embed("Getting user stats...", "generating embed....")
+            msg = await ctx.reply(embed=embed)
+            for users in [m for m in ctx.guild.members if not m.bot]:
+                index += 1
+                xp = await mee6_api.levels.get_user_level(users.id)
+                level = await mee6_api.levels.get_user_xp(users.id)
+                if xp == None:
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
+                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
+                else:
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
+                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, {level}, {xp}, {xp})")
+                connection.commit()
+
+                embed.set_footer(text=f"Getting user {index}/{ctx.message.guild.member_count}")
+                embed.description = f"{users.name}#{users.discriminator}({users.id})\n{xp}\n{level}"
+                await msg.edit(text="", embed=embed)
+                await asyncio.sleep(1)
+
+        except Exception as ex:
+            print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
+
+        finally:
+            if connection is not None and connection.is_connected():
+                connection.close()
+                if cursor is not None:
+                    cursor.close()
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        if member.guild.id == "725886999646437407":
+            try:
+                mee6API = API(725886999646437407)
+                Xp = await mee6API.levels.get_user_level(member.id)
+                Level = await mee6API.levels.get_user_xp(member.id)
+                connection = self.auth()
+                cursor = connection.cursor()
+                cursor.execute(f"SELECT * FROM Levels WHERE guildId = {member.guild.id} AND userId = {member.id}")
+                records = cursor.fetchall()
+
+                for row in records:
+                    row += "notnull"
+
+                if row == "" and Xp == None:
+                    return
+
+                elif row == "" and Xp != None:
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
+                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, {Xp}, {Xp})")
+            except Exception as ex:
+                print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
+
+            finally:
+                if connection is not None and connection.is_connected():
+                    connection.close()
+                    if cursor is not None:
+                        cursor.close()
+
+    @staticmethod
+    def auth():
+        connection = mysql.connector.connect(host=data["MySQLServer"], database=data["MySQLDatabase"],
+                                             user=data["MySQLUser"], password=data["MySQLPassword"])
+        return connection
 
 
 def setup(bot):
