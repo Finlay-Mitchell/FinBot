@@ -1052,7 +1052,7 @@ namespace FinBot.Modules
 
                 conn.Open();
                 List<Dictionary<string, dynamic>> scores = new List<Dictionary<string, dynamic>>();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY totalXP DESC LIMIT 10", conn);
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY XP DESC LIMIT 10", conn);
                 using MySqlDataReader reader = cmd.ExecuteReader();
                 int count = 0;
                 EmbedBuilder b = new EmbedBuilder()
@@ -1098,7 +1098,7 @@ namespace FinBot.Modules
                         }
 
                         arr.Add("name", username);
-                        arr.Add("score", reader.GetInt64(5));
+                        arr.Add("score", reader.GetInt64(4));
                         scores.Add(arr);
                         int spaceCount = 32 - username.Length;
                         string spaces = "";
@@ -1247,7 +1247,7 @@ namespace FinBot.Modules
 
                 while (reader.Read())
                 {
-                    b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
+                    b.Description = $"Current progress - {reader.GetInt64(4)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
                     $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
                 }
 
@@ -1406,7 +1406,7 @@ namespace FinBot.Modules
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY totalXP DESC LIMIT 10", conn);
+                    MySqlCommand cmd = new MySqlCommand($"SELECT * FROM Levels WHERE guildId = {Context.Guild.Id} ORDER BY XP DESC LIMIT 10", conn);
                     using MySqlDataReader reader = cmd.ExecuteReader();
                     int count = 0;
                     string Username = "labels: [";
@@ -1440,7 +1440,7 @@ namespace FinBot.Modules
                                 }
                             }
 
-                            Data += $"{reader.GetInt64(5)}, ";
+                            Data += $"{reader.GetInt64(4)}, ";
                         }
 
                         else

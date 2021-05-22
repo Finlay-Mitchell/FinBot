@@ -58,14 +58,15 @@ class Misc(commands.Cog):
             msg = await ctx.reply(embed=embed)
             for users in [m for m in ctx.guild.members if not m.bot]:
                 index += 1
-                xp = await mee6_api.levels.get_user_level(users.id)
-                level = await mee6_api.levels.get_user_xp(users.id)
+                xp = await mee6_api.levels.get_user_xp(users.id)
+                level = await mee6_api.levels.get_user_level(users.id)
+
                 if xp == None:
-                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, 0, 0)")
                 else:
-                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, {level}, {xp}, {xp})")
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, {level}, {xp})")
                 connection.commit()
 
                 embed.set_footer(text=f"Getting user {index}/{ctx.message.guild.member_count}")
@@ -87,8 +88,8 @@ class Misc(commands.Cog):
         if member.guild.id == "725886999646437407":
             try:
                 mee6API = API(725886999646437407)
-                Xp = await mee6API.levels.get_user_level(member.id)
-                Level = await mee6API.levels.get_user_xp(member.id)
+                Xp = await mee6API.levels.get_user_xp(member.id)
+                Level = await mee6API.levels.get_user_level(member.id)
                 connection = self.auth()
                 cursor = connection.cursor()
                 cursor.execute(f"SELECT * FROM Levels WHERE guildId = {member.guild.id} AND userId = {member.id}")
@@ -101,8 +102,8 @@ class Misc(commands.Cog):
                     return
 
                 elif row == "" and Xp != None:
-                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, {Xp}, {Xp})")
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, {Xp})")
             except Exception as ex:
                 print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
 

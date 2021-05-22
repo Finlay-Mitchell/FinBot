@@ -110,10 +110,10 @@ class guild_config(commands.Cog):
             await self.guild_db.update_one({"_id": ctx.guild.id}, {"$set": {"levelling": toggle}})
 
         if "true" in toggle or "on" in toggle:
-            await ctx.reply(embed=self.bot.create_completed_embed("Levelling channel Updated!",
+            await ctx.reply(embed=self.bot.create_completed_embed("Guild levelling enabled!",
                                                                   "Enabled guild levelling"))
         else:
-            await ctx.reply(embed=self.bot.create_completed_embed("Levelling channel Updated!",
+            await ctx.reply(embed=self.bot.create_completed_embed("Guild levelling disabled!",
                                                                   "Disabled guild levelling"))
 
     @enableLevelling.error
