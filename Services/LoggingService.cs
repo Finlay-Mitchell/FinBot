@@ -34,7 +34,7 @@ namespace FinBot.Services
             _discord.MessageReceived += OnMessageReceived;
         }
 
-        private async Task AddToLevels(uint type, MySqlConnection conn, SocketMessage arg, long level, long XP)
+        private async Task AddToDatabase(uint type, MySqlConnection conn, SocketMessage arg, long level, long XP, long totalXP)
         {
             try
             {
@@ -43,13 +43,13 @@ namespace FinBot.Services
 
                 if (type == 0)
                 {
-                    MySqlCommand cmd = new MySqlCommand($"UPDATE Levels SET LastValidTimestamp = {Now}, level = {level}, XP = {XP} WHERE guildId = {chan.Guild.Id} AND userId = {arg.Author.Id}", conn);
+                    MySqlCommand cmd = new MySqlCommand($"UPDATE Levels SET LastValidTimestamp = {Now}, level = {level}, XP = {XP}, totalXP = {totalXP} WHERE guildId = {chan.Guild.Id} AND userId = {arg.Author.Id}", conn);
                     cmd.ExecuteNonQuery();
                 }
 
                 else
                 {
-                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES({arg.Author.Id}, {chan.Guild.Id}, {Now}, 0, {XP})", conn);
+                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES({arg.Author.Id}, {chan.Guild.Id}, {Now}, 0, {XP}, {totalXP})", conn);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -145,12 +145,15 @@ namespace FinBot.Services
                     long Now = Global.ConvertToTimestamp(arg.Timestamp.UtcDateTime);
                     MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
                     MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+
                     conn.Open();
                     long TimeStamp = 0;
                     long XP = 0;
                     long level = 0;
                     bool ran = false;
                     long xpToNextLevel = 0;
+                    long totalXP = 0;
+
                     MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Levels WHERE userId = {arg.Author.Id} AND guildId = {chan.Guild.Id}", conn);
                     MySqlDataReader reader = cmd1.ExecuteReader();
 
@@ -164,9 +167,10 @@ namespace FinBot.Services
                             if (TimeStamp >= Global.MinMessageTimestamp || Global.IsDev(arg.Author))
                             {
                                 XP = reader.GetInt64(4);
+                                level = reader.GetInt64(3);
                                 Random r = new Random();
                                 XP += r.Next(15, 25);
-                                level = reader.GetInt64(3);
+                                totalXP += XP;
                                 xpToNextLevel = (long)(5 * Math.Pow(level, 2) + 50 * level + 100);
 
                                 if (XP >= xpToNextLevel)
@@ -184,7 +188,7 @@ namespace FinBot.Services
                                 }
 
                                 queryConn.Open();
-                                await AddToLevels(0, queryConn, arg, level, XP);
+                                await AddToDatabase(0, queryConn, arg, level, XP, totalXP);
                                 queryConn.Close();
                             }
 
@@ -205,9 +209,9 @@ namespace FinBot.Services
                         try
                         {
                             Random r = new Random();
-                            XP += r.Next(15, 25);
+                            totalXP = +r.Next(15, 25);
                             queryConn.Open();
-                            await AddToLevels(1, queryConn, arg, 0, XP);
+                            await AddToDatabase(1, queryConn, arg, 0, XP, totalXP);
                             queryConn.Close();
                         }
 

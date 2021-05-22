@@ -63,10 +63,10 @@ class Misc(commands.Cog):
 
                 if xp == None:
                     cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
-                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, 0, 0)")
+                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
                 else:
                     cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
-                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, {level}, {xp})")
+                                   f"({users.id}, {ctx.guild.id}, {int(time.time())}, {level}, 0, {xp})")
                 connection.commit()
 
                 embed.set_footer(text=f"Getting user {index}/{ctx.message.guild.member_count}")
@@ -103,7 +103,7 @@ class Misc(commands.Cog):
 
                 elif row == "" and Xp != None:
                     cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
-                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, {Xp})")
+                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, 0, {Xp})")
             except Exception as ex:
                 print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
 
@@ -112,6 +112,35 @@ class Misc(commands.Cog):
                     connection.close()
                     if cursor is not None:
                         cursor.close()
+
+    @commands.command(Pass_Context=True)
+    @is_developer()
+    async def getme(self, ctx):
+        try:
+            connection = self.auth()
+            cursor = connection.cursor()
+
+            mee6_api = API(ctx.message.guild.id)
+
+            xp = await mee6_api.levels.get_user_xp(305797476290527235)
+            level = await mee6_api.levels.get_user_level(305797476290527235)
+            if xp == None:
+                cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                               f"({305797476290527235}, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
+            else:
+                cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                               f"({305797476290527235}, {ctx.guild.id}, {int(time.time())}, {level}, 0 {xp})")
+            connection.commit()
+
+        except Exception as ex:
+            print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
+
+        finally:
+            if connection is not None and connection.is_connected():
+                connection.close()
+                if cursor is not None:
+                    cursor.close()
+
 
     @staticmethod
     def auth():
