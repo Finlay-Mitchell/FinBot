@@ -102,7 +102,7 @@ class Misc(commands.Cog):
                     return
 
                 elif row == "" and Xp != None:
-                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
                                    f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, 0, {Xp})")
             except Exception as ex:
                 print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
@@ -126,10 +126,10 @@ class Misc(commands.Cog):
             level = await mee6_api.levels.get_user_level(305797476290527235)
             if xp == None:
                 cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                               f"({305797476290527235}, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
+                               f"(305797476290527235, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
             else:
                 cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                               f"({305797476290527235}, {ctx.guild.id}, {int(time.time())}, {level}, 0 {xp})")
+                               f"(305797476290527235, {ctx.guild.id}, {int(time.time())}, {level}, 0 {xp})")
             connection.commit()
 
         except Exception as ex:
