@@ -164,7 +164,7 @@ namespace FinBot.Services
                             ran = true;
                             TimeStamp = Now - reader.GetInt64(2);
 
-                            if (TimeStamp >= Global.MinMessageTimestamp || Global.IsDev(arg.Author))
+                            if (TimeStamp >= Global.MinMessageTimestamp)
                             {
                                 XP = reader.GetInt64(4);
                                 level = reader.GetInt64(3);
