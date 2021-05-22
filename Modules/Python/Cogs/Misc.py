@@ -87,23 +87,22 @@ class Misc(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         if member.guild.id == "725886999646437407":
             try:
-                mee6API = API(725886999646437407)
+                mee6API = API(member.guild.id)
                 Xp = await mee6API.levels.get_user_xp(member.id)
                 Level = await mee6API.levels.get_user_level(member.id)
                 connection = self.auth()
                 cursor = connection.cursor()
-                cursor.execute(f"SELECT * FROM Levels WHERE guildId = {member.guild.id} AND userId = {member.id}")
-                records = cursor.fetchall()
+                mee6_api = API(member.guild.id)
+                xp = await mee6_api.levels.get_user_xp(member.id)
+                level = await mee6_api.levels.get_user_level(member.id)
 
-                for row in records:
-                    row += "notnull"
-
-                if row == "" and Xp == None:
-                    return
-
-                elif row == "" and Xp != None:
+                if xp == None:
                     cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {Level}, 0, {Xp})")
+                                   f"({member.id}, {member.guild.id}, {int(time.time())}, 0, 0, 0)")
+                else:
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
+                                   f"({member.id}, {member.guild.id}, {int(time.time())}, {level}, 0, {xp})")
+                connection.commit()
             except Exception as ex:
                 print(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
 
