@@ -62,10 +62,10 @@ class Misc(commands.Cog):
                 level = await mee6_api.levels.get_user_level(users.id)
 
                 if xp == None:
-                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
                                    f"({users.id}, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
                 else:
-                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP) VALUES"
+                    cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
                                    f"({users.id}, {ctx.guild.id}, {int(time.time())}, {level}, 0, {xp})")
                 connection.commit()
 
