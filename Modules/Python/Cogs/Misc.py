@@ -129,7 +129,7 @@ class Misc(commands.Cog):
                                f"(305797476290527235, {ctx.guild.id}, {int(time.time())}, 0, 0, 0)")
             else:
                 cursor.execute(f"INSERT INTO Levels(userId, guildId, LastValidTimestamp, level, XP, totalXP) VALUES"
-                               f"(305797476290527235, {ctx.guild.id}, {int(time.time())}, {level}, 0 {xp})")
+                               f"(305797476290527235, {ctx.guild.id}, {int(time.time())}, {level}, 0, {xp})")
             connection.commit()
 
         except Exception as ex:
