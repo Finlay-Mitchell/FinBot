@@ -1212,7 +1212,7 @@ namespace FinBot.Modules
             if (arg.Length == 0)
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, GetRank(Context.Message.Author, Context.Guild.Id));
+                await Context.Message.ReplyAsync("", false, await GetRankAsync(Context.Message.Author, Context.Guild.Id));
             }
 
             else
@@ -1220,12 +1220,12 @@ namespace FinBot.Modules
                 if (Context.Message.MentionedUsers.Any())
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, GetRank(Context.Message.MentionedUsers.First(), Context.Guild.Id));
+                    await Context.Message.ReplyAsync("", false, await GetRankAsync(Context.Message.MentionedUsers.First(), Context.Guild.Id));
                 }
             }
         }
 
-        public Embed GetRank(SocketUser user, ulong guild)
+        public async Task<Embed> GetRankAsync(SocketUser user, ulong guild)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
 
@@ -1247,13 +1247,39 @@ namespace FinBot.Modules
 
                 while (reader.Read())
                 {
-                    b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
-                    $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
+                    try
+                    {
+                        RankItems rankItems = new RankItems();
+                        rankItems.chanId = $"{Context.Channel.Id}";
+                        rankItems.userId = $"{user.Id}";
+                        rankItems.XP = $"{reader.GetInt64(5)}";
+                        rankItems.reqXP = $"{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}";
+                        rankItems.level = $"{reader.GetInt64(3)}";
+                        HttpClient HTTPClient = new HttpClient();
+                        string final_object = JsonConvert.SerializeObject(rankItems);
+                        byte[] buffer = Encoding.UTF8.GetBytes(final_object);
+                        ByteArrayContent byteContent = new ByteArrayContent(buffer);
+                        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                        HttpRequestMessage request = new HttpRequestMessage
+                        {
+                            Method = HttpMethod.Post,
+                            RequestUri = new Uri("http://api.finlaymitchell.ml/rankcard/"),
+                            Content = new StringContent(final_object, Encoding.UTF8, "application/json"),
+                        };
+                        HttpResponseMessage HTTPResponse = await HTTPClient.SendAsync(request);
+                    }
+
+                    catch
+                    {
+                        b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
+                        $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
+                        b.WithCurrentTimestamp();
+                        return b.Build();
+                    }
+
                 }
 
                 conn.Close();
-                b.WithCurrentTimestamp();
-                return b.Build();
             }
 
             catch (Exception ex)
@@ -1269,6 +1295,11 @@ namespace FinBot.Modules
                     eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     return eb.Build();
                 }
+            }
+
+            finally
+            {
+                conn.Close();
             }
 
             return null;
@@ -1773,6 +1804,22 @@ namespace FinBot.Modules
             eb.WithFooter("Via UptimeRobot");
             eb.Color = Color.Green;
             await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
+
+        [Command("test")]
+        public async Task test()
+        {
+            
+        }
+
+        class RankItems
+        {
+            public string userId { get; set; }
+            public string level { get; set; }
+            public string XP { get; set; }
+            public string reqXP { get; set; }
+            public string chanId { get; set; }
         }
     }
 }

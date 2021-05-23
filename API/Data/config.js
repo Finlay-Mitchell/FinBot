@@ -1,7 +1,6 @@
-const config = require('../../bin/Debug/netcoreapp3.1/Data/Config.json')
-const bot = require('./../discord/startup.js')
+'use strict';
 
-exports.token = config.Token;
-exports.prefix = config.Prefix;
+exports.config = require('../../bin/Debug/netcoreapp3.1/Data/Config.json')
+const bot = require('./../discord/startup.js')
 
 exports.client = bot.client;
