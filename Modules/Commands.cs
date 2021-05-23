@@ -1247,35 +1247,35 @@ namespace FinBot.Modules
 
                 while (reader.Read())
                 {
-                    try
-                    {
-                        RankItems rankItems = new RankItems();
-                        rankItems.chanId = $"{Context.Channel.Id}";
-                        rankItems.userId = $"{user.Id}";
-                        rankItems.XP = $"{reader.GetInt64(5)}";
-                        rankItems.reqXP = $"{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}";
-                        rankItems.level = $"{reader.GetInt64(3)}";
-                        HttpClient HTTPClient = new HttpClient();
-                        string final_object = JsonConvert.SerializeObject(rankItems);
-                        byte[] buffer = Encoding.UTF8.GetBytes(final_object);
-                        ByteArrayContent byteContent = new ByteArrayContent(buffer);
-                        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                        HttpRequestMessage request = new HttpRequestMessage
-                        {
-                            Method = HttpMethod.Post,
-                            RequestUri = new Uri("http://api.finlaymitchell.ml/rankcard/"),
-                            Content = new StringContent(final_object, Encoding.UTF8, "application/json"),
-                        };
-                        HttpResponseMessage HTTPResponse = await HTTPClient.SendAsync(request);
-                    }
+                    //try
+                    //{
+                    //    RankItems rankItems = new RankItems();
+                    //    rankItems.chanId = $"{Context.Channel.Id}";
+                    //    rankItems.userId = $"{user.Id}";
+                    //    rankItems.XP = $"{reader.GetInt64(5)}";
+                    //    rankItems.reqXP = $"{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}";
+                    //    rankItems.level = $"{reader.GetInt64(3)}";
+                    //    HttpClient HTTPClient = new HttpClient();
+                    //    string final_object = JsonConvert.SerializeObject(rankItems);
+                    //    byte[] buffer = Encoding.UTF8.GetBytes(final_object);
+                    //    ByteArrayContent byteContent = new ByteArrayContent(buffer);
+                    //    byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    //    HttpRequestMessage request = new HttpRequestMessage
+                    //    {
+                    //        Method = HttpMethod.Post,
+                    //        RequestUri = new Uri("http://api.finlaymitchell.ml/rankcard/"),
+                    //        Content = new StringContent(final_object, Encoding.UTF8, "application/json"),
+                    //    };
+                    //    HttpResponseMessage HTTPResponse = await HTTPClient.SendAsync(request);
+                    //}
 
-                    catch
-                    {
+                    //catch
+                    //{
                         b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
                         $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
                         b.WithCurrentTimestamp();
                         return b.Build();
-                    }
+                    //}
 
                 }
 
