@@ -1,6 +1,6 @@
 var express = require("express");
 var discord = require(`./discord/bot.js`);
-
+var port = process.env.PORT || 3000;
 var app = express();
 app.use(express.json())
 
@@ -25,7 +25,7 @@ app.post('/rankcard', (request, response) => {
     response.status(200).send(`${discord.rankcard(userId, level, XP, reqXP, chanId)}`);
 });
 // This is REQUIRED for IISNODE to work
-app.listen(process.env.PORT, () => {
+app.listen(port, () => {
     // app.listen("8080", () => {
 
 console.log("listening");

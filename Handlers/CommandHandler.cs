@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
-using MongoDB.Driver;
-using MongoDB.Bson;
 
 namespace FinBot.Handlers
 {
@@ -17,7 +15,6 @@ namespace FinBot.Handlers
         private DiscordShardedClient _client;
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
-        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
 
         public CommandHandler(IServiceProvider services)
         {

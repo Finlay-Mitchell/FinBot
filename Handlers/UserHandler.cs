@@ -10,13 +10,13 @@ using Discord.Commands;
 
 namespace FinBot.Handlers
 {
-    public class UserJoinedHandler : ModuleBase<SocketCommandContext>
+    public class UserHandler : ModuleBase<SocketCommandContext>
     {
 
         private DiscordShardedClient _client;
         MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
 
-        public UserJoinedHandler(IServiceProvider services)
+        public UserHandler(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
             _client.UserJoined += HandleWelcomeAsync;
@@ -121,7 +121,7 @@ namespace FinBot.Handlers
                             IconUrl = arg.GetAvatarUrl(),
                             Text = $"{arg.Username}#{arg.Discriminator}"
                         },
-                        Description = $"Welcome, {arg.Mention} to {arg.Guild.Name}. You are member #{arg.Guild.Users.Count}!",
+                        Description = $"Welcome, {arg.Mention} to {arg.Guild.Name}. You are member #{arg.Guild.MemberCount}!",
                         ThumbnailUrl = Global.WelcomeMessageURL,
                         Color = Color.Green
                     };

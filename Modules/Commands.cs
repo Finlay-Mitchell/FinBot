@@ -1718,58 +1718,6 @@ namespace FinBot.Modules
             }
         }
 
-        //[Command("test")]
-        //public async Task test()
-        //{
-        //    HttpClient HTTPClient = new HttpClient();
-        //    HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://api.finlaymitchell.ml/test");
-        //    string resp = await HTTPResponse.Content.ReadAsStringAsync();
-        //    APIResults data = JsonConvert.DeserializeObject<APIResults>(resp);
-        //    await ReplyAsync(data.test + "\n\n\n" + data.check);
-        //}
-
-
-        //class APIResults
-        //{
-        //    public string test { get; set; }
-        //    public string check { get; set; }
-        //}
-
-
-        //[Command("APITest")]
-        //public async Task APITest(string type = "Get")
-        //{
-        //    if (type == "Get")
-        //    {
-        //        HttpClient HTTPClient = new HttpClient();
-        //        HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://api.finlaymitchell.ml");
-        //        string resp = await HTTPResponse.Content.ReadAsStringAsync();
-        //        await ReplyAsync(resp);
-        //    }
-
-        //    else
-        //    {
-        //        HttpClient HTTPClient = new HttpClient();
-        //        string final_object = "{\"testing\":\"yes\"}";
-        //        string content = JsonConvert.SerializeObject(final_object);
-        //        byte[] buffer = Encoding.UTF8.GetBytes(content);
-        //        ByteArrayContent byteContent = new ByteArrayContent(buffer);
-        //        byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        //        HttpRequestMessage request = new HttpRequestMessage
-        //        {
-        //            Method = HttpMethod.Post,
-        //            RequestUri = new Uri("https://api.finlaymitchell.ml/test/"),
-        //            Content = new StringContent(JsonConvert.SerializeObject(final_object), Encoding.UTF8, "application/json"),
-        //        };
-        //        HttpResponseMessage HTTPResponse = await HTTPClient.SendAsync(request);
-        //        string resp = await HTTPResponse.Content.ReadAsStringAsync();
-
-        //        await ReplyAsync(request.ToString());
-        //        await ReplyAsync(resp);
-        //    }
-        //}
-
-
         ///*
         // * 
         // * 
@@ -1778,13 +1726,13 @@ namespace FinBot.Modules
         // * 
         // */
 
-        //[Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
-        //public Task chatbot(params string[] arg)
-        //{
-        //    return Task.CompletedTask;
-        //}
+        [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
+        public Task chatbot(params string[] arg)
+        {
+            return Task.CompletedTask;
+        }
 
-        [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime")]
+        [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime"), Alias("status")]
         public async Task uptime()
         {
             UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);
@@ -1792,25 +1740,18 @@ namespace FinBot.Modules
 
             EmbedBuilder eb = new EmbedBuilder();
             monitors.ForEach(item => eb.AddField(item.Name, $"Status: {item.Status}\nUptime: {item.Uptime}%"));
-            eb.Title = "Bot statuses";
+            eb.Title = "Bot status";
             eb.Author = new EmbedAuthorBuilder()
             {
                 Name = Context.Message.Author.ToString(),
                 IconUrl = Context.Message.Author.GetAvatarUrl(),
                 Url = Context.Message.GetJumpUrl()
             };
-            eb.Description = "[View status page](https://stats.uptimerobot.com/JX1M3H8Jzw)";
+            eb.Description = "[View status page](https://status.finlaymitchell.ml)";
             eb.WithCurrentTimestamp();
             eb.WithFooter("Via UptimeRobot");
             eb.Color = Color.Green;
             await Context.Message.ReplyAsync("", false, eb.Build());
-        }
-
-
-        [Command("test")]
-        public async Task test()
-        {
-            
         }
 
         class RankItems

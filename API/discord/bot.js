@@ -1,5 +1,5 @@
 var bot = require("../data/config.js")
-const canvacord = require("canvacord");
+// const canvacord = require("canvacord");
 var lastMessage = "No content set yet";
 const Discord = require('discord.js');
 
@@ -17,26 +17,26 @@ client.on('message', async (message) => {
 
 exports.rankcard = function rankcard(userId = 0, level = 0, XP = 0, reqXP = 0, chanId = 0)
 {
-    var getuser = client.users.fetch(userId);
-    getuser.then(user => {
-        const rank = new canvacord.Rank()
-        .setAvatar(user.displayAvatarURL({ dynamic: false, format: 'png' }))
-        .setCurrentXP(parseFloat(XP))
-        .setRequiredXP(parseFloat(reqXP))
-        .setLevel(parseFloat(level))
-        .setStatus(user.presence.status)
-        .setProgressBar("#0ff1ce", "COLOR")
-        .setUsername(user.username)
-        .setRank(1, "Rank", false)
-        .setDiscriminator(user.discriminator);
+    // var getuser = client.users.fetch(userId);
+    // getuser.then(user => {
+    //     const rank = new canvacord.Rank()
+    //     .setAvatar(user.displayAvatarURL({ dynamic: false, format: 'png' }))
+    //     .setCurrentXP(parseFloat(XP))
+    //     .setRequiredXP(parseFloat(reqXP))
+    //     .setLevel(parseFloat(level))
+    //     .setStatus(user.presence.status)
+    //     .setProgressBar("#0ff1ce", "COLOR")
+    //     .setUsername(user.username)
+    //     .setRank(1, "Rank", false)
+    //     .setDiscriminator(user.discriminator);
     
-    rank.build()
-        .then(data => {
-            const attachment = new Discord.MessageAttachment(data, "RankCard.png");
-            const chan = client.channels.fetch(chanId);
-            chan.then(channel => channel.send(attachment));
-        });
-    });
+    // rank.build()
+    //     .then(data => {
+    //         const attachment = new Discord.MessageAttachment(data, "RankCard.png");
+    //         const chan = client.channels.fetch(chanId);
+    //         chan.then(channel => channel.send(attachment));
+    //     });
+    // });
 
     return `success`;
 }

@@ -74,6 +74,11 @@ namespace FinBot
                 .AddSingleton<YouTubeModel>()
                 .AddSingleton<ChatFilter>()
                 .AddSingleton<HelpHandler>()
+                .AddSingleton<MuteService>()
+                .AddSingleton<ReminderService>()
+                .AddSingleton<UserHandler>()
+                .AddSingleton<MemberCountHandler>()
+                .AddSingleton<StatusHandler>()
                 .AddSingleton<LoggingService>();
 
             ConfigureServices(services);
