@@ -2,8 +2,8 @@ from typing import Any
 
 from main import FinBot
 from discord.ext import commands
-from Handlers.GeniusHandler import GeniusSearcher
-from Handlers.PaginationHandler import Paginator
+from Handlers.genius_handler import GeniusSearcher
+from Handlers.pagination_handler import Paginator
 import discord
 
 # TODO:

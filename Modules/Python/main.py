@@ -5,11 +5,11 @@ import datetime
 import time
 from discord.ext import commands
 from Data import config
-from Handlers.storageHandler import DataHelper
+from Handlers.storage_handler import DataHelper
 from traceback import format_exc, print_tb
 import re
 import motor.motor_asyncio
-from Handlers.MongoHandler import MongoDB
+from Handlers.mongo_handler import MongoDB
 import aiml
 import sys
 from typing import Union

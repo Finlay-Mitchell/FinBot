@@ -5,7 +5,7 @@ import aiohttp
 import asyncio
 import secrets
 
-from Handlers.MinecraftHandler import *
+from Handlers.minecraft_handler import *
 from main import *
 
 

@@ -7,8 +7,8 @@ import traceback
 
 from main import FinBot
 from Data.config import data
-from Checks.Permission_check import logs_perms
-from Handlers.PaginationHandler import Paginator
+from Checks.permission_check import logs_perms
+from Handlers.pagination_handler import Paginator
 
 
 class Modlogs(commands.Cog):

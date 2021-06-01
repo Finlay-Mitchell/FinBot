@@ -11,7 +11,7 @@ import time
 import traceback
 
 from main import *
-from Checks.Permission_check import is_developer
+from Checks.permission_check import is_developer
 
 
 class Misc(commands.Cog):

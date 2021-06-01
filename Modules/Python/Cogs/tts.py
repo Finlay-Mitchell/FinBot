@@ -1,19 +1,18 @@
+import discord
+from discord.ext import commands
+import gtts.lang
+
 import asyncio
 import concurrent.futures
 from typing import Optional
 from functools import partial
-import discord
-import gtts.lang
-from discord.ext import commands
-from main import FinBot
-from Handlers.storageHandler import DataHelper
-from Data import messages
-from Handlers.TTSHandler import get_speak_file
+
+from Handlers.tts_handler import get_speak_file
 from Data import config
 from Checks.speak_check import speak_changer_check
-from Checks.Permission_check import is_high_staff
-from Checks.User_check import is_owner
-from Data.config import prefix
+from Checks.permission_check import is_high_staff
+from main import FinBot
+from Data import messages
 
 
 class TTS(commands.Cog):
@@ -222,6 +221,18 @@ class TTS(commands.Cog):
         self.guild_queues[member.guild.id].pop(0)
         return True
 
+    async def determine_prefix(self, message):
+        if not hasattr(message, "guild") or message.guild is None:
+            return ""
+        if self.bot.mongo is None:
+            return f"a{config.prefix}"
+        guild_document = await self.bot.mongo.find_by_id(self.bot.mongo.client.finlay.guilds, message.guild.id)
+        if guild_document is None or guild_document.get("prefix") is None:
+            return config.prefix
+        else:
+            guild_prefix = guild_document.get("prefix")
+            return guild_prefix
+
     @commands.Cog.listener()
     async def on_message(self, message):
         member = message.author
@@ -233,7 +244,7 @@ class TTS(commands.Cog):
         old_member = await self.tts_db.speakers.find_one({"_id": {"user_id": member.id, "guild_id": member.guild.id}})
         if old_member is None:
             return
-        if message.content.startswith(config.prefix):
+        if message.content.startswith(await self.determine_prefix(message)):
             return
         await self.speak_message(message)
 

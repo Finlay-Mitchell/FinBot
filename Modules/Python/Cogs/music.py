@@ -1,5 +1,3 @@
-import asyncio
-
 import aiohttp
 import json.decoder
 import re
@@ -12,13 +10,11 @@ import discord
 from discord.ext import commands
 from youtube_dl import YoutubeDL, utils
 import youtubesearchpython.__future__ as youtube_search
-import youtubesearchpython
 from pytube import Playlist
 
-from Checks.Permission_check import is_staff
-from Handlers.storageHandler import DataHelper
-from Handlers.spotifyHandler import *
-from Handlers.PaginationHandler import Paginator
+from Checks.permission_check import is_staff
+from Handlers.spotify_handler import *
+from Handlers.pagination_handler import Paginator
 from Data import config
 
 

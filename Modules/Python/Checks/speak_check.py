@@ -1,14 +1,12 @@
-from Handlers.storageHandler import DataHelper
 from discord.ext import commands
-from Data import config
+from main import MongoDB
 
 
 def speak_changer_check():
     async def predicate(ctx):
-        data = DataHelper()
-        all_perms = data.get("speak_changer", {})
-        guild_perms = all_perms.get(str(ctx.guild.id), [])
-        return (ctx.author.guild_permissions.administrator or ctx.author.id in guild_perms or
-                ctx.author.id == config.owner_id)
-
+        if ctx.author.guild_permissions.administrator:
+            return True
+        db = MongoDB()
+        old_member = await db.client.finlay.tts.perms.find_one({"_id": {"user_id": ctx.author.id, "guild_id": ctx.guild.id}})
+        return old_member is not None
     return commands.check(predicate)

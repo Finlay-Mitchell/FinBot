@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from Data import config
-from Checks.Permission_check import is_high_staff
+from Checks.permission_check import is_high_staff
 from main import FinBot
 
 

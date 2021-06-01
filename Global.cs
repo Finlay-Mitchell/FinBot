@@ -182,7 +182,7 @@ namespace FinBot
 
         public static async Task<string> DetermineLevel(SocketGuild guild)
         {
-            // Determines whether guild user levelling is enabled or not.
+            // Determines whether guild user levelling is enabled or not - also add dictionary soon.
             try
             {
                 MongoClient MongoClient = new MongoClient(mongoconnstr);

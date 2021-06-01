@@ -34,39 +34,39 @@ namespace FinBot.Modules
             _client = service.GetRequiredService<DiscordShardedClient>();
         }
 
-        [Command("testing")]
-        public async Task testing()
-        {
-            string rand = "";
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                int bit_count = (16 * 6);
-                int byte_count = ((bit_count + 7) / 8); // rounded up
-                byte[] bytes = new byte[byte_count];
-                rng.GetBytes(bytes);
-                rand = Convert.ToBase64String(bytes);
-            }
+        //[Command("testing")]
+        //public async Task testing()
+        //{
+        //    string rand = "";
+        //    using (var rng = new RNGCryptoServiceProvider())
+        //    {
+        //        int bit_count = (16 * 6);
+        //        int byte_count = ((bit_count + 7) / 8); // rounded up
+        //        byte[] bytes = new byte[byte_count];
+        //        rng.GetBytes(bytes);
+        //        rand = Convert.ToBase64String(bytes);
+        //    }
 
-            rand = Regex.Replace(rand, "[\"/]", "");
-            rand = Regex.Replace(rand, @"[\\]", "");
-            await ReplyAsync(rand);
-            //2000, 510
-            //Bitmap bitmap = new Bitmap(2000, 1000, PixelFormat.Format32bppPArgb);
-            Bitmap bitmap = new Bitmap(1050, 550);
-            Graphics graphics = Graphics.FromImage(bitmap);
-            //Pen pen = new Pen(Colour.FromKnownColor(KnownColor.Blue), 2);
-            Pen pen = new Pen(Colour.FromArgb(255, 0, 0, 0), 5);
-            //1000, 500
-            graphics.DrawRectangle(pen, 10, 10, 750, 500);
+        //    rand = Regex.Replace(rand, "[\"/]", "");
+        //    rand = Regex.Replace(rand, @"[\\]", "");
+        //    await ReplyAsync(rand);
+        //    //2000, 510
+        //    //Bitmap bitmap = new Bitmap(2000, 1000, PixelFormat.Format32bppPArgb);
+        //    Bitmap bitmap = new Bitmap(1050, 550);
+        //    Graphics graphics = Graphics.FromImage(bitmap);
+        //    //Pen pen = new Pen(Colour.FromKnownColor(KnownColor.Blue), 2);
+        //    Pen pen = new Pen(Colour.FromArgb(255, 0, 0, 0), 5);
+        //    //1000, 500
+        //    graphics.DrawRectangle(pen, 10, 10, 750, 500);
 
 
-            //Pen pen1 = new Pen(Colour.FromKnownColor(KnownColor.Red), 2);
-            //graphics.DrawEllipse(pen1, 10, 10, 900, 700);
-            string file = $"image_{rand}.png";
-            bitmap.Save(file);
-            await Context.Channel.SendFileAsync(file);
-            File.Delete(file);
-        }
+        //    //Pen pen1 = new Pen(Colour.FromKnownColor(KnownColor.Red), 2);
+        //    //graphics.DrawEllipse(pen1, 10, 10, 900, 700);
+        //    string file = $"image_{rand}.png";
+        //    bitmap.Save(file);
+        //    await Context.Channel.SendFileAsync(file);
+        //    File.Delete(file);
+        //}
 
         [Command("restart")]
         public async Task Reset([Remainder] string reason = "No reason provided.")

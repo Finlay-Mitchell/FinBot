@@ -17,6 +17,8 @@ namespace FinBot
     {
         static void Main(string[] args)
         {
+            Console.Title = "Finbot";
+
             while (true)
             {
                 try
