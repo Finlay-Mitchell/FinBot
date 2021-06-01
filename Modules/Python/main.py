@@ -1,21 +1,24 @@
 import discord
+from discord.ext import commands
+import motor.motor_asyncio
+import aiml
+
 import asyncio
 import os
 import datetime
 import time
-from discord.ext import commands
-from Data import config
-from Handlers.storage_handler import DataHelper
 from traceback import format_exc, print_tb
 import re
-import motor.motor_asyncio
-from Handlers.mongo_handler import MongoDB
-import aiml
 import sys
 from typing import Union
+import ctypes
+
+from Handlers.mongo_handler import MongoDB
+from Data import config
+from Handlers.storage_handler import DataHelper
 
 sys.setrecursionlimit(10**4)
-STARTUP_FILE = "std-startup.xml"
+ctypes.windll.kernel32.SetConsoleTitleW("FinBot")
 
 
 class FinBot(commands.Bot):
@@ -83,7 +86,6 @@ def get_bot():
 
     @bot.event
     async def on_ready():
-        print("Ready!")
         bot.guild = bot.get_guild(config.monkey_guild_id)
         bot.error_channel = bot.get_channel(config.error_channel_id)
         bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(config.mongo_connection_uri)
@@ -93,6 +95,7 @@ def get_bot():
             print("Loading Cog named {}...".format(extension_name))
             bot.load_extension("Cogs.{}".format(extension_name))
             print("Loaded cog {}!".format(extension_name))
+        print("Ready!")
 
     # noinspection PyUnusedLocal
     @bot.event
@@ -102,8 +105,6 @@ def get_bot():
                                   colour=discord.Colour.red())
             embed.description = format_exc()[:2000]
             print(format_exc())
-            # await bot.error_channel.send(embed=embed)
-            # bot.restart()
 
         except Exception as e:
             print("Error in sending error to discord. Error was {}".format(format_exc()))

@@ -9,6 +9,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from main import FinBot
 from Data import config
 
+
 def find_closest(title, fulltext, options):
     sorted_options = []
     for option in options:

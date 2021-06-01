@@ -17,7 +17,6 @@ from Handlers.spotify_handler import *
 from Handlers.pagination_handler import Paginator
 from Data import config
 
-
 # TODO:
 """
 1. <FUTURE> Start on web help page and change help handler to fully custom help handler.
