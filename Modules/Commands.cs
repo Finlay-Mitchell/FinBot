@@ -329,6 +329,12 @@ namespace FinBot.Modules
                     await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, UserInfo(Context.Message.MentionedUsers.First()));
                 }
+
+                else if (arg[0].Length == 17 || arg[0].Length == 18)
+                {
+                    SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
+                    await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
+                }
             }
         }
 
@@ -357,7 +363,7 @@ namespace FinBot.Modules
             eb.AddField("Created at UTC", user.CreatedAt.UtcDateTime.ToString("r"));
             eb.AddField("Joined at UTC?", SGU.JoinedAt.HasValue ? SGU.JoinedAt.Value.UtcDateTime.ToString("r") : "No value :/");
             eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{String.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
-            eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{String.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
+            _ = eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{string.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
             eb.WithAuthor(SGU);
             eb.WithColor(Color.DarkPurple);
             eb.WithTitle($"{user.Username}");
@@ -488,6 +494,12 @@ namespace FinBot.Modules
                     await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, AV(Context.Message.MentionedUsers.First()));
                 }
+
+                else if (arg[0].Length == 17 || arg[0].Length == 18)
+                {
+                    SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
+                    await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
+                }
             }
         }
 
@@ -506,33 +518,33 @@ namespace FinBot.Modules
             return eb.Build();
         }
 
-        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
-        public async Task Remind(string duration, [Remainder] string remindMsg)
-        {
-            if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here"))
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Sorry but can't mention everybody");
-            }
+        //[Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
+        //public async Task Remind(string duration, [Remainder] string remindMsg)
+        //{
+        //    if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here"))
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Sorry but can't mention everybody");
+        //    }
 
-            else if (Context.Message.MentionedUsers.Any())
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Sorry but you can't mention users");
-            }
+        //    else if (Context.Message.MentionedUsers.Any())
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Sorry but you can't mention users");
+        //    }
 
-            else if (Context.Message.MentionedRoles.Any())
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync($"Sorry but you can't mention roles");
-            }
+        //    else if (Context.Message.MentionedRoles.Any())
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await Context.Message.ReplyAsync($"Sorry but you can't mention roles");
+        //    }
 
-            else
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await ReminderService.setReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);
-            }
-        }
+        //    else
+        //    {
+        //        await Context.Channel.TriggerTypingAsync();
+        //        await ReminderService.setReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);
+        //    }
+        //}
 
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
@@ -799,7 +811,6 @@ namespace FinBot.Modules
 
                 else
                 {
-
                     if (options[index] == "heads" && choice == "tails")
                     {
                         await Context.Message.ReplyAsync("I win!");
@@ -1222,10 +1233,16 @@ namespace FinBot.Modules
                     await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, await GetRankAsync(Context.Message.MentionedUsers.First(), Context.Guild.Id));
                 }
+
+                else if (arg[0].Length == 17 || arg[0].Length == 18)
+                {
+                    SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
+                    await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
+                }
             }
         }
 
-        public async Task<Embed> GetRankAsync(SocketUser user, ulong guild)
+        public Task<Embed> GetRankAsync(SocketUser user, ulong guild)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
 
@@ -1250,7 +1267,7 @@ namespace FinBot.Modules
                     b.Description = $"Current progress - {reader.GetInt64(5)}/{(long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100)}\nCurrent progress to next " +
                     $"level - {Math.Round((double)reader.GetInt64(4) / (long)(5 * Math.Pow(reader.GetInt64(3), 2) + 50 * reader.GetInt64(3) + 100) * 100, 2)}%\nLevel - {reader.GetInt64(3)}";
                     b.WithCurrentTimestamp();
-                    return b.Build();
+                    return Task.FromResult(b.Build());
                 }
 
                 conn.Close();
@@ -1267,7 +1284,7 @@ namespace FinBot.Modules
                     eb.WithCurrentTimestamp();
                     eb.WithColor(Color.Red);
                     eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
-                    return eb.Build();
+                    return Task.FromResult(eb.Build());
                 }
             }
 

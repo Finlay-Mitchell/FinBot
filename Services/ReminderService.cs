@@ -93,7 +93,7 @@ namespace FinBot.Services
                     await chan.SendMessageAsync($"Set a reminder for {message} for {duration}");
                     
                     
-                    chan.SendMessageAsync(reminderTimestamp.ToString());
+                    await chan.SendMessageAsync(reminderTimestamp.ToString());
                 }
 
                 conn.Close();
