@@ -163,7 +163,7 @@ namespace FinBot.Handlers
                 CommandInfo cmd = match.Command;
                 builder.AddField(x =>
                 {
-                    x.Name = $"_ _";
+                    x.Name = $"_ _"; //This makes an empty space, leaving the field without a name throws an exception and so this is essentially the only way to make a seemingly empty space.
                     x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{guild_prefix}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{guild_prefix}")}";
                     x.IsInline = true;
                 });
