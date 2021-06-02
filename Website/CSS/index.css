@@ -63,77 +63,119 @@ body
     position:relative;
     box-shadow: 0 0 1px rgba(0,0,0,0);
     transition-duration: .3s;
-  }
-  
-  .hoverable:before
+}
+
+.hoverable:before
+{
+  position:absolute;
+  pointer-events: none;
+  z-index:-1;
+  content: '';
+  top: 100%;
+  left: 5%;
+  height:10px;
+  width:90%;
+  opacity:0;
+  background: -webkit-radial-gradient(center, ellipse, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 80%);
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 80%);
+  /* W3C */
+  transition-duration: 0.3s;
+}
+
+.hoverable:hover, .hoverable:active, .hoverable:focus
+{
+  transform: translateY(-5px);
+}
+.hoverable:hover:before, .hoverable:active:before, .hoverable:focus:before
+{
+  opacity: 1;
+  transform: translateY(-5px);
+}
+
+@keyframes bounce-animation 
+{
+  16.65% 
   {
-    position:absolute;
-    pointer-events: none;
-    z-index:-1;
-    content: '';
-    top: 100%;
-    left: 5%;
-    height:10px;
-    width:90%;
-    opacity:0;
-    background: -webkit-radial-gradient(center, ellipse, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 80%);
-    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 80%);
-    /* W3C */
-    transition-duration: 0.3s;
+    -webkit-transform: translateY(8px);
+    transform: translateY(8px);
   }
-  
-  .hoverable:hover, .hoverable:active, .hoverable:focus
+
+  33.3% 
   {
-    transform: translateY(-5px);
+    -webkit-transform: translateY(-6px);
+    transform: translateY(-6px);
   }
-  
-  .hoverable:hover:before, .hoverable:active:before, .hoverable:focus:before
+
+  49.95% 
   {
-    opacity: 1;
-    transform: translateY(-5px);
+    -webkit-transform: translateY(4px);
+    transform: translateY(4px);
   }
-  
-  @keyframes bounce-animation 
+
+  66.6% 
   {
-    16.65% 
-    {
-      -webkit-transform: translateY(8px);
-      transform: translateY(8px);
-    }
-  
-    33.3% 
-    {
-      -webkit-transform: translateY(-6px);
-      transform: translateY(-6px);
-    }
-  
-    49.95% 
-    {
-      -webkit-transform: translateY(4px);
-      transform: translateY(4px);
-    }
-  
-    66.6% 
-    {
-      -webkit-transform: translateY(-2px);
-      transform: translateY(-2px);
-    }
-  
-    83.25% 
-    {
-      -webkit-transform: translateY(1px);
-      transform: translateY(1px);
-    }
-  
-    100%
-    {
-      -webkit-transform: translateY(0);
-      transform: translateY(0);
-    }
+    -webkit-transform: translateY(-2px);
+    transform: translateY(-2px);
   }
-  
-  .bounce 
+
+  83.25% 
   {
-    animation-name: bounce-animation;
-    animation-duration: 2s;
+    -webkit-transform: translateY(1px);
+    transform: translateY(1px);
   }
+
+  100%
+  {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+}
+
+.bounce 
+{
+  animation-name: bounce-animation;
+  animation-duration: 2s;
+}
+
+footer p
+{
+    text-align: center;
+    color: #707070;
+    font-size: 1.2rem;
+    padding: 30px 0;
+}
+
+footer hr
+{
+    border: 2px solid #707070;
+    margin-top: 80px;
+}
+
+.underline-section hr
+{
+    border: none;
+    height: 1px;
+    background-color: #707070;
+}
+
+footer button 
+{
+  border: 2px solid #252627;
+  background-color: #252627;
+  color: #252627;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  text-emphasis-color: red;
+}
+
+.themetoggle
+{
+    border-color: gray !important;
+    color: rebeccapurple;
+}
+  
+.themetoggle:hover 
+{
+    background: #e7e7e7;
+}

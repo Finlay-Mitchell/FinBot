@@ -1,0 +1,30 @@
+.light-theme
+{
+    background-color: white !important; 
+}
+
+.light-theme .card 
+{
+    background-color: white !important; 
+}
+
+.light-theme footer hr 
+{
+    border: 2px solid lightgray;
+    margin-top: 80px;
+}
+
+.light-theme .underline-section hr 
+{
+    background-color: lightgrey;
+}
+
+.light-theme footer button 
+{
+    background-color: white;
+}
+
+.light-theme .card-text
+{
+    color: black !important;
+}

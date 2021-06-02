@@ -3,17 +3,18 @@
     <head>
         <meta charset = "UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title> Finlay Mitchell</title>
+        <title> FinBot - The Discord Bot </title>
+        <link rel="shortcut icon" type="image/x-icon" href="../Media/BotLogo.png">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-
         <link href="../CSS/index.css" rel="stylesheet">
+        <link href="../CSS/theme.css" rel="stylesheet">
         <script src="../Javascript/index.js"></script>
+        <script src="../Javascript/global.js"></script>
     </head>
 
     <body>
@@ -24,26 +25,26 @@
             </button>
           </div>
 
-
           <div class="container-fluid">
             <nav class="navbar navbar-inverse">
               <div class="container-fluid">
                 <ul class="nav navbar-nav">
-                  <li><a class="hoverable btn btn-primary" href="#">Invite to Discord!</a></li>
-                  <li><a class="hoverable btn btn-primary" href="#">Join the support server!</a></li>
-                  <li><a class="hoverable btn btn-primary" href="#">My main website</a></li>
-                  <li><a class="hoverable btn btn-primary" href="#">Contact</a></li>
+                  <li><a class="hoverable btn btn-primary" href="https://bot.finlaymitchell.ml" target="_blank">Invite to Discord!</a></li>
+                  <li><a class="hoverable btn btn-primary" href="https://server.finlaymitchell.ml" target="_blank">Join the support server!</a></li>
+                  <li><a class="hoverable btn btn-primary" href="https://finlaymitchell.ml" target="_blank">My developers personal website</a></li>
+                  <li><a class="hoverable btn btn-primary" href="https://finlaymitchell.ml/contact" target="_blank">Contact</a></li>
                 </ul>
               </div>
-            </nav>          
+            </nav>  
+            <div class="underline-section">
+                <hr> 
+            </div>       
           </div>
-          
-
 
           <div class="card text-center">
             <div class="card-body">
               <h1 class="card-title">FinBot</h1>
-              <img class="card-img" src="../Media/music.png">
+              <img class="card-img" src="../Media/BotLogo.png">
               <a href="https://bot.finlaymitchell.ml" class="btn btn-primary" target="_blank">Add to Discord</a>
               <a href="https://finbot.finlaymitchell.ml/About" class="btn btn-primary" target="_blank">About</a>
             </div>
@@ -61,7 +62,6 @@
                         <dd>- Be able to control what goes on in your playlist, with the ability to remove songs, clear the queue, shuffle the queue,
                              monitor volume and more whilst being able to add playlists and individual songs from YouTube and Spotify with
                               powerful searching algorithms.</dd>
-
                     </dl>
                 </div>
             </div>
@@ -106,6 +106,16 @@
     </div>
 
 
+
+    <div class="underline-section">
+        <hr>
+    </div>
+
+    <footer>
+        <hr>
+        <p>2020-<script>GetYear()</script> Copyright&copy;. All Rights Reserved</p>
+        <button type="button" class="btn themetoggle" onclick="ToggleTheme()">Toggle theme</button>
+    </footer>
 
     </body>
 </html>
