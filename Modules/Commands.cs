@@ -37,8 +37,9 @@ namespace FinBot.Modules
     public class Commands : ModuleBase<ShardedCommandContext>
     {
         [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r")]
-        public async Task Reddit(string subreddit)
+        public async Task Reddit([Remainder] string subreddit)
         {
+            subreddit = subreddit.Replace(" ", "");
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync($"https://www.reddit.com/r/{subreddit}.json");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
@@ -63,24 +64,13 @@ namespace FinBot.Modules
                 }
                 .WithColor(221, 65, 36)
                 .Build());
+
+                return;
             }
 
             Random rand = new Random();
             int count = childs.Count();
             Child post = childs.ToArray()[rand.Next() % childs.Count()];
-            EmbedBuilder b = new EmbedBuilder()
-            {
-                Color = new Color(0xFF4301),
-                Title = subreddit,
-                Description = $"{post.Data.Title}\n",
-                ImageUrl = post.Data.Url.ToString(),
-                Footer = new EmbedFooterBuilder()
-                {
-                    Text = "u/" + post.Data.Author
-                }
-            };
-            b.AddField("Post info", $"{post.Data.Ups} upvotes\nurl: https://reddit.com/{post.Data.Permalink}");
-            b.WithCurrentTimestamp();
 
             if (!(Chan.IsNsfw) && post.Data.over_18)
             {
@@ -97,13 +87,25 @@ namespace FinBot.Modules
                 }
                 .WithColor(221, 65, 36)
                 .Build());
+
+                return;
             }
 
-            else
+            EmbedBuilder b = new EmbedBuilder()
             {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, b.Build());
-            }
+                Color = new Color(0xFF4301),
+                Title = subreddit,
+                Description = $"{post.Data.Title}\n",
+                ImageUrl = post.Data.Url.ToString(),
+                Footer = new EmbedFooterBuilder()
+                {
+                    Text = "u/" + post.Data.Author
+                }
+            };
+            b.AddField("Post info", $"{post.Data.Ups} upvotes\nurl: https://reddit.com/{post.Data.Permalink}\nCreated at: {Global.UnixTimeStampToDateTime(post.Data.Created)}");
+            b.WithCurrentTimestamp();
+            await Context.Channel.TriggerTypingAsync();
+            await Context.Message.ReplyAsync("", false, b.Build());
         }
 
         [Command("guess"), Summary("The bot will guess the contents of an image"), Remarks("(PREFIX)guess <image>)")]
@@ -1747,13 +1749,11 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
-        ///*
-        // * 
-        // * 
-        // * BOILERPLACE CODE FOR PYTHON MODULE
-        // * 
-        // * 
-        // */
+        /*
+         * 
+         * BOILERPLACE CODE FOR PYTHON MODULE 
+         * 
+         */
 
         [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
         public Task chatbot(params string[] arg)

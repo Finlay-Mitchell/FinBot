@@ -25,7 +25,6 @@ namespace FinBot
         public static string GoogleSearchAPIKey { get; set; }
         public static string GeniusAPIKey { get; set; }
         public static string LoggingLevel { get; set; }
-        public static string Pythoninterpreter { get; set; }
         public static ulong SupportChannelId { get; set; }
         public static ulong SupportGuildId { get; set; }
 
@@ -74,7 +73,6 @@ namespace FinBot
             MySQL.MySQLPassword = data.MySQLPassword;
             GeniusAPIKey = data.GeniusAPIKey;
             LoggingLevel = data.LoggingLevel;
-            Pythoninterpreter = data.Pythoninterpreter;
             SupportChannelId = data.SupportChannelId;
             SupportGuildId = data.SupportGuildId;
             mongoconnstr = data.mongoconnstr;
@@ -101,7 +99,6 @@ namespace FinBot
             public string MySQLPassword { get; set; }
             public string GeniusAPIKey { get; set; }
             public string LoggingLevel { get; set; }
-            public string Pythoninterpreter { get; set; }
             public ulong SupportChannelId { get; set; }
             public ulong SupportGuildId { get; set; }
             public string mongoconnstr { get; set; }
