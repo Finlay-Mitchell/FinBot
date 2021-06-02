@@ -207,12 +207,12 @@ namespace FinBot.Modules
             eb.WithCurrentTimestamp();
             eb.WithAuthor(Context.Message.Author);
 
-            if (totalLatency <= 94)
+            if (totalLatency <= 100)
             {
                 eb.Color = Color.Green;
             }
 
-            else if (totalLatency < 250)
+            else if (totalLatency <= 250)
             {
                 eb.Color = Color.Orange;
             }
@@ -229,28 +229,14 @@ namespace FinBot.Modules
             });
         }
 
-        [Command("say"), Summary("repeats the text you enter to it"), Remarks("(PREFIX)say <text>"), Alias("echo", "repeat")]
+        [Command("say"), Summary("repeats the text you enter to it"), Remarks("(PREFIX)say <text>"), Alias("echo", "repeat", "reply")]
         public async Task Echo([Remainder] string echo)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
 
-            if (Context.Message.MentionedEveryone)
+            if (Context.Message.MentionedUsers.Any() || Context.Message.MentionedRoles.Any() || Context.Message.MentionedEveryone)
             {
-                await Context.Message.Channel.SendMessageAsync("Sorry but you can't mention everyone");
-                tp.Dispose();
-                return;
-            }
-
-            if (Context.Message.MentionedRoles.Any())
-            {
-                await Context.Channel.SendMessageAsync("sorry but you can't mention roles.");
-                tp.Dispose();
-                return;
-            }
-
-            if (Context.Message.MentionedUsers.Any())
-            {
-                await Context.Channel.SendMessageAsync("sorry but you can't mention users.");
+                await Context.Message.Channel.SendMessageAsync("Sorry, but you can't mention people");
                 tp.Dispose();
                 return;
             }
@@ -259,23 +245,22 @@ namespace FinBot.Modules
             {
                 await Context.Channel.SendMessageAsync(SayText(string.Join(' ', echo), Context));
                 tp.Dispose();
+                return;
             }
 
             else
             {
                 await Context.Message.ReplyAsync($"What do you want me to say? please do {await Global.DeterminePrefix(Context)}say <msg>.");
                 tp.Dispose();
+                return;
             }
-
-            tp.Dispose();
         }
 
         public string SayText(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
-            final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-])", "");
+            final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-@])", "");
             final = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
-            final = Regex.Replace(final, "@", "");
 
             if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
             {
