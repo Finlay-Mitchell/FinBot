@@ -152,7 +152,6 @@ namespace FinBot.Handlers
             }
 
             string guild_prefix = await Global.DeterminePrefix(Context);
-
             EmbedBuilder builder = new EmbedBuilder()
             {
                 Color = new Color(114, 137, 218),

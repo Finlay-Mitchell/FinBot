@@ -16,6 +16,7 @@ namespace FinBot.Handlers
         public MemberCountHandler(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
+
             _client.UserJoined += HandleUserCount;
             _client.UserLeft += HandleUserCount;
         }
@@ -23,6 +24,8 @@ namespace FinBot.Handlers
 
         public async Task<string> GetUserCountChannel(SocketGuild guild)
         {
+            //This tries to get the user count channel ID from the database, if not found, defaults to 0
+
             try
             {
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
@@ -63,8 +66,6 @@ namespace FinBot.Handlers
                 {
                     SocketVoiceChannel channel = arg.Guild.GetVoiceChannel(MemberCountChannel);
                     SocketGuild guild = (channel as SocketGuildChannel)?.Guild;
-
-                    //string msg = $"Total Users: {arg.Guild.Users.Count}";
                     string msg = $"Total Users: {guild.MemberCount}";
 
 

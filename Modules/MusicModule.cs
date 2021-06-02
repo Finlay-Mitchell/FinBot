@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace FinBot.Modules 
 {
-    public class MusicModule : ModuleBase<ShardedCommandContext> //This is more code just to fill the help command up, much like TTSCommands.cs
+    public class MusicModule : ModuleBase<ShardedCommandContext> //Music python boilerplate code
     {
         [Command("play"), Summary("plays a song/playlist"), Remarks("(PREFIX)play <song(s)>"), Alias("p")]
         public Task play(params string[] args)

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace FinBot.Modules
 {
-    public class TTSCommands : ModuleBase<ShardedCommandContext> //This is purely boilerplate code to allow for the HelpHandler to hold all commands, including Python module.
+    public class TTSCommands : ModuleBase<ShardedCommandContext> //TTS python boilerplate code
     {
         [Command("speak"), Summary("Adds/removes user from the TTS speak list"), Remarks("(PREFIX)speak (optional)<user>")]
         public Task speak(params string[] args)

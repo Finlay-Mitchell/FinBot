@@ -25,7 +25,7 @@ using FinBot.Handlers;
 
 namespace FinBot.Modules
 {
-    public class DevCommands : ModuleBase<ShardedCommandContext>
+    public class DevCommands : ModuleBase<ShardedCommandContext> //Dev commands hidden from regular users
     {
         private DiscordShardedClient _client;
 

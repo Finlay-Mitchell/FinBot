@@ -159,9 +159,9 @@ namespace FinBot.Modules
                 cmd.ExecuteNonQuery();
             }
 
-            catch
+            catch(Exception ex)
             {
-
+                Global.ConsoleLog(ex.Message);
             }
         }
 
@@ -182,9 +182,9 @@ namespace FinBot.Modules
                 }
             }
 
-            catch
+            catch(Exception ex)
             {
-
+                Global.ConsoleLog(ex.Message);
             }
         }
 
@@ -206,6 +206,15 @@ namespace FinBot.Modules
                     {
                         indx++;
                         
+                        /*
+                         * 
+                         * THIS NEEDS TO BE IMPLEMENTED SUCH AS:
+                         * 5 warns in 1 day - 6 hour mute
+                         * 10 warns - 12 hour mute
+                         * 15 warns - 24 hour mute
+                         * 
+                         */
+
                         //if (indx == 5)
                         //{
                         //    //    var modlogs = Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel);
@@ -236,8 +245,10 @@ namespace FinBot.Modules
                     queryConn.Close();
                 }
 
-                catch
+                catch(Exception ex)
                 {
+                    Global.ConsoleLog(ex.Message);
+
                     //do stuffs
                 }
 
@@ -281,6 +292,7 @@ namespace FinBot.Modules
                     Description = "You do not have the valid permission to execute this command",
                     Color = Color.Red
                 }.Build());
+
                 return;
             }
 
@@ -321,8 +333,10 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch
+                catch(Exception ex)
                 {
+                    Global.ConsoleLog(ex.Message);
+
                     // do stuff
                 }
 
@@ -332,8 +346,10 @@ namespace FinBot.Modules
                 }
             }
 
-            catch
+            catch(Exception ex)
             {
+                Global.ConsoleLog(ex.Message);
+
                 // do stuff
             }
         }
@@ -357,6 +373,7 @@ namespace FinBot.Modules
                     Description = "You do not have the valid permission to execute this command",
                     Color = Color.Red
                 }.Build());
+
                 return;
             }
 
@@ -396,9 +413,11 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch
+                catch(Exception ex)
                 {
+                    Global.ConsoleLog(ex.Message);
 
+                    //do stuffs
                 }
 
                 finally
@@ -407,9 +426,11 @@ namespace FinBot.Modules
                 }
             }
 
-            catch
+            catch(Exception ex)
             {
+                Global.ConsoleLog(ex.Message);
 
+                //do stuffs
             }
         }
 
@@ -479,7 +500,7 @@ namespace FinBot.Modules
 
                 try
                 {
-                    await user.SendMessageAsync($"You've been banned from {Context.Guild}. Reason: {reason}, Time of ban: {DateTime.Now}.");
+                    await user.SendMessageAsync($"You've been banned from {Context.Guild}.\nReason: {reason}\nTime of ban: {DateTime.Now}.");
                 }
 
                 catch (Exception)
@@ -573,7 +594,7 @@ namespace FinBot.Modules
 
                 try
                 {
-                    await user.SendMessageAsync($"You've been kicked from {Context.Guild} by {GuildUser} for {reason} at {DateTime.Now}.");
+                    await user.SendMessageAsync($"You've been kicked from {Context.Guild}.\nReason: {reason}\nTime of kick: {DateTime.Now}.");
                 }
 
                 catch (Exception)
@@ -666,6 +687,8 @@ namespace FinBot.Modules
                             Url = Context.Message.GetJumpUrl()
                         }
                     }.Build());
+
+                    return;
                 }
 
                 else
@@ -685,6 +708,8 @@ namespace FinBot.Modules
                                 Url = Context.Message.GetJumpUrl()
                             }
                         }.Build());
+
+                        return;
                     }
 
                     else
@@ -706,6 +731,8 @@ namespace FinBot.Modules
                         eb.WithCurrentTimestamp();
                         await Context.Channel.TriggerTypingAsync();
                         await Context.Message.ReplyAsync("", false, eb.Build());
+
+                        return;
                     }
                 }
             }
@@ -725,6 +752,8 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+
+                return;
             }
         }
 
@@ -754,6 +783,8 @@ namespace FinBot.Modules
                                 Url = Context.Message.GetJumpUrl()
                             }
                         }.Build());
+
+                        return;
                     }
 
                     else
@@ -774,6 +805,8 @@ namespace FinBot.Modules
                         eb.WithCurrentTimestamp();
                         await Context.Channel.TriggerTypingAsync();
                         await Context.Channel.SendMessageAsync("", false, eb.Build());
+
+                        return;
                     }
                 }
 
@@ -792,6 +825,7 @@ namespace FinBot.Modules
                         }
                     }.Build());
 
+                    return;
                 }
             }
 
@@ -810,6 +844,8 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+
+                return;
             }
         }
 
@@ -877,6 +913,8 @@ namespace FinBot.Modules
                     eb.WithCurrentTimestamp();
                     await Context.Channel.TriggerTypingAsync();
                     await Context.Channel.SendMessageAsync("", false, eb.Build());
+
+                    return;
                 }
             }
 
@@ -895,8 +933,18 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+
+                return;
             }
         }
+
+        /*
+         * 
+         * THIS IS DEV TEST CODE FOR A NEW MUTE FUNCTION
+         * THIS NEEDS TO BE MODIFIED NOT TO EDIT CHANNELS 
+         * CHECK FOR MUTE ROLE IN DATABASE
+         *
+         */
 
         //        //[Command("mute"), Summary("mutes a user from the Guild)"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
         //        //public async Task mute(IGuildUser user, [Remainder] string reason = "No reason provided")
@@ -1233,7 +1281,7 @@ namespace FinBot.Modules
         //            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
 
 
-
+        //This is boilerplaate code for python module
         [Command("ModLogs"), Summary("Gets the modlogs for the current user"), Remarks("(PREFIX)modlogs <user>")]
         public Task Modlogs(params string[] arg)
         {

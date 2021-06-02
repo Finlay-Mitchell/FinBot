@@ -85,7 +85,6 @@ namespace FinBot.Handlers
 
     public class YouTubeSearcher
     {
-
         public string getYouTubeApiRequest(string url)
         {
             string reponse = string.Empty;
@@ -94,9 +93,7 @@ namespace FinBot.Handlers
             string response = string.Empty;
             using (HttpClient httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders
-                    .Accept
-                    .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 response = httpClient.GetStringAsync(url).Result;
             }
             return response;

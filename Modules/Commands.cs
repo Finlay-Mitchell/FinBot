@@ -36,8 +36,6 @@ namespace FinBot.Modules
 {
     public class Commands : ModuleBase<ShardedCommandContext>
     {
-        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
-
         [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r")]
         public async Task Reddit(string subreddit)
         {
@@ -276,6 +274,12 @@ namespace FinBot.Modules
 
             return final;
 
+
+            /*
+             * 
+             * REDESIGN THE CHAT FILTRATION SYSTEM
+             * 
+             */
 
             //string final = text.ToLower();
             //string finalcompare = final;
@@ -517,6 +521,12 @@ namespace FinBot.Modules
             .Build();
             return eb.Build();
         }
+
+        /*
+         * 
+         * REDESIGN THIS FEATURE
+         * 
+         */
 
         //[Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
         //public async Task Remind(string duration, [Remainder] string remindMsg)
@@ -1534,6 +1544,7 @@ namespace FinBot.Modules
         {
             DadJokeClient client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
             string dadJoke = await client.GetRandomJokeStringAsync();
+            await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync(dadJoke);
         }
 
@@ -1638,7 +1649,7 @@ namespace FinBot.Modules
                             ulong mId = (ulong)reader.GetInt64(0);
                             ulong chanId = (ulong)reader.GetInt64(4);
                             ITextChannel channel = (ITextChannel)Context.Guild.GetChannel(chanId);
-                            var msg = await channel.GetMessageAsync(mId);
+                            IMessage msg = await channel.GetMessageAsync(mId);
                             EmbedBuilder eb = new EmbedBuilder();
                             eb.WithTitle("Getting poll results...");
                             eb.Color = Color.Orange;
@@ -1664,6 +1675,11 @@ namespace FinBot.Modules
                             MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
                             cmd1.ExecuteNonQuery();
                             queryConn.Close();
+                        }
+
+                        finally
+                        {
+                            queryConn.Open();
                         }
                     }
 
@@ -1709,20 +1725,6 @@ namespace FinBot.Modules
             }
         }
 
-        ///*
-        // * 
-        // * 
-        // * BOILERPLACE CODE FOR PYTHON MODULE
-        // * 
-        // * 
-        // */
-
-        [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
-        public Task chatbot(params string[] arg)
-        {
-            return Task.CompletedTask;
-        }
-
         [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime"), Alias("status")]
         public async Task uptime()
         {
@@ -1743,6 +1745,20 @@ namespace FinBot.Modules
             eb.WithFooter("Via UptimeRobot");
             eb.Color = Color.Green;
             await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
+        ///*
+        // * 
+        // * 
+        // * BOILERPLACE CODE FOR PYTHON MODULE
+        // * 
+        // * 
+        // */
+
+        [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
+        public Task chatbot(params string[] arg)
+        {
+            return Task.CompletedTask;
         }
     }
 }

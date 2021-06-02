@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
-using System.Diagnostics;
 
 namespace FinBot
 {
@@ -29,6 +28,7 @@ namespace FinBot
 
                 catch (Exception ex)
                 {
+                    //Log the exception to the console and retry after 5 seconds.
                     Global.ConsoleLog($"Exception: \"{ex}\"\n\n Retrying...", ConsoleColor.Red, ConsoleColor.Black);
                     Thread.Sleep(5000);
                 }
@@ -94,6 +94,7 @@ namespace FinBot
         private static void ConfigureServices(IServiceCollection services)
         {
             //configure levelling type.
+            //Read level type from config.json
             services.AddLogging(configure => configure.AddSerilog());
             Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Error;
 

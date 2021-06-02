@@ -19,12 +19,15 @@ namespace FinBot.Handlers
         public UserHandler(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
+            
             _client.UserJoined += HandleWelcomeAsync;
             _client.UserLeft += HandleGoodbyeAsync;
         }
 
         public async Task<string> GetWelcomeChannel(SocketGuild guild)
         {
+            //This tries to get the welcome channel ID from the database, if not found, defaults to 0
+
             try
             {
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");

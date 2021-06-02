@@ -21,8 +21,9 @@ namespace FinBot.Handlers
             _services = services;
             _client = services.GetRequiredService<DiscordShardedClient>();
             _commands = services.GetRequiredService<CommandService>();
-            _client.MessageReceived += HandleCommandAsync;
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
+
+            _client.MessageReceived += HandleCommandAsync;
         }
 
         public async Task HandleCommandAsync(SocketMessage s)
@@ -102,19 +103,19 @@ namespace FinBot.Handlers
             {
                 if (context.Channel is IGuildChannel)
                 {
-                    var logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] Discord Server: [{context.Guild.Name}] -> [{context.Message.Content}]";
+                    string logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] Discord Server: [{context.Guild.Name}] -> [{context.Message.Content}]";
                     _logger.LogInformation(logTxt);
                 }
 
                 else
                 {
-                    var logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] -> [{context.Message.Content}]";
+                    string logTxt = $"User: [{context.User.Username}]<->[{context.User.Id}] -> [{context.Message.Content}]";
                     _logger.LogInformation(logTxt);
                 }
 
                 if(!result.IsSuccess)
                 {
-                    var logTxt = $"Command: Failed to execute \"{context.Message.Content}\" for {context.User.Username} in {context.Guild.Name}/{context.Channel} with reason: {result.Error}/{result.ErrorReason}";
+                    string logTxt = $"Command: Failed to execute \"{context.Message.Content}\" for {context.User.Username} in {context.Guild.Name}/{context.Channel} with reason: {result.Error}/{result.ErrorReason}";
                     _logger.LogError(logTxt);
                 }
             });

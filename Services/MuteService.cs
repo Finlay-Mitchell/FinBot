@@ -6,6 +6,12 @@ using Discord;
 
 namespace FinBot.Services
 {
+	/*
+	 *
+	 *I NEED TO DEVELOP THIS LATER ON
+	 * 
+	 */
+
     class MuteService
     {
 		//public static async Task MuteAsyncSeconds(SocketUser user, SocketGuild guild, TimeSpan time, SocketTextChannel channel)
