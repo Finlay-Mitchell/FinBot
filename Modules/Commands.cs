@@ -177,7 +177,15 @@ namespace FinBot.Modules
 
             else
             {
-                await Context.Message.ReplyAsync("theres nothing to guess or there is too much.");
+                if (arg.Length <= 1)
+                {
+                    await Context.Message.ReplyAsync("There's nothing to guess. Please provide an image");
+                }
+
+                else
+                {
+                    await Context.Message.ReplyAsync("There's nothing to guess. Please only provide one parameter.");
+                }
             }
         }
 
