@@ -47,10 +47,10 @@ namespace FinBot.Modules
             Regex r = new Regex(@"https:\/\/i.redd.it\/(.*?)\.");
             IEnumerable<Child> childs = data.Data.Children.Where(x => r.IsMatch(x.Data.Url.ToString()));
             SocketTextChannel Chan = Context.Message.Channel as SocketTextChannel;
+            IDisposable tp = Context.Channel.EnterTypingState();
 
             if (!childs.Any())
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Title = "Subreddit not found!",
@@ -64,6 +64,7 @@ namespace FinBot.Modules
                 }
                 .WithColor(221, 65, 36)
                 .Build());
+                tp.Dispose();
 
                 return;
             }
@@ -87,6 +88,7 @@ namespace FinBot.Modules
                 }
                 .WithColor(221, 65, 36)
                 .Build());
+                tp.Dispose();
 
                 return;
             }
@@ -106,18 +108,20 @@ namespace FinBot.Modules
             b.WithCurrentTimestamp();
             await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync("", false, b.Build());
+            tp.Dispose();
         }
 
         [Command("guess"), Summary("The bot will guess the contents of an image"), Remarks("(PREFIX)guess <image>)")]
         public async Task Guess(params string[] arg)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
+
             if (arg.Length == 1)
             {
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
                 if (Uri.TryCreate(arg.First(), UriKind.RelativeOrAbsolute, out Uri i))
 #pragma warning restore IDE0059 // Unnecessary assignment of a value
                 {
-                    IDisposable tp = Context.Channel.EnterTypingState();
                     HttpClient HTTPClient = new HttpClient();
                     string url = "https://www.google.com/searchbyimage?image_url=" + arg.First();
                     HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
@@ -137,9 +141,8 @@ namespace FinBot.Modules
                     else
                     {
                         await Context.Message.ReplyAsync(@"Unable to guess.");
+                        tp.Dispose();
                     }
-
-                    tp.Dispose();
                 }
 
                 else
@@ -150,7 +153,6 @@ namespace FinBot.Modules
 
             else if (Context.Message.Attachments.Count == 1)
             {
-                IDisposable tp = Context.Channel.EnterTypingState();
                 HttpClient HTTPClient = new HttpClient();
                 string url = "https://www.google.com/searchbyimage?image_url=" + Context.Message.Attachments.First().ProxyUrl;
                 HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
@@ -170,9 +172,8 @@ namespace FinBot.Modules
                 else
                 {
                     await Context.Message.ReplyAsync(@"Unable to guess.");
+                    tp.Dispose();
                 }
-
-                tp.Dispose();
             }
 
             else
@@ -180,11 +181,13 @@ namespace FinBot.Modules
                 if (arg.Length <= 1)
                 {
                     await Context.Message.ReplyAsync("There's nothing to guess. Please provide an image");
+                    tp.Dispose();
                 }
 
                 else
                 {
                     await Context.Message.ReplyAsync("There's nothing to guess. Please only provide one parameter.");
+                    tp.Dispose();
                 }
             }
         }
@@ -232,26 +235,23 @@ namespace FinBot.Modules
         [Command("say"), Summary("repeats the text you enter to it"), Remarks("(PREFIX)say <text>"), Alias("echo", "repeat", "reply")]
         public async Task Echo([Remainder] string echo)
         {
-            IDisposable tp = Context.Channel.EnterTypingState();
+            await Context.Channel.TriggerTypingAsync();
 
             if (Context.Message.MentionedUsers.Any() || Context.Message.MentionedRoles.Any() || Context.Message.MentionedEveryone)
             {
                 await Context.Message.Channel.SendMessageAsync("Sorry, but you can't mention people");
-                tp.Dispose();
                 return;
             }
 
             if (echo.Length != 0)
             {
                 await Context.Channel.SendMessageAsync(SayText(string.Join(' ', echo), Context));
-                tp.Dispose();
                 return;
             }
 
             else
             {
                 await Context.Message.ReplyAsync($"What do you want me to say? please do {await Global.DeterminePrefix(Context)}say <msg>.");
-                tp.Dispose();
                 return;
             }
         }
@@ -315,26 +315,31 @@ namespace FinBot.Modules
         [Command("userinfo"), Summary("shows information on a user"), Remarks("(PREFIX)userinfo || (PREFIX)userinfo <user>."), Alias("whois", "user", "info", "user-info")]
         public async Task Userinfo(params string[] arg)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
+
             if (arg.Length == 0)
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, UserInfo(Context.Message.Author));
+                tp.Dispose();
             }
 
             else
             {
                 if (Context.Message.MentionedUsers.Any())
                 {
-                    await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, UserInfo(Context.Message.MentionedUsers.First()));
+                    tp.Dispose();
                 }
 
                 else if (arg[0].Length == 17 || arg[0].Length == 18)
                 {
                     SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
                     await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
+                    tp.Dispose();
                 }
             }
+
+            tp.Dispose();
         }
 
         public Embed UserInfo([Remainder] SocketUser user)
@@ -358,10 +363,10 @@ namespace FinBot.Modules
             eb.AddField("Nickname?", nickState == "" ? "None" : nickState);
             eb.AddField("ID:", $"{user.Id}");
             eb.AddField("Status", user.Status);
-            eb.AddField("Active clients", String.IsNullOrEmpty(String.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) || user.IsBot ? ClientError : String.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
-            eb.AddField("Created at UTC", user.CreatedAt.UtcDateTime.ToString("r"));
+            eb.AddField("Active clients", string.IsNullOrEmpty(string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) || user.IsBot ? ClientError : string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
+            _ = eb.AddField("Created at UTC", user.CreatedAt.UtcDateTime.ToString("r"));
             eb.AddField("Joined at UTC?", SGU.JoinedAt.HasValue ? SGU.JoinedAt.Value.UtcDateTime.ToString("r") : "No value :/");
-            eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{String.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
+            _ = eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{string.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
             _ = eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{string.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
             eb.WithAuthor(SGU);
             eb.WithColor(Color.DarkPurple);
@@ -375,6 +380,7 @@ namespace FinBot.Modules
         [Command("serverinfo"), Summary("Shows information on the server"), Remarks("(PREFIX)serverinfo"), Alias("server", "server-info")]
         public async Task ServerInfo()
         {
+            await Context.Channel.TriggerTypingAsync();
             string boosttier = "";
 
             switch (Context.Guild.PremiumTier.ToString())
@@ -389,6 +395,10 @@ namespace FinBot.Modules
 
                 case "Tier3":
                     boosttier = "Tier 3";
+                    break;
+
+                default:
+                    boosttier = "None";
                     break;
             }
 
@@ -407,10 +417,10 @@ namespace FinBot.Modules
             eb.AddField("Boost level", boosttier, true);
             eb.AddField("Number of roles", Context.Guild.Roles.Count, true);
             eb.AddField("Number of channels", $"Text channels: {Context.Guild.TextChannels.Count}\nVoice channels: {Context.Guild.VoiceChannels.Count}\nCategories: {Context.Guild.CategoryChannels.Count}", true);
-            eb.AddField($"VIP perks [{Context.Guild.Features.Count}]", String.IsNullOrEmpty(String.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower()) ? "None" : String.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower().Replace("_", " "), true);
+            _ = eb.AddField($"VIP perks [{Context.Guild.Features.Count}]", string.IsNullOrEmpty(string.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower()) ? "None" : 
+                string.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower().Replace("_", " "), true);
             eb.WithCurrentTimestamp();
             eb.WithColor(Color.Blue);
-            await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
@@ -425,7 +435,7 @@ namespace FinBot.Modules
             eb.WithAuthor(Context.Message.Author);
             eb.WithColor(Color.Gold);
             eb.WithTitle("Bot info");
-            eb.AddField("Uptime", $"{(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}");
+            eb.AddField("Uptime", $"{DateTime.Now - Process.GetCurrentProcess().StartTime:dd\\.hh\\:mm\\:ss}");
             eb.AddField("Runtime", $"{RuntimeInformation.FrameworkDescription} {RuntimeInformation.OSArchitecture}");
             eb.AddField($"Heap size", $"{Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString()} MB");
             eb.AddField("How many servers am I in?", Context.Client.Guilds.Count());
