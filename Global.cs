@@ -205,5 +205,23 @@ namespace FinBot
                 return "False";
             }
         }
+
+        public static EmbedBuilder EmbedMessage(string title, string msg = "")
+        {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithTitle(title);
+            embed.WithDescription(msg);
+            embed.Color = ColorPicker();
+            return embed;
+        }
+
+        public static Color ColorPicker()
+        {
+            Color[] Colours = {Color.Blue, Color.DarkBlue, Color.DarkerGrey, Color.DarkGreen, Color.DarkGrey, Color.DarkMagenta, Color.DarkOrange, Color.DarkPurple, Color.DarkRed, Color.DarkTeal, Color.Default, Color.Gold, Color.Green,
+            Color.LighterGrey, Color.LightGrey, Color.LightOrange, Color.Magenta, Color.Orange, Color.Purple, Color.Red, Color.Teal };
+            Random rand = new Random();
+            int index = rand.Next(Colours.Length);
+            return Colours[index];
+        }
     }
 }

@@ -31,6 +31,7 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using UptimeSharp;
 using UptimeSharp.Models;
+using SearchResult = Google.Apis.YouTube.v3.Data.SearchResult;
 
 namespace FinBot.Modules
 {
@@ -338,8 +339,6 @@ namespace FinBot.Modules
                     tp.Dispose();
                 }
             }
-
-            tp.Dispose();
         }
 
         public Embed UserInfo([Remainder] SocketUser user)
@@ -450,21 +449,23 @@ namespace FinBot.Modules
         [Command("8ball"), Summary("with 8ball magic, ask it a question and it will respond to you"), Remarks("(PREFIX)8ball <question>"), Alias("eightball", "ask")]
         public async Task EightBall([Remainder] string input)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
+
             if (string.IsNullOrEmpty(input))
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("Please enter a parameter");
+                tp.Dispose();
             }
 
             else
             {
-                await Context.Channel.TriggerTypingAsync();
                 string[] answers = { "As I see it, yes.", "Ask again later.", "It is certain.", "It is decidedly so.", "Don't count on it.", "Better not tell you now.", "Concentrate and ask again.", " Cannot predict now.",
                 "Most likely.", "My reply is no", "Yes.", "You may rely on it.", "Yes - definitely.", "Very doubtful.", "Without a doubt.", " My sources say no.", " Outlook not so good.", "Outlook good.", "Reply hazy, try again",
                 "Signs point to yes"};
                 Random rand = new Random();
                 int index = rand.Next(answers.Length);
                 await Context.Message.ReplyAsync(answers[index]);
+                tp.Dispose();
             }
         }
 
@@ -481,39 +482,43 @@ namespace FinBot.Modules
         [Command("roll"), Summary("rolls a random number between 0 and your number"), Remarks("(PREFIX)roll <number>")]
         public async Task Roll(int num)
         {
+            await Context.Channel.TriggerTypingAsync();
             Random r = new Random();
             int ans = r.Next(0, num);
-            await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync($"Number: {ans}");
         }
 
         [Command("av"), Summary("show users avatar"), Remarks("(PREFIX)av <user>"), Alias("Avatar", "profile")]
         public async Task AvAsync(params string[] arg)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
+
             if (arg.Length == 0)
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, AV(Context.Message.Author));
+                tp.Dispose();
             }
 
             else
             {
                 if (Context.Message.MentionedUsers.Any())
                 {
-                    await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, AV(Context.Message.MentionedUsers.First()));
+                    tp.Dispose();
                 }
 
                 else if (arg[0].Length == 17 || arg[0].Length == 18)
                 {
                     SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
                     await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
+                    tp.Dispose();
                 }
             }
         }
 
         public Embed AV(SocketUser user)
         {
+            Context.Channel.TriggerTypingAsync();
             EmbedBuilder eb = new EmbedBuilder()
             {
                 ImageUrl = user.GetAvatarUrl(size: 1024)
@@ -564,41 +569,26 @@ namespace FinBot.Modules
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
+
             if (text.Contains(","))
             {
                 string[] result = text.Split(',');
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, EmbedMessage(result[0], result[1]).Build());
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage(result[0], result[1]).Build());
+                tp.Dispose();
             }
 
             else
             {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, EmbedMessage(text).Build());
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage(text).Build());
+                tp.Dispose();
             }
-        }
-
-        private EmbedBuilder EmbedMessage(string title, string msg = "")
-        {
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithTitle(title);
-            embed.WithDescription(msg);
-            embed.Color = ColorPicker();
-            return embed;
-        }
-
-        private Color ColorPicker()
-        {
-            Color[] Colours = {Color.Blue, Color.DarkBlue, Color.DarkerGrey, Color.DarkGreen, Color.DarkGrey, Color.DarkMagenta, Color.DarkOrange, Color.DarkPurple, Color.DarkRed, Color.DarkTeal, Color.Default, Color.Gold, Color.Green,
-            Color.LighterGrey, Color.LightGrey, Color.LightOrange, Color.Magenta, Color.Orange, Color.Purple, Color.Red, Color.Teal };
-            Random rand = new Random();
-            int index = rand.Next(Colours.Length);
-            return Colours[index];
         }
 
         [Command("translate"), Summary("Translates inputted text to English"), Remarks("(PREFIX)translate <text>"), Alias("t", "trans")]
         public async Task Translate([Remainder] string translate)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             translate = Regex.Replace(translate, @"^\s*""?|""?\s*$", "");
             string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q={HttpUtility.UrlEncode(translate)}";
             WebClient webClient = new WebClient
@@ -613,7 +603,6 @@ namespace FinBot.Modules
 
                 if (result == translate)
                 {
-                    await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
@@ -626,11 +615,11 @@ namespace FinBot.Modules
                             Url = Context.Message.GetJumpUrl()
                         }
                     }.Build());
+                    tp.Dispose();
 
                     return;
                 }
 
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.Blue,
@@ -642,11 +631,11 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+                tp.Dispose();
             }
 
             catch
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
@@ -659,6 +648,7 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+                tp.Dispose();
             }
         }
 
@@ -667,6 +657,7 @@ namespace FinBot.Modules
         {
             if (string.IsNullOrWhiteSpace(search))
             {
+                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("A search needs to be entered! E.G: `wiki testing`");
                 return;
             }
@@ -676,6 +667,7 @@ namespace FinBot.Modules
 
         private async Task WikiSearch(string search, ISocketMessageChannel channel, SocketUserMessage msg, int maxSearch = 10)
         {
+            await channel.TriggerTypingAsync();
             Color wikipediaSearchColor = new Color(237, 237, 237);
             EmbedBuilder embed = new EmbedBuilder();
             StringBuilder sb = new StringBuilder();
@@ -709,23 +701,15 @@ namespace FinBot.Modules
 
             embed.WithDescription(sb.ToString());
             embed.WithCurrentTimestamp();
-            await ModifyMessage(message, embed);
-        }
-
-        public static async Task ModifyMessage(IUserMessage baseMessage, string newMessage)
-        {
-            await baseMessage.ModifyAsync(x => { x.Content = newMessage; });
-        }
-
-        public static async Task ModifyMessage(IUserMessage baseMessage, EmbedBuilder embed)
-        {
-            await baseMessage.ModifyAsync(x => { x.Embed = embed.Build(); });
+            await Global.ModifyMessage(message, embed);
         }
 
         [Command("Roleinfo"), Summary("Gets information on the parsed role"), Remarks("(PREFIX)roleinfo <role name> or <@role>"), Alias("role", "role-info", "ri")]
-        public async Task RoleInfo([Remainder] SocketRole role)
+        public async Task RoleInfo([Remainder] SocketRole role = null)
         {
-            if (Context.Guild.Roles.Any(x => x.Name == role.ToString()))
+            IDisposable tp = Context.Channel.EnterTypingState();
+            
+            if (Context.Guild.Roles.Any(x => x.Name == role?.ToString()))
             {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.AddField("Role name", role.Mention, true);
@@ -734,10 +718,29 @@ namespace FinBot.Modules
                 eb.AddField("Mentionable", role.IsMentionable ? "Yes" : "No", true);
                 eb.AddField("Displayed separately", role.IsHoisted ? "Yes" : "No", true);
                 eb.AddField("Colour", role.Color, true);
-                eb.AddField($"Permissions[{role.Permissions.ToList().Count}]", String.IsNullOrEmpty(String.Join(separator: ", ", values: role.Permissions.ToList().Select(r => r.ToString()))) ? "None" : String.Join(separator: ", ", values: role.Permissions.ToList().Select(r => r.ToString())), true);
+                _ = eb.AddField($"Permissions[{role.Permissions.ToList().Count}]", string.IsNullOrEmpty(string.Join(separator: ", ", values: role.Permissions.ToList().Select(r => r.ToString()))) ? "None" :
+                    string.Join(separator: ", ", values: role.Permissions.ToList().Select(r => r.ToString())), true);
                 eb.WithFooter($"Role created at {role.CreatedAt}");
                 eb.WithColor(role.Color);
                 await Context.Message.ReplyAsync("", false, eb.Build());
+                tp.Dispose();
+            }
+
+            else
+            {
+                EmbedBuilder eb = new EmbedBuilder()
+                {
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                    },
+                    Title = $"Please mention a role",
+                    Description = $"Please parse in a role parameter!",
+                    Color = Color.Orange,
+                };
+                await Context.Message.ReplyAsync("", false, eb.Build());
+                tp.Dispose();
             }
         }
 
@@ -745,7 +748,8 @@ namespace FinBot.Modules
         public async Task GetRoles()
         {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.AddField($"Roles [{Context.Guild.Roles.Count}]:", String.IsNullOrEmpty(String.Join(separator: ", ", values: Context.Guild.Roles.ToList().Select(r => r.ToString()))) ? "There are no roles" : $"{String.Join(separator: ", ", values: Context.Guild.Roles.ToList().Select(r => r.Mention))}");
+            _ = eb.AddField($"Roles [{Context.Guild.Roles.Count}]:", string.IsNullOrEmpty(string.Join(separator: ", ", values: Context.Guild.Roles.ToList().Select(r => r.ToString()))) ? "There are no roles" : 
+                $"{string.Join(separator: ", ", values: Context.Guild.Roles.ToList().Select(r => r.Mention))}");
             eb.WithAuthor(Context.Message.Author);
             eb.WithCurrentTimestamp();
             eb.WithColor(Color.DarkPurple);
@@ -755,6 +759,8 @@ namespace FinBot.Modules
         [Command("rps"), Summary("Play rock paper sciessors with the bot"), Remarks("(PREFIX)rps <rock/paper/scissors>"), Alias("rockpaperscissors", "rock-paper-scissors")]
         public async Task RPS(string choice)
         {
+            await Context.Channel.TriggerTypingAsync();
+
             if (choice.ToLower() != "rock" && choice.ToLower() != "paper" && choice.ToLower() != "scissors")
             {
                 await Context.Message.ReplyAsync("Please enter a valid option. Either \"rock\", \"paper\" or \"scissors\"");
@@ -807,6 +813,8 @@ namespace FinBot.Modules
         [Command("flip"), Summary("Challenge me to a coin flip!"), Remarks("(PREFIX)flip <heads/tails>"), Alias("coinflip", "coin", "coin-flip", "flipcoin", "flip-coin")]
         public async Task Flip(string choice = "")
         {
+            await Context.Channel.TriggerTypingAsync();
+
             if (choice.ToLower() != "heads" && choice.ToLower() != "tails" && choice.ToLower() != "")
             {
                 await Context.Message.ReplyAsync("Please enter a valid argument. Either heads or tails or leave it blank");
@@ -847,11 +855,12 @@ namespace FinBot.Modules
         [Command("ysearch", RunMode = RunMode.Async), Summary("Search YouTube for a specific keyword"), Remarks("(PREFIX)ysearch <query>")]
         public async Task SearchYouTube([Remainder] string args = "")
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             string searchFor = string.Empty;
             EmbedBuilder embed = new EmbedBuilder();
             string embedThumb = Context.User.GetAvatarUrl();
             StringBuilder sb = new StringBuilder();
-            List<Google.Apis.YouTube.v3.Data.SearchResult> results = null;
+            List<SearchResult> results = null;
             embed.ThumbnailUrl = embedThumb;
 
             if (string.IsNullOrEmpty(args))
@@ -861,6 +870,8 @@ namespace FinBot.Modules
                 sb.AppendLine("Please provide a term to search for!");
                 embed.Description = sb.ToString();
                 await Context.Message.ReplyAsync("", false, embed.Build());
+                tp.Dispose();
+
                 return;
             }
 
@@ -876,14 +887,14 @@ namespace FinBot.Modules
             {
                 string videoUrlPrefix = $"https://www.youtube.com/watch?v=";
                 embed.Title = $"YouTube Search For (**{searchFor}**)";
-                Google.Apis.YouTube.v3.Data.SearchResult thumbFromVideo = results.Where(r => r.Id.Kind == "youtube#video").Take(1).FirstOrDefault();
+                SearchResult thumbFromVideo = results.Where(r => r.Id.Kind == "youtube#video").Take(1).FirstOrDefault();
 
                 if (thumbFromVideo != null)
                 {
                     embed.ThumbnailUrl = thumbFromVideo.Snippet.Thumbnails.Default__.Url;
                 }
 
-                foreach (Google.Apis.YouTube.v3.Data.SearchResult result in results.Where(r => r.Id.Kind == "youtube#video").Take(3))
+                foreach (SearchResult result in results.Where(r => r.Id.Kind == "youtube#video").Take(3))
                 {
                     string fullVideoUrl = string.Empty;
                     string videoId = string.Empty;
@@ -909,12 +920,14 @@ namespace FinBot.Modules
 
                 embed.Description = sb.ToString();
                 await Context.Message.ReplyAsync("", false, embed.Build());
+                tp.Dispose();
             }
         }
 
         [Command("TranslateTo"), Summary("Translates the input text to the language you specify"), Remarks("(PREFIX)TranslateTo <language code> <text>"), Alias("trto", "tto")]
         public async Task TranslateTo(string toLanguage, [Remainder] string translate)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             translate = Regex.Replace(translate, @"^\s*""?|""?\s*$", "");
             string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl={toLanguage}&dt=t&q={HttpUtility.UrlEncode(translate)}";
             WebClient webClient = new WebClient
@@ -929,7 +942,6 @@ namespace FinBot.Modules
 
                 if (result == translate)
                 {
-                    await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
@@ -942,11 +954,11 @@ namespace FinBot.Modules
                             Url = Context.Message.GetJumpUrl()
                         }
                     }.Build());
+                    tp.Dispose();
 
                     return;
                 }
 
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.Blue,
@@ -958,11 +970,11 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+                tp.Dispose();
             }
 
             catch
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
@@ -975,12 +987,14 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+                tp.Dispose();
             }
         }
 
         [Command("fact"), Summary("Gives you a random fact"), Remarks("(PREFIX)fact")]
         public async Task Fact()
         {
+            await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://uselessfacts.jsph.pl/random.json");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
@@ -999,6 +1013,7 @@ namespace FinBot.Modules
         [Command("catfact"), Summary("Gets a random cat fact"), Remarks("(PREFIX)catfact")]
         public async Task catFact()
         {
+            await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://meowfacts.herokuapp.com/");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
@@ -1010,6 +1025,7 @@ namespace FinBot.Modules
         [Command("trivia"), Summary("Gives you a random trivia question and censored out answer"), Remarks("(PREFIX)trivia")]
         public async Task Trivia()
         {
+            await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("http://jservice.io/api/random");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
@@ -1017,7 +1033,7 @@ namespace FinBot.Modules
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithTitle("Trivia question");
-            eb.AddField($"__{APIData.question}?__", $"\n᲼᲼\n᲼᲼\n||{APIData.answer}||", false); // Empty spaces are just hidden from being shown on Discord, see https://www.quora.com/How-do-you-get-an-invisible-name-in-Discord#:~:text=There%20is%20no%20actual%20invisible,the%20character%20if%20you%20wish.
+            eb.AddField($"__{APIData.question}?__", $"\n_ _\n_ _\n||{APIData.answer}||", false); //The empty unerline just means we can create `illegal` spaces between the question and answer.
             eb.WithColor(Color.DarkPurple);
             eb.WithAuthor(Context.Message.Author);
             await Context.Message.ReplyAsync("", false, eb.Build());
@@ -1034,6 +1050,7 @@ namespace FinBot.Modules
         [Command("leaderboard"), Summary("Gets the top 10 members in the leaderboard for the guild"), Remarks("(PREFIX)leaderboard")]
         public async Task GetLeaderboard()
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
 
             try
@@ -1055,6 +1072,8 @@ namespace FinBot.Modules
                     };
 
                     await Context.Message.ReplyAsync("", false, eb.Build());
+                    tp.Dispose();
+
                     return;
                 }
 
@@ -1073,6 +1092,8 @@ namespace FinBot.Modules
                     };
 
                     await Context.Message.ReplyAsync("", false, eb.Build());
+                    tp.Dispose();
+
                     return;
                 }
 
@@ -1174,6 +1195,11 @@ namespace FinBot.Modules
                     b.Description = format + "```";
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
+
+                finally
+                {
+                    tp.Dispose();
+                }
             }
 
             catch (Exception ex)
@@ -1188,6 +1214,8 @@ namespace FinBot.Modules
                     eb.WithColor(Color.Red);
                     eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Channel.SendMessageAsync("", false, eb.Build());
+                    tp.Dispose();
+                    
                     return;
                 }
             }
@@ -1197,6 +1225,7 @@ namespace FinBot.Modules
         [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("level")]
         public async Task Rank(params string[] arg)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             string toLevel = await Global.DetermineLevel(Context.Guild);
 
             if (toLevel.ToLower() == "false")
@@ -1214,6 +1243,8 @@ namespace FinBot.Modules
                 };
 
                 await Context.Message.ReplyAsync("", false, b.Build());
+                tp.Dispose();
+
                 return;
             }
 
@@ -1232,27 +1263,30 @@ namespace FinBot.Modules
                 };
 
                 await Context.Message.ReplyAsync("", false, b.Build());
+                tp.Dispose();
+
                 return;
             }
 
             if (arg.Length == 0)
             {
-                await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, await GetRankAsync(Context.Message.Author, Context.Guild.Id));
+                tp.Dispose();
             }
 
             else
             {
                 if (Context.Message.MentionedUsers.Any())
                 {
-                    await Context.Channel.TriggerTypingAsync();
                     await Context.Message.ReplyAsync("", false, await GetRankAsync(Context.Message.MentionedUsers.First(), Context.Guild.Id));
+                    tp.Dispose();
                 }
 
                 else if (arg[0].Length == 17 || arg[0].Length == 18)
                 {
                     SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
                     await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
+                    tp.Dispose();
                 }
             }
         }
@@ -1314,6 +1348,7 @@ namespace FinBot.Modules
         [Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe")]
         public async Task Snipe()
         {
+            await Context.Channel.TriggerTypingAsync();
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
 
             try
@@ -1387,6 +1422,7 @@ namespace FinBot.Modules
         [Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
         public async Task stats(params string[] graph)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             string toLevel = await Global.DetermineLevel(Context.Guild);
 
             if (toLevel.ToLower() == "false")
@@ -1404,6 +1440,8 @@ namespace FinBot.Modules
                 };
 
                 await Context.Message.ReplyAsync("", false, b.Build());
+                tp.Dispose();
+
                 return;
             }
 
@@ -1422,6 +1460,8 @@ namespace FinBot.Modules
                 };
 
                 await Context.Message.ReplyAsync("", false, b.Build());
+                tp.Dispose();
+
                 return;
             }
 
@@ -1433,6 +1473,8 @@ namespace FinBot.Modules
                 noOp.WithColor(Color.Red);
                 noOp.WithAuthor(Context.Message.Author);
                 await Context.Message.ReplyAsync("", false, noOp.Build());
+                tp.Dispose();
+
                 return;
             }
 
@@ -1500,29 +1542,35 @@ namespace FinBot.Modules
                         case "pie":
                             qc.Config = $"{{type: 'pie', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
                             await Context.Message.ReplyAsync(qc.GetUrl());
+                            tp.Dispose();
                             break;
 
                         case "bar":
                             qc.Config = $"{{type: 'bar', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
                             await Context.Message.ReplyAsync(qc.GetUrl());
+                            tp.Dispose();
                             break;
 
                         case "line":
                             qc.Config = $"{{type: 'line', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
                             await Context.Message.ReplyAsync(qc.GetUrl());
+                            tp.Dispose();
                             break;
 
                         case "doughnut":
                             qc.Config = $"{{type: 'doughnut', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
                             await Context.Message.ReplyAsync(qc.GetUrl());
+                            tp.Dispose();
                             break;
 
                         case "polararea":
                             qc.Config = $"{{type: 'polarArea', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
                             await Context.Message.ReplyAsync(qc.GetUrl());
+                            tp.Dispose();
                             break;
                         default:
                             await ReplyAsync("Please only enter \"pie\", \"bar\", \"line\", \"doughnut\" or \"polararea\"");
+                            tp.Dispose();
                             break;
                     }
                 }
@@ -1539,6 +1587,7 @@ namespace FinBot.Modules
                         eb.WithColor(Color.Red);
                         eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                         await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                        tp.Dispose();
                     }
                 }
             }
@@ -1547,15 +1596,16 @@ namespace FinBot.Modules
         [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
         public async Task dadjoke()
         {
+            await Context.Channel.TriggerTypingAsync();
             DadJokeClient client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
             string dadJoke = await client.GetRandomJokeStringAsync();
-            await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync(dadJoke);
         }
 
         [Command("poll")]
         public async Task poll([Remainder] string question)
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
             MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
 
@@ -1579,6 +1629,8 @@ namespace FinBot.Modules
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
                         await Context.Message.ReplyAsync("", false, eb.Build());
+                        tp.Dispose();
+
                         return;
                     }
 
@@ -1589,6 +1641,7 @@ namespace FinBot.Modules
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
                         var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                        tp.Dispose();
                         await msg.AddReactionsAsync(Global.reactions.ToArray());
                         queryConn.Open();
                         MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET message = {msg.Id}, guildId = {Context.Guild.Id}, author = {Context.Message.Author.Id}, state = 'Active', chanId = {Context.Message.Channel.Id} WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
@@ -1606,6 +1659,7 @@ namespace FinBot.Modules
                     eb.WithAuthor(Context.Message.Author);
                     eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
                     var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    tp.Dispose();
                     await msg.AddReactionsAsync(Global.reactions.ToArray());
                     queryConn.Open();
                     MySqlCommand cmd1 = new MySqlCommand($"INSERT INTO Polls(message, guildId, author, state, chanId) VALUES ({msg.Id}, {Context.Guild.Id}, {Context.Message.Author.Id}, 'Active', {Context.Message.Channel.Id})", queryConn);
@@ -1626,6 +1680,7 @@ namespace FinBot.Modules
                     eb.WithColor(Color.Red);
                     eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    tp.Dispose();
                 }
             }
         }
@@ -1633,6 +1688,7 @@ namespace FinBot.Modules
         [Command("endpoll")]
         public async Task endpoll()
         {
+            IDisposable tp = Context.Channel.EnterTypingState();
             MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
             MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
 
@@ -1666,7 +1722,7 @@ namespace FinBot.Modules
                             eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
                             eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
                             eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
-                            await ModifyMessage(message, eb);
+                            await Global.ModifyMessage(message, eb);
                             queryConn.Open();
                             MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
                             cmd1.ExecuteNonQuery();
@@ -1685,6 +1741,7 @@ namespace FinBot.Modules
                         finally
                         {
                             queryConn.Open();
+                            tp.Dispose();
                         }
                     }
 
@@ -1697,6 +1754,7 @@ namespace FinBot.Modules
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
                         await Context.Message.ReplyAsync("", false, eb.Build());
+                        tp.Dispose();
                     }
                 }
 
@@ -1711,6 +1769,7 @@ namespace FinBot.Modules
                     eb.WithCurrentTimestamp();
                     eb.Color = Color.Red;
                     await Context.Message.ReplyAsync("", false, eb.Build());
+                    tp.Dispose();
                 }
             }
 
@@ -1726,6 +1785,7 @@ namespace FinBot.Modules
                     eb.WithColor(Color.Red);
                     eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
                     await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    tp.Dispose();
                 }
             }
         }
@@ -1733,6 +1793,7 @@ namespace FinBot.Modules
         [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime"), Alias("status")]
         public async Task uptime()
         {
+            await Context.Channel.TriggerTypingAsync();
             UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);
             List<Monitor> monitors = await _client.GetMonitors();
 
