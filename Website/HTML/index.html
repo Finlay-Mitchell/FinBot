@@ -9,7 +9,7 @@
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"></script>
+        <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
         <link href="../CSS/index.css" rel="stylesheet">
         <link href="../CSS/theme.css" rel="stylesheet">
@@ -18,13 +18,6 @@
     </head>
 
     <body>
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <strong>Warning!</strong> This website is still in early development, please don't judge too hard.
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-
           <div class="container-fluid">
             <nav class="navbar navbar-inverse">
               <div class="container-fluid">
@@ -109,32 +102,53 @@
         <hr>
     </div>
 
-    <div class="row mx-auto py-5 border-secondary">
-        <div class="col-md-10">
-            <h2 class="display-3 text-primary"> Commands</h2>
-            <p>This bot comes with a huge array of commands, such as:</p>
-                <ul>
-                    <li>Fun commands</li>
-                    <li>Administrative commands</li>
-                    <li>Music commands</li>
-                    <li>Config commands</li>
-                    <li>Utility commands</li>
-                </ul>
-            <p>And much more!<br>This allowing you to take full control of your server whilst allowing users to use the bot for their own usages too.</p>
-        </div>
-            <div class="listmedia">
-                <img class="img-fluid" src="../Media/commands.png" alt="image of commands">
+      <section>
+        <div class="container">
+          <div class="card">
+            <div class="row">
+                <img class="img-fluid" src="../Media/commands.png" alt="Commands image">
+              <div class="col-md-6">     
+                <div class="card-block">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Card text.</p>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </section>
 
-    <div class="underline-section">
+      <div class="underline-section">
         <hr>
     </div>
+
+    <section>
+        <div class="container">
+          <div class="card">
+            <div class="row">
+              <div class="col-md-6">     
+                <div class="card-block">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Card text.</p>
+                </div>
+              </div>
+              <img class="img-fluid" src="..." alt="...">
+
+            </div>
+          </div>
+        </div>
+      </section>
 
     <footer>
         <hr>
         <p>2020-<script>GetYear()</script> Copyright&copy;. All Rights Reserved</p>
         <button type="button" class="btn themetoggle" onclick="ToggleTheme()">Toggle theme</button>
+        <a href="https://api.finlaymitchell.ml" target="_blank">
+            <button type="button" class="btn footerbutton">API</button>
+        </a>
+        <a href="https://finlaymitchell.ml/contact" target="_blank">
+            <button type="button" class="btn footerbutton">Contact</button>
+        </a>
     </footer>
 
     </body>

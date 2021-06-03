@@ -2,6 +2,7 @@
 {
     margin: 0;
     padding: 0;
+    color: white;
 }
 
 html
@@ -25,6 +26,7 @@ body
 
 .card
 {
+    border: none;
     background-color: #252627;
 }
 
@@ -171,8 +173,11 @@ footer button
 
 .themetoggle
 {
-    border-color: gray !important;
-    color: rebeccapurple;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border-color: gray !important;
+  color: rebeccapurple;
 }
   
 .themetoggle:hover 
@@ -183,18 +188,49 @@ footer button
 .col-md-10 ul 
 {
     color: white;
-    font-size: x-large;
+    font-size: large;
+    display: inline;
 }
 
 .col-md-10 p
 {
     color: white;
-    font-size: x-large;
+    font-size: large;
+    display: inline;
 }
 
 .listmedia img 
 {
-    /*
-     *IMPLEMENT LATER
-     */
+  width: 250px;
+  float: right;
+  margin-top: 75px;
+}
+
+.footerbutton
+{
+  float: right;
+  margin-left: 10px;
+  border-color: gray !important;
+  color: rebeccapurple;
+}
+
+.footerbutton:hover
+{
+  background: lightgrey;
+}
+
+.container .card .row
+{
+  margin-top: 80px;
+}
+
+.container .card .card-title
+{
+  font-size: xx-large;
+  color: white;
+}
+
+.container .card .card-text
+{
+  color: grey;
 }
