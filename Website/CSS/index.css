@@ -179,3 +179,22 @@ footer button
 {
     background: #e7e7e7;
 }
+
+.col-md-10 ul 
+{
+    color: white;
+    font-size: x-large;
+}
+
+.col-md-10 p
+{
+    color: white;
+    font-size: x-large;
+}
+
+.listmedia img 
+{
+    /*
+     *IMPLEMENT LATER
+     */
+}
