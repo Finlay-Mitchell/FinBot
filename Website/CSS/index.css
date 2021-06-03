@@ -150,7 +150,7 @@ footer p
 footer hr
 {
     border: 2px solid #707070;
-    margin-top: 80px;
+    /* margin-top: 80px; */
 }
 
 .underline-section hr
@@ -173,9 +173,6 @@ footer button
 
 .themetoggle
 {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
   border-color: gray !important;
   color: rebeccapurple;
 }
@@ -222,6 +219,7 @@ footer button
 .container .card .row
 {
   margin-top: 80px;
+  margin-bottom: 200px;
 }
 
 .container .card .card-title
@@ -230,7 +228,29 @@ footer button
   color: white;
 }
 
-.container .card .card-text
+.container .card .card-block li
 {
-  color: grey;
+  font-size: large;
+  list-style-type: none;
+  margin-left: 20px !important;
+  color: slategray;
+}
+
+.container .card .card-block ul li:before 
+{
+  content: '\2014';
+  position: absolute;
+  margin-left: -25px;
+}
+
+.container .card .card-block p
+{
+  font-size: large;
+  color: grey !important;
+}
+
+.container .card .scaledown
+{
+  width: 35%;
+  height: auto;
 }
