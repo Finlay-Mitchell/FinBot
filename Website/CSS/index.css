@@ -233,7 +233,8 @@ footer button
   font-size: large;
   list-style-type: none;
   margin-left: 20px !important;
-  color: slategray;
+  /* color: slategray; */
+  color: grey !important;
 }
 
 .container .card .card-block ul li:before 
