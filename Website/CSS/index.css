@@ -254,3 +254,9 @@ footer button
   width: 35%;
   height: auto;
 }
+
+.card .card-img
+{
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
