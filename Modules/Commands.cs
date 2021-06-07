@@ -12,23 +12,17 @@ using System.Net;
 using Newtonsoft.Json;
 using FinBot.Handlers;
 using Color = Discord.Color;
-using FinBot.Services;
 using Discord.Rest;
 using WikiDotNet;
 using System.Text;
 using System.Net.Http.Headers;
-using Google.Apis.YouTube.v3;
-using Google.Apis.Services;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Web;
 using QuickChart;
 using ICanHazDadJoke.NET;
 using System.Data;
 using MySql.Data.MySqlClient;
-using Google.Apis.YouTube.v3.Data;
 using MongoDB.Driver;
-using MongoDB.Bson;
 using UptimeSharp;
 using UptimeSharp.Models;
 using SearchResult = Google.Apis.YouTube.v3.Data.SearchResult;
@@ -119,9 +113,7 @@ namespace FinBot.Modules
 
             if (arg.Length == 1)
             {
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
-                if (Uri.TryCreate(arg.First(), UriKind.RelativeOrAbsolute, out Uri i))
-#pragma warning restore IDE0059 // Unnecessary assignment of a value
+                if (Uri.TryCreate(arg.First(), UriKind.RelativeOrAbsolute, out _))
                 {
                     HttpClient HTTPClient = new HttpClient();
                     string url = "https://www.google.com/searchbyimage?image_url=" + arg.First();
@@ -203,8 +195,10 @@ namespace FinBot.Modules
             ulong snowflake = (ulong)Math.Round((after - before).TotalSeconds * 1000);
             ulong Heartbeat = (ulong)Math.Round((double)Context.Client.Latency);
             ulong totalLatency = (ulong)Math.Round((message.CreatedAt - Context.Message.CreatedAt).TotalSeconds * 1000);
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.Title = $"Pong!";
+            EmbedBuilder eb = new EmbedBuilder
+            {
+                Title = $"Pong!"
+            };
             eb.AddField("Ping to discord", $"{Math.Floor((double)snowflake / 2)}ms");
             eb.AddField("Heartbeat(Me -> Discord -> Me)", $"{Heartbeat}ms");
             eb.AddField("Total time(Your message -> my reply)", $"{totalLatency}ms");
@@ -382,25 +376,13 @@ namespace FinBot.Modules
             await Context.Channel.TriggerTypingAsync();
             string boosttier = "";
 
-            switch (Context.Guild.PremiumTier.ToString())
+            boosttier = (Context.Guild.PremiumTier.ToString()) switch
             {
-                case "Tier1":
-                    boosttier = "Tier 1";
-                    break;
-
-                case "Tier2":
-                    boosttier = "Tier 2";
-                    break;
-
-                case "Tier3":
-                    boosttier = "Tier 3";
-                    break;
-
-                default:
-                    boosttier = "None";
-                    break;
-            }
-
+                "Tier1" => "Tier 1",
+                "Tier2" => "Tier 2",
+                "Tier3" => "Tier 3",
+                _ => "None",
+            };
             EmbedBuilder eb = new EmbedBuilder()
             {
                 Title = "Serverinfo",
@@ -430,16 +412,15 @@ namespace FinBot.Modules
             EmbedBuilder eb = new EmbedBuilder();
             eb.AddField("Developers:", "Finlay Mitchell, Thomas Waffles");
             eb.AddField("Version: ", Global.Version);
-            eb.AddField("Languages", "C# - Discord.net API\nPython - Discord.py");
+            eb.AddField("Languages", "C# - Discord.net API\nPython - Discord.py\nJavascript - Discord.js");
             eb.WithAuthor(Context.Message.Author);
             eb.WithColor(Color.Gold);
             eb.WithTitle("Bot info");
             eb.AddField("Uptime", $"{DateTime.Now - Process.GetCurrentProcess().StartTime:dd\\.hh\\:mm\\:ss}");
-            eb.AddField("Runtime", $"{RuntimeInformation.FrameworkDescription} {RuntimeInformation.OSArchitecture}");
-            eb.AddField($"Heap size", $"{Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString()} MB");
             eb.AddField("How many servers am I in?", Context.Client.Guilds.Count());
             eb.AddField("Invite to your server", "[Invite link](http://bot.finlaymitchell.ml)");
             eb.AddField("Join the support server", "[here](http://server.finlaymitchell.ml)");
+            eb.AddField("My website", "[Visit the webpage here](http://finbot.finlaymitchell.ml)");
             eb.WithDescription($"Here's some info on me");
             eb.WithCurrentTimestamp();
             eb.WithDescription("To support the developers, [please feel free to donate](http://donate.finlaymitchell.ml)!");
@@ -599,7 +580,7 @@ namespace FinBot.Modules
 
             try
             {
-                result = result.Substring(4, result.IndexOf("\"", 4, StringComparison.Ordinal) - 4);
+                result = result[4..result.IndexOf("\"", 4, StringComparison.Ordinal)];
 
                 if (result == translate)
                 {
@@ -912,7 +893,7 @@ namespace FinBot.Modules
 
                     if (result.Id.VideoId != null)
                     {
-                        fullVideoUrl = $"{videoUrlPrefix}{result.Id.VideoId.ToString()}";
+                        fullVideoUrl = $"{videoUrlPrefix}{result.Id.VideoId}";
                     }
 
                     sb.AppendLine($":video_camera: **__{result.Snippet.ChannelTitle}__** -> [**{result.Snippet.Title}**]({fullVideoUrl})\n\n *{description}*\n");
@@ -938,7 +919,7 @@ namespace FinBot.Modules
 
             try
             {
-                result = result.Substring(4, result.IndexOf("\"", 4, StringComparison.Ordinal) - 4);
+                result = result[4..result.IndexOf("\"", 4, StringComparison.Ordinal)];
 
                 if (result == translate)
                 {
@@ -1000,18 +981,18 @@ namespace FinBot.Modules
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
             resp = Regex.Replace(resp, @"[\[\]]", "");
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
-            string URL = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q={HttpUtility.UrlEncode(APIData.text)}";
+            string URL = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q={HttpUtility.UrlEncode(APIData.Text)}";
             WebClient webClient = new WebClient
             {
                 Encoding = Encoding.UTF8
             };
             string result = webClient.DownloadString(URL);
-            result = result.Substring(4, result.IndexOf("\"", 4, StringComparison.Ordinal) - 4);
+            result = result[4..result.IndexOf("\"", 4, StringComparison.Ordinal)];
             await Context.Message.ReplyAsync(result);
         }
 
         [Command("catfact"), Summary("Gets a random cat fact"), Remarks("(PREFIX)catfact")]
-        public async Task catFact()
+        public async Task CatFact()
         {
             await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
@@ -1019,7 +1000,7 @@ namespace FinBot.Modules
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
             resp = Regex.Replace(resp, @"[\[\]]", "");
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
-            await Context.Message.ReplyAsync(APIData.data);
+            await Context.Message.ReplyAsync(APIData.Data);
         }
 
         [Command("trivia"), Summary("Gives you a random trivia question and censored out answer"), Remarks("(PREFIX)trivia")]
@@ -1033,7 +1014,7 @@ namespace FinBot.Modules
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithTitle("Trivia question");
-            eb.AddField($"__{APIData.question}?__", $"\n_ _\n_ _\n||{APIData.answer}||", false); //The empty unerline just means we can create `illegal` spaces between the question and answer.
+            eb.AddField($"__{APIData.Question}?__", $"\n_ _\n_ _\n||{APIData.Answer}||", false); //The empty unerline just means we can create `illegal` spaces between the question and answer.
             eb.WithColor(Color.DarkPurple);
             eb.WithAuthor(Context.Message.Author);
             await Context.Message.ReplyAsync("", false, eb.Build());
@@ -1041,17 +1022,17 @@ namespace FinBot.Modules
 
         public class APIJsonItems
         {
-            public string answer { get; set; }
-            public string question { get; set; }
-            public string data { get; set; }
-            public string text { get; set; }
+            public string Answer { get; set; }
+            public string Question { get; set; }
+            public string Data { get; set; }
+            public string Text { get; set; }
         }
 
         [Command("leaderboard"), Summary("Gets the top 10 members in the leaderboard for the guild"), Remarks("(PREFIX)leaderboard")]
         public async Task GetLeaderboard()
         {
             IDisposable tp = Context.Channel.EnterTypingState();
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -1168,8 +1149,10 @@ namespace FinBot.Modules
 
                 try
                 {
-                    Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>>();
-                    final_object.Add("scores", scores);
+                    Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>>
+                    {
+                        { "scores", scores }
+                    };
                     HttpClient HTTPClient = new HttpClient();
                     string content = JsonConvert.SerializeObject(final_object);
                     byte[] buffer = Encoding.UTF8.GetBytes(content);
@@ -1293,7 +1276,7 @@ namespace FinBot.Modules
 
         public Task<Embed> GetRankAsync(SocketUser user, ulong guild)
         {
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -1349,7 +1332,7 @@ namespace FinBot.Modules
         public async Task Snipe()
         {
             await Context.Channel.TriggerTypingAsync();
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -1420,7 +1403,7 @@ namespace FinBot.Modules
         }
 
         [Command("stats"), Summary("Gets the server stats in a fancy graph"), Remarks("(PREFIX)stats <pie, bar, line, doughnut, polararea>")]
-        public async Task stats(params string[] graph)
+        public async Task Stats(params string[] graph)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
             string toLevel = await Global.DetermineLevel(Context.Guild);
@@ -1480,7 +1463,7 @@ namespace FinBot.Modules
 
             else if (graph.Length == 1)
             {
-                MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+                MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
                 try
                 {
@@ -1529,9 +1512,11 @@ namespace FinBot.Modules
                     }
 
                     conn.Close();
-                    Chart qc = new Chart();
-                    qc.Width = 500;
-                    qc.Height = 300;
+                    Chart qc = new Chart
+                    {
+                        Width = 500,
+                        Height = 300
+                    };
                     Username = Username.Remove(Username.LastIndexOf(','));
                     Username += "]";
                     Data = Data.Remove(Data.LastIndexOf(','));
@@ -1594,7 +1579,7 @@ namespace FinBot.Modules
         }
 
         [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
-        public async Task dadjoke()
+        public async Task DadJoke()
         {
             await Context.Channel.TriggerTypingAsync();
             DadJokeClient client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
@@ -1603,11 +1588,11 @@ namespace FinBot.Modules
         }
 
         [Command("poll")]
-        public async Task poll([Remainder] string question)
+        public async Task Poll([Remainder] string question)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -1622,9 +1607,11 @@ namespace FinBot.Modules
 
                     if (reader.GetString(3) == "Active")
                     {
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.Title = "Poll already active";
-                        eb.Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {await Global.DeterminePrefix(Context)}endpoll";
+                        EmbedBuilder eb = new EmbedBuilder
+                        {
+                            Title = "Poll already active",
+                            Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {await Global.DeterminePrefix(Context)}endpoll"
+                        };
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
@@ -1636,8 +1623,10 @@ namespace FinBot.Modules
 
                     else
                     {
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.Title = $"{question}";
+                        EmbedBuilder eb = new EmbedBuilder
+                        {
+                            Title = $"{question}"
+                        };
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
                         var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
@@ -1654,8 +1643,10 @@ namespace FinBot.Modules
 
                 if (!hasRan)
                 {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.Title = $"{question}";
+                    EmbedBuilder eb = new EmbedBuilder()
+                    {
+                        Title = $"{question}"
+                    };
                     eb.WithAuthor(Context.Message.Author);
                     eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
                     var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
@@ -1686,11 +1677,11 @@ namespace FinBot.Modules
         }
 
         [Command("endpoll")]
-        public async Task endpoll()
+        public async Task Endpoll()
         {
             IDisposable tp = Context.Channel.EnterTypingState();
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            MySqlConnection queryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -1747,9 +1738,11 @@ namespace FinBot.Modules
 
                     else
                     {
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.Title = "Poll not active";
-                        eb.Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command";
+                        EmbedBuilder eb = new EmbedBuilder
+                        {
+                            Title = "Poll not active",
+                            Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command"
+                        };
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithCurrentTimestamp();
                         eb.Color = Color.Red;
@@ -1762,9 +1755,11 @@ namespace FinBot.Modules
 
                 if (!hasRan)
                 {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.Title = "Poll not active";
-                    eb.Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command";
+                    EmbedBuilder eb = new EmbedBuilder
+                    {
+                        Title = "Poll not active",
+                        Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command"
+                    };
                     eb.WithAuthor(Context.Message.Author);
                     eb.WithCurrentTimestamp();
                     eb.Color = Color.Red;
@@ -1791,7 +1786,7 @@ namespace FinBot.Modules
         }
 
         [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime"), Alias("status")]
-        public async Task uptime()
+        public async Task Uptime()
         {
             await Context.Channel.TriggerTypingAsync();
             UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);
@@ -1820,9 +1815,10 @@ namespace FinBot.Modules
          */
 
         [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
-        public Task chatbot(params string[] arg)
+        public Task Chatbot(params string[] arg)
         {
             return Task.CompletedTask;
         }
+
     }
 }

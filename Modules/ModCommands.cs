@@ -16,11 +16,11 @@ namespace FinBot.Modules
 {
     public class ModCommands : ModuleBase<SocketCommandContext>
     {
-        private DiscordShardedClient _client;
+        //private readonly DiscordShardedClient _client;
 
         public ModCommands(IServiceProvider service)
         {
-            _client = service.GetRequiredService<DiscordShardedClient>();
+            //_client = service.GetRequiredService<DiscordShardedClient>();
         }
 
         [Command("clear"), Summary("clears a specified amount of messages from the chat"), Remarks("(PREFIX) clear<amount>"), Alias("purge", "clr")]
@@ -192,11 +192,11 @@ namespace FinBot.Modules
         {
             try
             {
-                MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+                MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
                 try
                 {
-                    MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+                    MySqlConnection queryConn = new MySqlConnection(Global.MySQL.ConnStr);
                     conn.Open();
                     MySqlCommand query = new MySqlCommand($"SELECT * FROM modlogs WHERE guildId = {GuildId} AND userId = {userID}", conn);
                     using MySqlDataReader rdr = query.ExecuteReader();
@@ -239,7 +239,7 @@ namespace FinBot.Modules
                         //}
                     }
 
-                    indx = indx + 1;
+                    indx += 1;
                     queryConn.Open();
                     AddToModlogs(queryConn, userID, action, ModeratorID, reason, GuildId, indx);
                     queryConn.Close();
@@ -311,7 +311,7 @@ namespace FinBot.Modules
             SocketUser u = mentions.First();
             try
             {
-                MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+                MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
                 try
                 {
@@ -392,7 +392,7 @@ namespace FinBot.Modules
             try
             {
                 SocketUser u = mentions.First();
-                MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
+                MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
                 try
                 {
@@ -626,7 +626,7 @@ namespace FinBot.Modules
         }
 
         [Command("vcmute"), Summary("Mutes a user from voice channels"), Remarks("(PREFIX)vcmute <user> (optional) <user>"), Alias("voicechatmute")]
-        public async Task vcMute(SocketUser user, [Remainder] string reason = "No reason provided")
+        public async Task VcMute(SocketUser user, [Remainder] string reason = "No reason provided")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
             SocketVoiceChannel vc = Context.Guild.GetUser(user.Id).VoiceChannel;
@@ -758,7 +758,7 @@ namespace FinBot.Modules
         }
 
         [Command("vcunmute"), Summary("Unmutes a user from voice channels"), Remarks("(PREFIX)vcunmute <user>"), Alias("(PREFIX)vcunmute")]
-        public async Task vcUnMute(SocketUser user)
+        public async Task VcUnMute(SocketUser user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 

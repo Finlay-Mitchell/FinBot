@@ -10,8 +10,8 @@ namespace FinBot.Handlers
 {
     public class MemberCountHandler : ModuleBase<SocketCommandContext>
     {
-        private DiscordShardedClient _client;
-        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
+        private readonly DiscordShardedClient _client;
+        readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
 
         public MemberCountHandler(IServiceProvider services)
         {

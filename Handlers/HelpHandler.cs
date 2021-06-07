@@ -16,7 +16,7 @@ namespace FinBot.Handlers
         }
 
         [Command("help"), Summary("gives you information on each command"), Remarks("(PREFIX)help(all commands)/(PREFIX)help <command>")]
-        public async Task help(params string[] arg)
+        public async Task Help(params string[] arg)
         {
             if (arg.Length == 1)
             {
@@ -107,12 +107,6 @@ namespace FinBot.Handlers
                             break;
 
                         case "MinecraftCommands":
-                            builder.AddField(x =>
-                            {
-                                x.Name = "Minecraft commands";
-                                x.Value = description.Remove(description.LastIndexOf(','));
-                                x.IsInline = false;
-                            });
                             break;
 
                         case "ConfigCommands":

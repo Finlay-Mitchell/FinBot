@@ -27,7 +27,7 @@ namespace FinBot.Modules
 {
     public class DevCommands : ModuleBase<ShardedCommandContext> //Dev commands hidden from regular users
     {
-        private DiscordShardedClient _client;
+        private readonly DiscordShardedClient _client;
 
         public DevCommands(IServiceProvider service)
         {
@@ -73,7 +73,6 @@ namespace FinBot.Modules
         {
             if (Global.IsDev(Context.User))
             {
-                Process currentProcess = Process.GetCurrentProcess();
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync($"Restarting bot with reason \"{reason}\"\n");
                 Process.Start($"{AppDomain.CurrentDomain.FriendlyName}.exe");
@@ -82,7 +81,7 @@ namespace FinBot.Modules
         }
 
         [Command("terminate")]
-        public async Task term()
+        public async Task Term()
         {
             if (Global.IsDev(Context.User))
             {
@@ -117,13 +116,19 @@ namespace FinBot.Modules
         }
 
         [Command("tld")] //boilerplate code for python TLD module
-        public Task tld(params string[] args)
+        public Task Tld(params string[] args)
         {
             return Task.CompletedTask;
         }
 
         [Command("exec")] //more boilerplate
-        public Task exec(params string[] args)
+        public Task Exec(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("reset_chatbot")]
+        public Task ResetChatbot(params string[] arg)
         {
             return Task.CompletedTask;
         }

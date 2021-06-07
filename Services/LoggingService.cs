@@ -18,7 +18,7 @@ namespace FinBot.Services
         private readonly ILogger _logger;
         private readonly DiscordShardedClient _discord;
         private readonly CommandService _commands;
-        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
+        readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
 
         public LoggingService(ILogger<LoggingService> logger, DiscordShardedClient discord, CommandService commands)
         {
@@ -143,8 +143,8 @@ namespace FinBot.Services
                 {
                     ulong Levelchannel = Convert.ToUInt64(GetLevellingChannel(chan.Guild).Result);
                     long Now = Global.ConvertToTimestamp(arg.Timestamp.UtcDateTime);
-                    MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-                    MySqlConnection queryConn = new MySqlConnection(Global.MySQL.connStr);
+                    MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+                    MySqlConnection queryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
                     conn.Open();
                     long TimeStamp = 0;
@@ -176,7 +176,7 @@ namespace FinBot.Services
                                 if (XP >= xpToNextLevel)
                                 {
                                     level += 1;
-                                    XP = XP - xpToNextLevel;
+                                    XP -= xpToNextLevel;
                                     SocketTextChannel Channel = (SocketTextChannel)chan.Guild.GetChannel(Levelchannel);
 
                                     if (Channel != null)
@@ -281,8 +281,8 @@ namespace FinBot.Services
                 }
             }
 
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -353,7 +353,6 @@ namespace FinBot.Services
 
             else if (arg.Channel.GetType() == typeof(SocketDMChannel))
             {
-                SocketDMChannel gC = (SocketDMChannel)arg.Channel;
                 string logMessage = $"User: [{arg.Author.Username}]<->[{arg.Author.Id}] DM channel: [{arg.Channel}] -> [{arg.Content}]";
                 _logger.LogDebug(logMessage);
             }

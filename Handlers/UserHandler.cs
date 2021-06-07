@@ -13,8 +13,8 @@ namespace FinBot.Handlers
     public class UserHandler : ModuleBase<SocketCommandContext>
     {
 
-        private DiscordShardedClient _client;
-        MongoClient MongoClient = new MongoClient(Global.mongoconnstr);
+        private readonly DiscordShardedClient _client;
+        readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
 
         public UserHandler(IServiceProvider services)
         {

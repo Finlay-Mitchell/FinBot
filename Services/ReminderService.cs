@@ -11,7 +11,7 @@ namespace FinBot.Services
 	public class ReminderService
 	{
         public static DiscordShardedClient _client;
-        Timer T;
+        readonly Timer T;
 
 		public ReminderService(IServiceProvider service)
 		{
@@ -23,8 +23,8 @@ namespace FinBot.Services
         public async void RemindAsync(object sender, ElapsedEventArgs e)
         {
 
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
@@ -61,15 +61,15 @@ namespace FinBot.Services
             }
         }
 
-        public static async Task setReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message)
+        public static async Task SetReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message)
         {
             timeSet = DateTime.Now;
             long currentTime = Global.ConvertToTimestamp(timeSet);
             DateTime f = DateTime.ParseExact(TimeSpan.FromSeconds(Convert.ToInt64(Parse_time(duration).Result)).TotalSeconds.ToString(), "ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None);
 
             long reminderTimestamp = Global.ConvertToTimestamp(f);
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.connStr);
-            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.connStr);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {

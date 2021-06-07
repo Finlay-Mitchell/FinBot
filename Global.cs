@@ -35,14 +35,14 @@ namespace FinBot
             public static string MySQLDatabase { get; set; }
             public static string MySQLPort { get; set; }
             public static string MySQLPassword { get; set; }
-            public static string connStr { get; set; }
+            public static string ConnStr { get; set; }
         }
         
-        public static string mongoconnstr { get; set; }
+        public static string Mongoconnstr { get; set; }
         public static string StatusPageAPIKey { get; set; }
         
 
-        private static string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
+        private static readonly string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
         public static string WelcomeMessageURL { get; set; }
         internal static JsonItems CurrentJsonData;
         public static string KickMessageURL { get; set; }
@@ -50,7 +50,7 @@ namespace FinBot
         public static string TopicsPath = $"{Environment.CurrentDirectory}/Data/Topics.txt";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec" }; // These are hidden from being shown in the help command in HelpHandler.cs
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "ResetChatbot" }; // These are hidden from being shown in the help command in HelpHandler.cs
         public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 }; // Listed developer Ids
 
         public static void ReadConfig()
@@ -75,10 +75,10 @@ namespace FinBot
             LoggingLevel = data.LoggingLevel;
             SupportChannelId = data.SupportChannelId;
             SupportGuildId = data.SupportGuildId;
-            mongoconnstr = data.mongoconnstr;
+            Mongoconnstr = data.Mongoconnstr;
             StatusPageAPIKey = data.StatusPageAPIKey;
 
-            MySQL.connStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}";
+            MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}";
         }
 
         public class JsonItems
@@ -101,7 +101,7 @@ namespace FinBot
             public string LoggingLevel { get; set; }
             public ulong SupportChannelId { get; set; }
             public ulong SupportGuildId { get; set; }
-            public string mongoconnstr { get; set; }
+            public string Mongoconnstr { get; set; }
             public string StatusPageAPIKey { get; set; }
         }
 
@@ -152,7 +152,7 @@ namespace FinBot
             //gets the prefix for the guild in question - add Dictionary support for first prefix test.
             try
             {
-                MongoClient MongoClient = new MongoClient(mongoconnstr);
+                MongoClient MongoClient = new MongoClient(Mongoconnstr);
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
                 ulong _id = context.Guild.Id;
@@ -182,7 +182,7 @@ namespace FinBot
 
             try
             {
-                MongoClient MongoClient = new MongoClient(mongoconnstr);
+                MongoClient MongoClient = new MongoClient(Mongoconnstr);
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
                 ulong _id = guild.Id;

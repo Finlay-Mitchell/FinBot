@@ -1,11 +1,13 @@
 import discord
 import mysql.connector
+import pyqrcode
 from discord.ext import commands
 from mee6_py_api import API
 import motor.motor_asyncio
 from Data.config import data
 
 from io import BytesIO
+import io
 import asyncio
 import time
 import traceback

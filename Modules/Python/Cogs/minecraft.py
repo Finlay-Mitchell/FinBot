@@ -14,7 +14,7 @@ class Minecraft(commands.Cog):
         self.bot = bot
 
     @commands.command(aliases=["bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats", "bw_info",
-                               "bwinfo", "bw-info"])
+                               "bwinfo", "bw-info", "hinfo"])
     async def bw_stats(self, ctx, arg):
         async with aiohttp.ClientSession() as session:
             uuid = await mc_uuid(arg, session)
