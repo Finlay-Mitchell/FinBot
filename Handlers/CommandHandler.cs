@@ -43,7 +43,12 @@ namespace FinBot.Handlers
             int argPos = 0;
             ShardedCommandContext context = new ShardedCommandContext(_client, message);
 
-            if (s.Channel.GetType() == typeof(SocketDMChannel))
+            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
+            {
+                return;
+            }
+
+            if(s.Channel.GetType() == typeof(SocketDMChannel))
             {
                 string msg = s.ToString();
 
@@ -61,16 +66,10 @@ namespace FinBot.Handlers
                     eb.WithDescription($"```{msg}```");
                     eb.WithColor(Color.DarkPurple);
                     IUserMessage replyMessage = await _client.GetGuild(Global.SupportGuildId).GetTextChannel(Global.SupportChannelId).SendMessageAsync("", false, eb.Build());
+                    
+                    return;
                 }
-            }
 
-            if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
-            {
-                return;
-            }
-
-            if(s.Channel.GetType() == typeof(SocketDMChannel) && !Global.IsDev(message.Author))
-            {
                 await message.ReplyAsync("Sorry, but commands are not enabled in DM's. Please try using bot commands in a server.");
                 return;
             }

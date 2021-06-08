@@ -50,7 +50,7 @@ namespace FinBot
         public static string TopicsPath = $"{Environment.CurrentDirectory}/Data/Topics.txt";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "ResetChatbot" }; // These are hidden from being shown in the help command in HelpHandler.cs
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot" }; // These are hidden from being shown in the help command in HelpHandler.cs
         public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 }; // Listed developer Ids
 
         public static void ReadConfig()

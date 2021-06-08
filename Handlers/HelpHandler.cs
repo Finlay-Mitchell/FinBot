@@ -70,7 +70,7 @@ namespace FinBot.Handlers
 
                 if (!string.IsNullOrWhiteSpace(description))
                 {
-                    switch (module.Name)
+                    switch (module.Name) // we ignore DevCommands since we don't want these being shown to the public
                     {
                         case "ModCommands":
                             builder.AddField(x =>
@@ -109,21 +109,18 @@ namespace FinBot.Handlers
                             break;
 
                         case "MinecraftCommands":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Minecraft commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
                             break;
 
                         case "ConfigCommands":
                             builder.AddField(x =>
                             {
                                 x.Name = "Config commands";
-                                x.Value = description.Remove(description.LastIndexOf(','));
-                                x.IsInline = false;
-                            });
-                            break;
-
-                        default:
-                            builder.AddField(x =>
-                            {
-                                x.Name = module.Name;
                                 x.Value = description.Remove(description.LastIndexOf(','));
                                 x.IsInline = false;
                             });
