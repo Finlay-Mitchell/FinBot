@@ -17,7 +17,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("bw_compare"), Summary("Compares the two inputted users bedwars statistics"), Remarks("(PREFIX) bw_compare <user1> <user2>"), Alias("bedwars_compare", "bedwarscompare", "bwcompare", "bw-compare", "bedwars-compare")]
+        [Command("bw_compare"), Summary("Compares the two inputted users bedwars statistics"), Remarks("(PREFIX)bw_compare <user1> <user2>"), Alias("bedwars_compare", "bedwarscompare", "bwcompare", "bw-compare", "bedwars-compare")]
         public Task bw_compare(params string[] arg)
         {
             return Task.CompletedTask;

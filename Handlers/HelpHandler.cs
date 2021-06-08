@@ -18,6 +18,11 @@ namespace FinBot.Handlers
         [Command("help"), Summary("gives you information on each command"), Remarks("(PREFIX)help(all commands)/(PREFIX)help <command>")]
         public async Task Help(params string[] arg)
         {
+            if(arg.Length == 0)
+            {
+                await HelpAsync();
+            }
+
             if (arg.Length == 1)
             {
                 await HelpAsync(arg.First());
@@ -26,11 +31,6 @@ namespace FinBot.Handlers
             else if (arg.Length > 1)
             {
                 await Context.Message.ReplyAsync("Please only enter one parameter");
-            }
-
-            else
-            {
-                await HelpAsync();
             }
         }
 
@@ -47,6 +47,8 @@ namespace FinBot.Handlers
                 }
             };
 
+            string guildPrefix = await Global.DeterminePrefix(Context);
+
             foreach (ModuleInfo module in _service.Modules)
             {
                 string description = null;
@@ -62,7 +64,7 @@ namespace FinBot.Handlers
 
                     if (result.IsSuccess)
                     {
-                        description += $"{await Global.DeterminePrefix(Context)}{cmd.Aliases.First()}, \t";
+                        description += $"{guildPrefix}{cmd.Aliases.First()}, \t";
                     }
                 }
 

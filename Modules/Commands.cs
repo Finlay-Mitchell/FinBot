@@ -1808,6 +1808,42 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
+        [Command("invite")]
+        public async Task Invite(params string[] arg)
+        {
+            EmbedBuilder eb = new EmbedBuilder()
+            {
+                Title = "Invite me here!",
+                Url = "https://bot.finlaymitchell.ml"
+            };
+
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
+        [Command("support")]
+        public async Task Support(params string[] arg)
+        {
+            EmbedBuilder eb = new EmbedBuilder()
+            {
+                Title = "Join my support server!",
+                Url = "https://support.finlaymitchell.ml"
+            };
+
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
+        [Command("website")]
+        public async Task Website(params string[] arg)
+        {
+            EmbedBuilder eb = new EmbedBuilder()
+            {
+                Title = "View my website here!",
+                Url = "https://finbot.finlaymitchell.ml"
+            };
+
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
         /*
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 
