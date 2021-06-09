@@ -1,6 +1,5 @@
 import discord
 import mysql.connector
-import pyqrcode
 from discord.ext import commands
 from mee6_py_api import API
 import motor.motor_asyncio
