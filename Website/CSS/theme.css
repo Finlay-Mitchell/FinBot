@@ -11,7 +11,6 @@
 .light-theme footer hr 
 {
     border: 2px solid lightgray;
-    /* margin-top: 80px; */
 }
 
 .light-theme .underline-section hr 
@@ -24,7 +23,7 @@
     background-color: white;
 }
 
-.light-theme .card-text
+.light-theme .card-text *
 {
     color: black !important;
 }
@@ -34,12 +33,12 @@
   color: black;
 }
 
-.light-theme .card-text dt
+.light-theme .statssection * 
 {
     color: black;
 }
 
-.light-theme .card-text dd
+.light-theme .card .card-body .card-title 
 {
-    color: black;
+    color: darkblue;
 }

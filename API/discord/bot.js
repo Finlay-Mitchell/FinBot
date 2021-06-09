@@ -16,3 +16,18 @@ exports.lastmessage = function lastmessage()
 {
     return lastMessage;
 }
+
+exports.ServerCount = function ServerCount()
+{
+    return client.guilds.cache.size;
+}
+
+exports.UserCount = function UserCount()
+{
+    return client.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+}
+
+exports.ChannelCount = function ChannelCount()
+{
+    return client.guilds.cache.reduce((a, g) => a + g.channels.cache.size, 0)
+}

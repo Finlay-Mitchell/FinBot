@@ -132,5 +132,28 @@ namespace FinBot.Modules
         {
             return Task.CompletedTask;
         }
+
+        //MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+        //IMongoDatabase database = MongoClient.GetDatabase("finlay");
+        //IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+        //ulong _id = Context.Guild.Id;
+        //await collection.UpdateOneAsync(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Set("prefix", $"{new_prefix}"));
+
+        //public void test()
+        //{
+        //    MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+        //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
+        //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+        //    //Builders<BsonDocument>.Filter.Eq("_id", );
+
+
+
+
+
+
+        //    //collection.UpdateOne();
+
+        //}
+
     }
 }

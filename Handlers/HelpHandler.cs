@@ -125,6 +125,15 @@ namespace FinBot.Handlers
                                 x.IsInline = false;
                             });
                             break;
+
+                        default:
+                            builder.AddField(x =>
+                            {
+                                x.Name = module.Name;
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
                     }
                 }
             }
