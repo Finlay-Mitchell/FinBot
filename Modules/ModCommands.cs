@@ -16,11 +16,11 @@ namespace FinBot.Modules
 {
     public class ModCommands : ModuleBase<SocketCommandContext>
     {
-        //private readonly DiscordShardedClient _client;
+        public readonly DiscordShardedClient _client;
 
         public ModCommands(IServiceProvider service)
         {
-            //_client = service.GetRequiredService<DiscordShardedClient>();
+            _client = service.GetRequiredService<DiscordShardedClient>();
         }
 
         [Command("clear"), Summary("clears a specified amount of messages from the chat"), Remarks("(PREFIX) clear<amount>"), Alias("purge", "clr")]
@@ -188,7 +188,7 @@ namespace FinBot.Modules
             }
         }
 
-        public static void AddModlogs(ulong userID, Action action, ulong ModeratorID, string reason, ulong GuildId)
+        public async void AddModlogs(ulong userID, Action action, ulong ModeratorID, string reason, ulong GuildId)
         {
             try
             {
@@ -201,11 +201,11 @@ namespace FinBot.Modules
                     MySqlCommand query = new MySqlCommand($"SELECT * FROM modlogs WHERE guildId = {GuildId} AND userId = {userID}", conn);
                     using MySqlDataReader rdr = query.ExecuteReader();
                     int indx = 0;
-
+                    
                     while (rdr.Read())
                     {
                         indx++;
-                        
+
                         /*
                          * 
                          * THIS NEEDS TO BE IMPLEMENTED SUCH AS:
@@ -215,28 +215,32 @@ namespace FinBot.Modules
                          * 
                          */
 
-                        //if (indx == 5)
-                        //{
-                        //    //    var modlogs = Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel);
-                        //    //    var embed = new EmbedBuilder();
-                        //    //    embed.WithTitle("5 Modlogs Reached!");
-                        //    //    embed.WithDescription($"<@{userID}> has reached 5 infractions!");
-                        //    //    embed.WithColor(Color.Red);
-                        //    //    embed.WithCurrentTimestamp();
-                        //    //    await modlogs.SendMessageAsync($"", false, embed.Build());
-                        //    //    SocketGuildUser U = Global.Client.GetGuild(Global.GuildId).GetUser(userID);
-                        //    //    SocketRole mutedrole = Global.Client.GetGuild(Global.GuildId).GetRole(Global.MuteRoleId);
-                        //    //    await U.AddRoleAsync(mutedrole);
-                        //    //    AddModlogs(user.Id, Action.Muted, 730015197980262424, "automute - too many infractions", user.Username);
-                        //    //    string[] formats = { @"h\h", @"s\s", @"m\m\ s\s", @"h\h\ m\m\ s\s", @"m\m", @"h\h\ m\m", @"d\d h\h\ m\m\ s\s", @"d\d", @"d\d h\h", @"d\d h\h m\m", @"d\d h\h m\m s\s" };
-                        //    //    TimeSpan t = TimeSpan.ParseExact("1h", formats, null);
-                        //    //    await MuteService.MuteAsyncSeconds((SocketUser)user, Global.Client.GetGuild(Global.GuildId), t, Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel));
-                        //}
+                        if (indx % 5 == 0)
+                        {
+                            //await AddMuteAsync(userID, GuildId);
+                            
+                            
+                            
+                            //    var modlogs = Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel);
+                            //    var embed = new EmbedBuilder();
+                            //    embed.WithTitle("5 Modlogs Reached!");
+                            //    embed.WithDescription($"<@{userID}> has reached 5 infractions!");
+                            //    embed.WithColor(Color.Red);
+                            //    embed.WithCurrentTimestamp();
+                            //    await modlogs.SendMessageAsync($"", false, embed.Build());
+                            //    SocketGuildUser U = Global.Client.GetGuild(Global.GuildId).GetUser(userID);
+                            //    SocketRole mutedrole = Global.Client.GetGuild(Global.GuildId).GetRole(Global.MuteRoleId);
+                            //    await U.AddRoleAsync(mutedrole);
+                            //    AddModlogs(user.Id, Action.Muted, 730015197980262424, "automute - too many infractions", user.Username);
+                            //    string[] formats = { @"h\h", @"s\s", @"m\m\ s\s", @"h\h\ m\m\ s\s", @"m\m", @"h\h\ m\m", @"d\d h\h\ m\m\ s\s", @"d\d", @"d\d h\h", @"d\d h\h m\m", @"d\d h\h m\m s\s" };
+                            //    TimeSpan t = TimeSpan.ParseExact("1h", formats, null);
+                            //    await MuteService.MuteAsyncSeconds((SocketUser)user, Global.Client.GetGuild(Global.GuildId), t, Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel));
+                        }
 
-                        //else
-                        //{
-                        //    break;
-                        //}
+                        else
+                        {
+                            break;
+                        }
                     }
 
                     indx += 1;
@@ -271,6 +275,35 @@ namespace FinBot.Modules
             Banned,
             Muted,
             VoiceMuted
+        }
+
+        public async Task AddMuteAsync(ulong userId, ulong guildId)
+        {
+            SocketGuild guild = _client.GetGuild(guildId);
+            SocketGuildUser user = guild.GetUser(userId);
+            IRole role = (guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+
+            if (role == null)
+            {
+                role = await guild.CreateRoleAsync("Muted", new GuildPermissions(sendMessages: false), null, false, null);
+            }
+
+            try
+            {
+                await role.ModifyAsync(x => x.Position = guild.CurrentUser.Hierarchy);
+
+                foreach (var channel in guild.TextChannels)
+                {
+                    if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
+                    {
+                        await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
+                    }
+                }
+            }
+
+            catch { }
+
+            await user.AddRoleAsync(role);
         }
 
         [Command("clearlogs"), Summary("Clears users logs"), Remarks("(PREFIX)clearlogs <user> <amount>"), Alias("clearlog", "cl")]
@@ -1280,6 +1313,247 @@ namespace FinBot.Modules
         //        {
         //            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
 
+        [Command("mute"), Summary("Mutes a user and stops them from talking in text channels"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
+        public async Task Mute(SocketGuildUser user, [Remainder] string reason = null)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (!GuildUser.GuildPermissions.ManageRoles)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+
+            else
+            {
+                if (user == Context.User)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "You don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                if (user.GuildPermissions.Administrator)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "I don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to mute an administrator.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                IRole role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+                
+                if (role == null)
+                {
+                    role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(sendMessages: false), null, false, null);
+                }
+
+                if (role.Position > Context.Guild.CurrentUser.Hierarchy)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "I don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but the role has a higher hierarchy than me.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                if (user.Roles.Contains(role))
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "User is already muted!",
+                        Description = $"{user} is already muted.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+                    
+                    return;
+                }
+                try
+                {
+                    await role.ModifyAsync(x => x.Position = Context.Guild.CurrentUser.Hierarchy);
+
+                    foreach (var channel in Context.Guild.TextChannels)
+                    {
+                        if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
+                        {
+                            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
+                        }
+                    }
+                }
+
+                catch { }
+
+                await user.AddRoleAsync(role);
+                AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.Green,
+                    Title = $"Muted user {user}!",
+                    Description = $"{user} has been successfully muted for reason: {reason}",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+        }
+
+        [Command("unmute"), Summary("Unmutes a muted user"), Remarks("(PREFIX)unmute <user>")]
+        public async Task unmute([Remainder] SocketGuildUser user)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (!GuildUser.GuildPermissions.ManageRoles)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+
+            else
+            {
+                IRole role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+
+                if (role == null)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "Role does not exist!",
+                        Description = $"The muted role does not exist to unmute a member.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                if (role.Position > Context.Guild.CurrentUser.Hierarchy)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "I don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but the role has a higher hierarchy than me.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                if (user.Roles.Contains(role))
+                {
+                    await user.RemoveRoleAsync(role);
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.Green,
+                        Title = $"Unmuted user {user}!",
+                        Description = $"{user} has been successfully unmuted.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                else
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = $"{user} is not muted!",
+                        Description = $"{user} is not currently muted.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+                }
+            }
+        }
 
         //This is boilerplaate code for python module
         [Command("ModLogs"), Summary("Gets the modlogs for the current user"), Remarks("(PREFIX)modlogs <user>")]

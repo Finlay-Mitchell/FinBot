@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using FinBot.Handlers;
+using Color = Discord.Color;
 
 namespace FinBot.Modules
 {
@@ -145,15 +146,5 @@ namespace FinBot.Modules
         //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
         //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
         //    //Builders<BsonDocument>.Filter.Eq("_id", );
-
-
-
-
-
-
-        //    //collection.UpdateOne();
-
-        //}
-
     }
 }
