@@ -7,16 +7,16 @@ router.get('/discord/redirect', passport.authenticate('discord'), (request, resp
     response.send(200);
 });
 
-// router.get('/', (request, response) => {
-//     if(request.user)
-//     {
-//         response.send(request.user);
-//     }
+router.get('/', (request, response) => {
+    if(request.user)
+    {
+        response.send(request.user);
+    }
 
-//     else 
-//     {
-//         response.status(401).send("UNAUTH");
-//     }
-// });
+    else 
+    {
+        response.status(401).send("UNAUTH");
+    }
+});
 
 module.exports = router;

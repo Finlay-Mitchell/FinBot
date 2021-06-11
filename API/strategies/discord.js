@@ -1,7 +1,7 @@
 const config = require("../Data/config");
+const user = require("../database/schemas/user");
 const passport = require("passport");
 const DiscordStrategy = require("passport-discord");
-const user = require("../database/schemas/user");
 
 passport.serializeUser((user, done) => {
     done(null, user.discordId)
@@ -10,8 +10,8 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (discordId, done) => {
     try
     {
-        const user = await user.findOne({discordId});
-        return user ? done(null, user) : done(null, null);
+        const User = await user.findOne({discordId});
+        return User ? done(null, User) : done(null, null);
     }
 
     catch(err)
