@@ -11,23 +11,6 @@ var port = process.env.PORT || 3000;
 var app = express();
 app.use(express.json())
 
-mongoose.connect(`${config.config.mongoconnstr}`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
-
-app.use(session({
-    secret: 'secret',
-    cookie: {
-        maxAge: 60000 * 60 * 24
-    },
-    resave: false,
-    saveUninitialized: false,
-    store: Store.create({mongoUrl: `${config.config.mongoconnstr}`})
-}))
-app.use(passport.initialize());
-app.use(passport.session());
-app.use('/api', routes);
 
 app.get('/', (request, response) => {
     response.status(200).send(`${discord.lastmessage()}`)
@@ -42,10 +25,29 @@ app.get('/botstats', (request, response) => {
      var person = {
         guildcount: discord.ServerCount(),
         usercount: discord.UserCount(),
-        channelcount: discord.ChannelCount()
+        channelcount: discord.ChannelCount(),
+        messagecount: discord.GetMessages()
       };
     response.status(200).send(person);
 });
+
+mongoose.connect(`mongodb://localhost:27017/FinBot`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+});
+
+app.use(session({
+    secret: 'secret',
+    cookie: {
+        maxAge: 60000 * 60 * 24
+    },
+    resave: false,
+    saveUninitialized: false,
+    store: Store.create({mongoUrl: `mongodb://localhost:27017/FinBot`})
+}))
+app.use(passport.initialize());
+app.use(passport.session());
+app.use('/api', routes);
 
 // This is REQUIRED for IISNODE to work
 app.listen(port, () => { 

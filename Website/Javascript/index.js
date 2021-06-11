@@ -28,33 +28,63 @@ function GetAPIData(query)
   switch(query)
   {
     case "guildcount":
-      fetch('https://api.finlaymitchell.ml/botstats')
+      fetch('http://localhost:3000/botstats')
       .then(function (res) {
         return res.json()
       })
       .then(function (body) {
-        p.append(body.guildcount)
+        p.innerText = body.guildcount
       })
       break;
 
     case "usercount":
-      fetch('https://api.finlaymitchell.ml/botstats')
+      fetch('http://localhost:3000/botstats')
       .then(function (res) {
         return res.json()
       })
       .then(function (body) {
-        p.append(body.usercount)
+        p.innerText = body.usercount;
       })
       break;
 
     case "channelcount":
-      fetch('https://api.finlaymitchell.ml/botstats')
+      fetch('http://localhost:3000/botstats')
       .then(function (res) {
         return res.json()
       })
       .then(function (body) {
-        p.append(body.channelcount)
+        p.innerText = body.channelcount;
+      })
+      break;
+
+      case "messagecount":
+      fetch('http://localhost:3000/botstats')
+      .then(function (res) {
+        return res.json()
+      })
+      .then(function (body) {
+        p.innerText = body.messagecount;
       })
       break;
   }
+
+  return 
+}
+
+function statsTimer(elem) {
+  console.log();
+  var t = 0;
+  clearInterval(window.timerInterval);
+  document.getElementById("guildcount").innerHTML = GetAPIData("guildcount");
+  document.getElementById("usercount").innerHTML = GetAPIData("usercount");
+  document.getElementById("messagecount").innerHTML = GetAPIData("messagecount");
+  document.getElementById("channelcount").innerHTML = GetAPIData("channelcount");  
+  window.timerInterval = setInterval(function() {
+    if (t == 0) {
+      GetAPIData("guildcount");
+      GetAPIData("usercount");
+      GetAPIData("messagecount");
+      GetAPIData("channelcount");
+        }
+  }, 10000);
 }

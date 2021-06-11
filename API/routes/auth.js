@@ -4,10 +4,11 @@ const passport = require("passport");
 router.get('/discord', passport.authenticate('discord'));
 
 router.get('/discord/redirect', passport.authenticate('discord'), (request, response) => {
-    response.send(200);
+    response.redirect("https://finbot.finlaymitchell.ml");
 });
 
 router.get('/', (request, response) => {
+    response.header('Access-Control-Allow-Origin', '*');
     if(request.user)
     {
         response.send(request.user);
@@ -15,7 +16,7 @@ router.get('/', (request, response) => {
 
     else 
     {
-        response.status(401).send("UNAUTH");
+        response.status(401).send("unauthorised");
     }
 });
 

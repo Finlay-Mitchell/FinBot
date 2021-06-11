@@ -241,7 +241,7 @@
           <div class="pt-1 pb-1">
             <h1>
               <span>
-                <span id="guildcount"><script>GetAPIData("guildcount")</script></span>
+                <span id="guildcount"><script>statsTimer("guildcount");</script></span>
               </span>
             </h1> 
             <p>Servers</p>
@@ -249,19 +249,32 @@
           <div>
             <h1>
               <span>
-                <span id="usercount"><script>GetAPIData("usercount")</script></span>
+                <span id="usercount"><script>statsTimer("usercount");</script></span>
               </span>
             </h1> 
             <p>Users</p>
           </div>
+
           <div>
             <h1>
               <span>
-                <span id="channelcount"><script>GetAPIData("channelcount")</script></span>
+                <span id="messagecount"><script>statsTimer("messagecount");</script></span>
+              </span>
+            </h1> 
+            <p>Messages</p>
+          </div>
+
+          <div>
+            <h1>
+              <span>
+                <span id="channelcount"><script>statsTimer("channelcount");</script></span>
               </span>
             </h1> 
             <p>Channels</p>
           </div>
+
+
+
         </div>
       </div>
     </div>
@@ -276,6 +289,7 @@
         <a href="https://finlaymitchell.ml/contact" target="_blank">
             <button type="button" class="btn footerbutton">Contact</button>
         </a>
+
     </footer>
 
 <div id="loading"></div>
