@@ -1558,7 +1558,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("blacklist"), Summary("Adds a word to the guild blacklist, meaning members can't say it."), Remarks("(PREFIX)blacklist <phrase>"), Alias("bl", "censor")]
+        [Command("censor"), Summary("Adds a word to the guild blacklist, meaning members can't say it."), Remarks("(PREFIX)blacklist <phrase>"), Alias("bl", "blacklist")]
         public async Task Blacklist([Remainder] string phrase)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1637,7 +1637,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("clearblacklist"), Summary("Clears the guild word blacklist"), Remarks("(PREFIX)clearblacklist"), Alias("blclear")]
+        [Command("clearcensored"), Summary("Clears the guild word blacklist"), Remarks("(PREFIX)clearblacklist"), Alias("blclear", "clearblacklist", "clearcensor")]
         public async Task Blclear()
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1656,6 +1656,68 @@ namespace FinBot.Modules
                 embed.WithAuthor(Context.Message.Author);
                 embed.WithCurrentTimestamp();
                 await Context.Message.ReplyAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+        }
+
+        [Command("uncensor"), Summary("Removes a word from the guild censor list."), Remarks("(PREFIX)blacklist <phrase>")]
+        public async Task Whitelist([Remainder] string phrase)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageMessages)
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+
+                try
+                {
+                    string itemVal = guild?.GetValue("blacklistedterms").ToJson();
+                    List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+                    if (re.IsMatch(phrase))
+                    {
+                        collection.UpdateMany(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Pull("blacklistedterms", phrase));
+                    }
+                }
+
+                catch { }
+
+                await Context.Message.DeleteAsync();
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Blacklist updated!");
+                embed.WithDescription("Successfully removed word from the blacklist!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
             }
 
             else
