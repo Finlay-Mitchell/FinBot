@@ -1710,7 +1710,6 @@ namespace FinBot.Modules
 
                 catch { }
 
-                await Context.Message.DeleteAsync();
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithTitle("Blacklist updated!");
                 embed.WithDescription("Successfully removed word from the blacklist!");
