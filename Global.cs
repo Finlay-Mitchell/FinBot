@@ -50,8 +50,10 @@ namespace FinBot
         public static string TopicsPath = $"{Environment.CurrentDirectory}/Data/Topics.txt";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot" }; // These are hidden from being shown in the help command in HelpHandler.cs
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata" }; // These are hidden from being shown in the help command in HelpHandler.cs
         public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 }; // Listed developer Ids
+        public static string LeetsPath = $"{Environment.CurrentDirectory}/Data/LeetRules.txt";
+        public static Dictionary<string, string> leetRules = LoadLeetRules();
 
         public static void ReadConfig()
         {
@@ -149,7 +151,7 @@ namespace FinBot
 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            //gets the prefix for the guild in question - add Dictionary support for first prefix test.
+            ////gets the prefix for the guild in question - add Dictionary support for first prefix test.
             try
             {
                 MongoClient MongoClient = new MongoClient(Mongoconnstr);
@@ -206,6 +208,36 @@ namespace FinBot
             }
         }
 
+        public static async Task<string> GetModLogChannel(SocketGuild guild)
+        {
+            //gets the modlog channel for `guild`
+
+            try
+            {
+                MongoClient mongoClient = new MongoClient(Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("modlogchannel").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return "0";
+                }
+            }
+            
+            catch
+            {
+                return "0";
+            }
+        }
+
         public static EmbedBuilder EmbedMessage(string title, string msg = "")
         {
             EmbedBuilder embed = new EmbedBuilder();
@@ -222,6 +254,24 @@ namespace FinBot
             Random rand = new Random();
             int index = rand.Next(Colours.Length);
             return Colours[index];
+        }
+
+        public static Dictionary<string, string> LoadLeetRules()
+        {
+            var t = File.ReadAllText(LeetsPath);
+            Dictionary<string, string> list = new Dictionary<string, string>();
+            if (t == "")
+                return list;
+            foreach (var i in t.Split("\n"))
+            {
+                if (i != "")
+                {
+                    var spl = i.Split(",");
+                    list.Add(spl[0], spl[1]);
+                }
+            }
+
+            return list;
         }
     }
 }

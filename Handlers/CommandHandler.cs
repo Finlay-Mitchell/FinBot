@@ -92,7 +92,13 @@ namespace FinBot.Handlers
                     Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " ZULU"
                 };
                 b.Title = "Bot Command Error!";
-                await _client.GetGuild(725886999646437407).GetTextChannel(784231099324301312).SendMessageAsync("", false, b.Build());
+
+                try
+                {
+                    await _client.GetGuild(725886999646437407).GetTextChannel(784231099324301312).SendMessageAsync("", false, b.Build());
+                }
+
+                catch { }
             }
         }
 

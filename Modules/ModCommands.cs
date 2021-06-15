@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
+using MongoDB.Bson;
+using Newtonsoft.Json;
 
 namespace FinBot.Modules
 {
@@ -159,7 +162,7 @@ namespace FinBot.Modules
                 cmd.ExecuteNonQuery();
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
             }
@@ -182,7 +185,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
             }
@@ -201,7 +204,7 @@ namespace FinBot.Modules
                     MySqlCommand query = new MySqlCommand($"SELECT * FROM modlogs WHERE guildId = {GuildId} AND userId = {userID}", conn);
                     using MySqlDataReader rdr = query.ExecuteReader();
                     int indx = 0;
-                    
+
                     while (rdr.Read())
                     {
                         indx++;
@@ -218,9 +221,9 @@ namespace FinBot.Modules
                         if (indx % 5 == 0)
                         {
                             //await AddMuteAsync(userID, GuildId);
-                            
-                            
-                            
+
+
+
                             //    var modlogs = Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel);
                             //    var embed = new EmbedBuilder();
                             //    embed.WithTitle("5 Modlogs Reached!");
@@ -249,7 +252,7 @@ namespace FinBot.Modules
                     queryConn.Close();
                 }
 
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Global.ConsoleLog(ex.Message);
 
@@ -366,7 +369,7 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Global.ConsoleLog(ex.Message);
 
@@ -379,7 +382,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
 
@@ -446,7 +449,7 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Global.ConsoleLog(ex.Message);
 
@@ -459,7 +462,7 @@ namespace FinBot.Modules
                 }
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
 
@@ -1376,7 +1379,7 @@ namespace FinBot.Modules
                 }
 
                 IRole role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
-                
+
                 if (role == null)
                 {
                     role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(sendMessages: false), null, false, null);
@@ -1416,7 +1419,7 @@ namespace FinBot.Modules
                             Url = Context.Message.GetJumpUrl()
                         }
                     }.Build());
-                    
+
                     return;
                 }
                 try
@@ -1552,6 +1555,189 @@ namespace FinBot.Modules
                         }
                     }.Build());
                 }
+            }
+        }
+
+        [Command("blacklist"), Summary("Adds a word to the guild blacklist, meaning members can't say it."), Remarks("(PREFIX)blacklist <phrase>"), Alias("bl", "censor")]
+        public async Task Blacklist([Remainder] string phrase)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageMessages)
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+
+                try
+                {
+                    string itemVal = guild?.GetValue("blacklistedterms").ToJson();
+                    List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+                    if (re.IsMatch(phrase))
+                    {
+                        EmbedBuilder errembed = new EmbedBuilder();
+                        errembed.WithTitle("Error");
+                        errembed.WithDescription("This word is already included in the censor list!");
+                        errembed.WithColor(Color.Red);
+                        errembed.WithAuthor(Context.Message.Author);
+                        await Context.Message.ReplyAsync("", false, errembed.Build());
+                        return;
+                    }
+                }
+
+                catch { }
+
+                if (guild == null)
+                {
+                    BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "blacklistedterms", phrase } };
+                    collection.InsertOne(document);
+                }
+
+                else
+                {
+                    collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Push("blacklistedterms", phrase));
+                }
+
+                await Context.Message.DeleteAsync();
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Blacklist updated!");
+                embed.WithDescription("Successfully added word to the word blacklist!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+        }
+
+        [Command("clearblacklist"), Summary("Clears the guild word blacklist"), Remarks("(PREFIX)clearblacklist"), Alias("blclear")]
+        public async Task Blclear()
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageMessages)
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                collection.UpdateMany(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Unset("blacklistedterms"));
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Success");
+                embed.WithDescription("Successfully cleared the censor list!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+        }
+
+        [Command("disablelinks"), Summary("enables and disables users being able to send links"), Remarks("(PREFIX)disablelinks <on/true/false/off>")]
+        public async Task DisableLinks(string onoroff)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageChannels)
+            {
+                bool enabled = false;
+
+                if (onoroff == "true" || onoroff == "on")
+                {
+                    enabled = true;
+                }
+
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+
+                if (guild == null)
+                {
+                    BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "disablelinks", enabled } };
+                    collection.InsertOne(document);
+                }
+
+                else
+                {
+                    collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Set("disablelinks", enabled));
+                }
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Success");
+                embed.WithDescription("Users are no longer able to send links!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
             }
         }
 

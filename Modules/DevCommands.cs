@@ -23,6 +23,9 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using FinBot.Handlers;
 using Color = Discord.Color;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using MongoDB.Bson.Serialization;
 
 namespace FinBot.Modules
 {
@@ -146,5 +149,78 @@ namespace FinBot.Modules
         //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
         //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
         //    //Builders<BsonDocument>.Filter.Eq("_id", );
+
+
+        //public async Task MesasageTest(SocketMessage msg)
+        //{
+        //    try
+        //    {
+
+        //        if (msg.Author.IsBot)
+        //        {
+        //            return;
+        //        }
+
+        //        MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+        //        IMongoDatabase database = MongoClient.GetDatabase("finlay");
+        //        IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+        //        SocketGuildChannel chan = msg.Channel as SocketGuildChannel;
+        //        ulong _id = chan.Guild.Id;
+        //        BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+        //        string itemVal = item?.GetValue("blacklistedterms").ToJson();
+
+        //        if (itemVal != null)
+        //        {
+        //            List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+        //            Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+
+        //            if(re.IsMatch(msg.Content))
+        //            {
+        //                await msg.Channel.SendMessageAsync($"Nah, can't say dat");
+        //            }
+
+        //        }
+
+        //        else
+        //        {
+        //            await msg.Channel.SendMessageAsync(itemVal.ToString());
+        //        }
+        //    }
+
+        //    catch(Exception ex)
+        //    {
+        //        //await msg.Channel.SendMessageAsync($"broke: {ex.Message}\n\n{ex.StackTrace}");
+        //    }
+
+        //}
+
+        [Command("getguilddata")]
+        public async Task Getguilddata()
+        {
+            if (Global.IsDev(Context.User))
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument data = await MongoHandler.FindById(collection, _id);
+                await ReplyAsync(data.ToString());
+            }
+        }
+
+        //[Command("clearalldata")]
+        //public async Task Clearalldata()
+        //{
+        //    if (Global.IsDev(Context.User))
+        //    {
+        //        MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+        //        IMongoDatabase database = mongoClient.GetDatabase("finlay");
+        //        IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+        //        ulong _id = Context.Guild.Id;
+        //        collection.DeleteOne(Builders<BsonDocument>.Filter.Eq("id", _id));
+        //        BsonDocument data = await MongoHandler.FindById(collection, _id);
+        //        await ReplyAsync(data.ToString());
+        //    }
+        //}
     }
 }

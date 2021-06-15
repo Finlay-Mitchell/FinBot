@@ -5,153 +5,230 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using FinBot.Modules;
-using System.IO;
 using System.Text.RegularExpressions;
+using MongoDB.Driver;
+using MongoDB.Bson;
+using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Discord.Commands;
 
 namespace FinBot.Handlers.AutoMod
 {
-    public class ChatFilter
+    public class ChatFilter : ModuleBase<ShardedCommandContext>
     {
-        DiscordSocketClient _client;
-        //SocketTextChannel chan = (SocketTextChannel)Global.Client.GetChannel(Global.ModLogChannel);
+        DiscordShardedClient _client;
+        public static ModCommands modCommands;
 
-        public ChatFilter(DiscordSocketClient client)
+        public ChatFilter(IServiceProvider service)
         {
-            _client = client;
-            //_client.MessageReceived += CheckForCensoredWords;
-            //_client.MessageReceived += CheckForLinks;
-            //_client.MessageReceived += CheckForPingSpam;
+            _client = service.GetRequiredService<DiscordShardedClient>();
+
+            modCommands = new ModCommands(service);
+            _client.MessageReceived += CheckForCensoredWords;
+            _client.MessageReceived += CheckForPingSpam;
+            _client.MessageReceived += CheckForLinks;
         }
 
-        //private async Task CheckForCensoredWords(SocketMessage arg)
-        //{
-        //    if (arg.Author.IsBot)
-        //    {
-        //        return;
-        //    }
+        public async Task CheckForCensoredWords(SocketMessage msg)
+        {
+            try
+            {
+                if (msg.Author.IsBot)
+                {
+                    return;
+                }
 
-        //    SocketGuildUser user = Global.Client.GetGuild(Global.GuildId).GetUser(arg.Author.Id);
-        //    string[] leetWords = File.ReadAllLines(Global.CensoredWordsPath);
-        //    string msg = arg.ToString();
-        //    Dictionary<string, string> leetRules = Global.LoadLeetRules();
+                SocketGuildUser user = (SocketGuildUser)msg.Author;
 
-        //    if (Global.Client.GetGuild(Global.GuildId).GetRole(726453086331338802).Position <= user.Hierarchy)
-        //    {
-        //        return;
-        //    }
+                if (user.GuildPermissions.ManageMessages)
+                {
+                    return;
+                }
 
-        //    foreach (KeyValuePair<string, string> x in leetRules)
-        //    {
-        //        msg = msg.Replace(x.Key, x.Value);
-        //    }
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                SocketGuildChannel chan = msg.Channel as SocketGuildChannel;
+                ulong _id = chan.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("blacklistedterms").ToJson();
+                string message = msg.Content;
+                
+                foreach (KeyValuePair<string, string> x in Global.leetRules)
+                {
+                    message = message.Replace(x.Key, x.Value);
+                }
+                
+                message = message.ToLower();
 
-        //    msg = msg.ToLower();
+                if (itemVal != null)
+                {
+                    List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
-        //    Regex re = new Regex(@"\b(" + string.Join("|", leetWords.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+                    if (re.IsMatch(message))
+                    {
 
-        //    if (re.IsMatch(msg))
-        //    {
+                        await msg.DeleteAsync();
+                        modCommands.AddModlogs(msg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Bad word usage", chan.Guild.Id);
+                        EmbedBuilder eb = new EmbedBuilder()
+                        {
+                            Title = $"***{msg.Author.Username} has been warned***",
+                            Footer = new EmbedFooterBuilder()
+                            {
+                                IconUrl = msg.Author.GetAvatarUrl(),
+                                Text = $"{msg.Author.Username}#{msg.Author.Discriminator}"
+                            },
+                            Description = $"{msg.Author} has been warned at {DateTime.Now}\n Reason: Bad word usage.",
+                            ThumbnailUrl = Global.KickMessageURL,
+                            Color = Color.Orange
+                        };
+                        eb.WithCurrentTimestamp();
+                        await msg.Channel.TriggerTypingAsync();
+                        await msg.Channel.SendMessageAsync("", false, eb.Build());
+                        string modlogchannel = await Global.GetModLogChannel(chan.Guild);
 
-        //        await arg.DeleteAsync();
-        //        ModCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, Global.Client.CurrentUser.Id, "Bad word usage", arg.Author.Username);
-        //        EmbedBuilder eb = new EmbedBuilder()
-        //        {
-        //            Title = $"***{arg.Author.Username} has been warned***",
-        //            Footer = new EmbedFooterBuilder()
-        //            {
-        //                IconUrl = arg.Author.GetAvatarUrl(),
-        //                Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
-        //            },
-        //            Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: Bad word usage.",
-        //            ThumbnailUrl = Global.KickMessageURL,
-        //            Color = Color.Orange
-        //        };
-        //        eb.WithCurrentTimestamp();
-        //        await arg.Channel.TriggerTypingAsync();
-        //        await arg.Channel.SendMessageAsync("", false, eb.Build());
-        //        eb.AddField("User", $"{user.Username}", true);
-        //        eb.AddField("Moderator", $"LexiBot automod", true);
-        //        eb.AddField("Reason", $"\"Bad word usage.\"", true);
-        //        eb.AddField("Message", arg.ToString(), true);
-        //        eb.WithCurrentTimestamp();
-        //        await chan.SendMessageAsync("", false, eb.Build());
-        //    }
+                        if (modlogchannel == "0")
+                        {
+                            return;
+                        }
 
-        //    return;
-        //}
+                        SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
+                        eb.AddField("User", $"{user.Username}", true);
+                        eb.AddField("Moderator", $"LexiBot automod.", true);
+                        eb.AddField("Reason", $"\"Bad word usage.\"", true);
+                        eb.AddField("Message", msg.ToString(), true);
+                        eb.WithCurrentTimestamp();
+                        await logchannel.SendMessageAsync("", false, eb.Build());
+                    }
 
-        //private async Task CheckForLinks(SocketMessage arg)
-        //{
-        //    SocketGuildUser user = (SocketGuildUser)arg.Author;
-        //    Regex r = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?");
+                }
 
-        //    if (r.IsMatch(arg.ToString()) && !user.Roles.Any(r => r.Id == 794993948572516392) && !user.GuildPermissions.Administrator)
-        //    {
-        //        await arg.DeleteAsync();
-        //        ModCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, Global.Client.CurrentUser.Id, "Sent a link", arg.Author.Username);
-        //        EmbedBuilder eb = new EmbedBuilder()
-        //        {
-        //            Title = $"***{arg.Author.Username} has been warned***",
-        //            Footer = new EmbedFooterBuilder()
-        //            {
-        //                IconUrl = arg.Author.GetAvatarUrl(),
-        //                Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
-        //            },
-        //            Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: Sent a link.",
-        //            ThumbnailUrl = Global.KickMessageURL,
-        //            Color = Color.Orange
-        //        };
-        //        eb.WithCurrentTimestamp();
-        //        await arg.Channel.TriggerTypingAsync();
-        //        await arg.Channel.SendMessageAsync("", false, eb.Build());
-        //        eb.AddField("User", $"{user.Username}", true);
-        //        eb.AddField("Moderator", $"LexiBot automod.", true);
-        //        eb.AddField("Reason", $"\"Sent a link.\"", true);
-        //        eb.AddField("Message", arg.ToString(), true);
-        //        eb.WithCurrentTimestamp();
-        //        await chan.SendMessageAsync("", false, eb.Build());
+                else
+                {
+                    await msg.Channel.SendMessageAsync(itemVal.ToString());
+                }
+            }
+
+            catch (Exception ex)
+            {
+                //await msg.Channel.SendMessageAsync($"broke: {ex.Message}\n\n{ex.StackTrace}");
+            }
+        }
+
+        private async Task CheckForLinks(SocketMessage arg)
+        {
+            SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
+            SocketGuildUser user = (SocketGuildUser)arg.Author;
+
+            if (user.GuildPermissions.ManageMessages)
+            {
+                return;
+            }
+
+            try
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = chan.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("blacklistedterms").ToJson();
+
+                if (itemVal == null || itemVal == "false")
+                {
+                    return;
+                }
+            }
+            
+            catch { return; }
+
+            Regex r = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?");
+
+            if (r.IsMatch(arg.ToString()) && !user.Roles.Any(r => r.Id == 794993948572516392))
+            {
+                await arg.DeleteAsync();
+                modCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Sent a link", chan.Guild.Id);
+                EmbedBuilder eb = new EmbedBuilder()
+                {
+                    Title = $"***{arg.Author.Username} has been warned***",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = arg.Author.GetAvatarUrl(),
+                        Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
+                    },
+                    Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: Sent a link.",
+                    ThumbnailUrl = Global.KickMessageURL,
+                    Color = Color.Orange
+                };
+                eb.WithCurrentTimestamp();
+                await arg.Channel.TriggerTypingAsync();
+                await arg.Channel.SendMessageAsync("", false, eb.Build());
+                string modlogchannel = await Global.GetModLogChannel(chan.Guild);
+
+                if(modlogchannel == "0")
+                {
+                    return;
+                }
+
+                SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
+                eb.AddField("User", $"{user.Username}", true);
+                eb.AddField("Moderator", $"LexiBot automod.", true);
+                eb.AddField("Reason", $"\"Sent a link.\"", true);
+                eb.AddField("Message", arg.ToString(), true);
+                eb.WithCurrentTimestamp();
+                await logchannel.SendMessageAsync("", false, eb.Build());
 
 
-        //        return;
-        //    }
+                return;
+            }
 
-        //    return;
-        //}
+            return;
+        }
 
-        //private async Task CheckForPingSpam(SocketMessage arg)
-        //{
-        //    SocketGuildUser user = (SocketGuildUser)arg.Author;
+        private async Task CheckForPingSpam(SocketMessage arg)
+        {
+            SocketGuildUser user = (SocketGuildUser)arg.Author;
 
-        //    if (!user.GuildPermissions.Administrator && arg.MentionedUsers.Count >= Global.MaxUserPingCount || arg.MentionedRoles.Count >= Global.MaxRolePingCount)
-        //    {
-        //        await arg.DeleteAsync();
-        //        ModCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, Global.Client.CurrentUser.Id, "mass ping", arg.Author.Username);
-        //        EmbedBuilder eb = new EmbedBuilder()
-        //        {
-        //            Title = $"***{arg.Author.Username} has been warned***",
-        //            Footer = new EmbedFooterBuilder()
-        //            {
-        //                IconUrl = arg.Author.GetAvatarUrl(),
-        //                Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
-        //            },
-        //            Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: mass ping.",
-        //            ThumbnailUrl = Global.KickMessageURL,
-        //            Color = Color.Orange
-        //        };
-        //        eb.WithCurrentTimestamp();
-        //        await arg.Channel.TriggerTypingAsync();
-        //        await arg.Channel.SendMessageAsync("", false, eb.Build());
-        //        eb.AddField("User", $"{user.Username}", true);
-        //        eb.AddField("Moderator", $"LexiBot automod", true);
-        //        eb.AddField("Reason", $"\"Mass mention.\"", true);
-        //        eb.AddField("Message", arg.ToString(), true);
-        //        eb.WithCurrentTimestamp();
-        //        await chan.SendMessageAsync("", false, eb.Build());
+            if (!user.GuildPermissions.ManageMessages && arg.MentionedUsers.Count >= Global.MaxUserPingCount || arg.MentionedRoles.Count >= Global.MaxRolePingCount)
+            {
+                await arg.DeleteAsync();
+                SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
+                modCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "mass ping", chan.Guild.Id);
+                EmbedBuilder eb = new EmbedBuilder()
+                {
+                    Title = $"***{arg.Author.Username} has been warned***",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = arg.Author.GetAvatarUrl(),
+                        Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
+                    },
+                    Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: mass ping.",
+                    ThumbnailUrl = Global.KickMessageURL,
+                    Color = Color.Orange
+                };
+                eb.WithCurrentTimestamp();
+                await arg.Channel.TriggerTypingAsync();
+                await arg.Channel.SendMessageAsync("", false, eb.Build());
+                string modlogchannel = await Global.GetModLogChannel(chan.Guild);
 
-        //        return;
-        //    }
+                if (modlogchannel == "0")
+                {
+                    return;
+                }
 
-        //    return;
-        //}
+                SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
+                eb.AddField("User", $"{user.Username}", true);
+                eb.AddField("Moderator", $"LexiBot automod.", true);
+                eb.AddField("Reason", $"\"Mass ping.\"", true);
+                eb.AddField("Message", arg.ToString(), true);
+                eb.WithCurrentTimestamp();
+                await logchannel.SendMessageAsync("", false, eb.Build());
+
+                return;
+            }
+
+            return;
+        }
     }
 }
