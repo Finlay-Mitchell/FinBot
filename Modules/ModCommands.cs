@@ -218,32 +218,34 @@ namespace FinBot.Modules
                          * 
                          */
 
-                        if (indx % 5 == 0)
-                        {
-                            //await AddMuteAsync(userID, GuildId);
+//                        if (indx % 5 == 0)
+//                        {
+//                            await AddMuteAsync(userID, GuildId);
+//                            SocketGuild guild = _client.GetGuild(GuildId);
+//                            string modlogchannel = await Global.GetModLogChannel(guild);
 
+//                            if (modlogchannel == "0")
+//                            {
+//                                return;
+//                            }
 
+//                            SocketUser user = guild.GetUser(userID);
+//                            SocketTextChannel logchannel = guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
+//                            EmbedBuilder eb = new EmbedBuilder();
+//                            eb.WithTitle($"{user} automuted");
+//                            eb.AddField("User", $"{user.Username}", true);
+//                            eb.AddField("Moderator", $"LexiBot automod.", true);
+//                            eb.AddField("Reason", $"\"Too many infractions.\"", true);
+//                            eb.AddField("Infraction count", indx.ToString(), true);
+//                            eb.WithAuthor(user);
+//                            eb.WithCurrentTimestamp();
+//                            await logchannel.SendMessageAsync("", false, eb.Build());
 
-                            //    var modlogs = Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel);
-                            //    var embed = new EmbedBuilder();
-                            //    embed.WithTitle("5 Modlogs Reached!");
-                            //    embed.WithDescription($"<@{userID}> has reached 5 infractions!");
-                            //    embed.WithColor(Color.Red);
-                            //    embed.WithCurrentTimestamp();
-                            //    await modlogs.SendMessageAsync($"", false, embed.Build());
-                            //    SocketGuildUser U = Global.Client.GetGuild(Global.GuildId).GetUser(userID);
-                            //    SocketRole mutedrole = Global.Client.GetGuild(Global.GuildId).GetRole(Global.MuteRoleId);
-                            //    await U.AddRoleAsync(mutedrole);
-                            //    AddModlogs(user.Id, Action.Muted, 730015197980262424, "automute - too many infractions", user.Username);
-                            //    string[] formats = { @"h\h", @"s\s", @"m\m\ s\s", @"h\h\ m\m\ s\s", @"m\m", @"h\h\ m\m", @"d\d h\h\ m\m\ s\s", @"d\d", @"d\d h\h", @"d\d h\h m\m", @"d\d h\h m\m s\s" };
-                            //    TimeSpan t = TimeSpan.ParseExact("1h", formats, null);
-                            //    await MuteService.MuteAsyncSeconds((SocketUser)user, Global.Client.GetGuild(Global.GuildId), t, Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel));
-                        }
-
-                        else
-                        {
-                            break;
-                        }
+//;
+//                            //    string[] formats = { @"h\h", @"s\s", @"m\m\ s\s", @"h\h\ m\m\ s\s", @"m\m", @"h\h\ m\m", @"d\d h\h\ m\m\ s\s", @"d\d", @"d\d h\h", @"d\d h\h m\m", @"d\d h\h m\m s\s" };
+//                            //    TimeSpan t = TimeSpan.ParseExact("1h", formats, null);
+//                            //    await MuteService.MuteAsyncSeconds((SocketUser)user, Global.Client.GetGuild(Global.GuildId), t, Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel));
+//                        }
                     }
 
                     indx += 1;
@@ -306,7 +308,10 @@ namespace FinBot.Modules
 
             catch { }
 
-            await user.AddRoleAsync(role);
+            finally
+            {
+                await user.AddRoleAsync(role);
+            }
         }
 
         [Command("clearlogs"), Summary("Clears users logs"), Remarks("(PREFIX)clearlogs <user> <amount>"), Alias("clearlog", "cl")]

@@ -16,7 +16,7 @@ namespace FinBot.Services
 		public ReminderService(IServiceProvider service)
 		{
 			_client = service.GetRequiredService<DiscordShardedClient>();
-            T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 20).TotalMilliseconds, Enabled = true };
+            T = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 5).TotalMilliseconds, Enabled = true };
             T.Elapsed += RemindAsync;
         }
 
@@ -61,60 +61,72 @@ namespace FinBot.Services
             }
         }
 
-        public static async Task SetReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message)
+        public async static Task SetReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message)
         {
-            timeSet = DateTime.Now;
             long currentTime = Global.ConvertToTimestamp(timeSet);
-            DateTime f = DateTime.ParseExact(TimeSpan.FromSeconds(Convert.ToInt64(Parse_time(duration).Result)).TotalSeconds.ToString(), "ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None);
+            //DateTime f = DateTime.ParseExact(TimeSpan.FromSeconds(Convert.ToInt64(await Parse_time(duration))).TotalSeconds.ToString(), "ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None);
 
-            long reminderTimestamp = Global.ConvertToTimestamp(f);
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
-            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
-
-            try
-            {
-                QueryConn.Open();
-                conn.Open();
-                bool read = false;
-                MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Reminders WHERE userId = {user.Id} AND guildId = {guild.Id}", conn);
-                MySqlDataReader reader = (MySqlDataReader)await cmd1.ExecuteReaderAsync();
+            string[] format = { "ss" };
+            DateTime f = DateTime.ParseExact(TimeSpan.FromSeconds(Convert.ToInt64(await Parse_time(duration))).TotalSeconds.ToString(), format, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None);
 
 
-                while (reader.Read())
-                {
-                    read = true;
-                    await chan.SendMessageAsync($"You already have a timer active. Please try again after this has expired or stop the timer by using the {Global.Prefix}stopreminder command.");
-                }
+
+
+
+
+
+
+            //DateTime f = DateTime.TryParseExact(await Parse_time(duration).ToString());//TimeSpan.FromSeconds(, "ss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None);
+
+            await chan.SendMessageAsync(f.ToString());
+            //long reminderTimestamp = Global.ConvertToTimestamp(f);
+            //MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            //MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
+
+            //try
+            //{
+            //    QueryConn.Open();
+            //    conn.Open();
+            //    bool read = false;
+            //    MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Reminders WHERE userId = {user.Id} AND guildId = {guild.Id}", conn);
+            //    MySqlDataReader reader = (MySqlDataReader)await cmd1.ExecuteReaderAsync();
+
+
+            //    while (reader.Read())
+            //    {
+            //        read = true;
+            //        await chan.SendMessageAsync($"You already have a timer active. Please try again after this has expired or stop the timer by using the {Global.Prefix}stopreminder command.");
+            //    }
                 
-                if (!read)
-                {
-                    MySqlCommand cmd2 = new MySqlCommand($"INSERT INTO Reminders(userId, guildId, chanId, timeSet, reminderTimestamp, message) VALUES ({user.Id}, {guild.Id}, {chan.Id}, {currentTime}, {reminderTimestamp}, '{message}')", QueryConn);
-                    cmd2.ExecuteNonQuery();
-                    await chan.SendMessageAsync($"Set a reminder for {message} for {duration}");
+            //    if (!read)
+            //    {
+            //        MySqlCommand cmd2 = new MySqlCommand($"INSERT INTO Reminders(userId, guildId, chanId, timeSet, reminderTimestamp, message) VALUES ({user.Id}, {guild.Id}, {chan.Id}, {currentTime}, {reminderTimestamp}, '{message}')", QueryConn);
+            //        cmd2.ExecuteNonQuery();
+            //        await chan.SendMessageAsync($"Set a reminder for {message} for {duration}");
                     
                     
-                    await chan.SendMessageAsync(reminderTimestamp.ToString());
-                }
+            //        await chan.SendMessageAsync(reminderTimestamp.ToString());
+            //    }
 
-                conn.Close();
-                QueryConn.Close();
-            }
+            //    conn.Close();
+            //    QueryConn.Close();
+            //}
 
-            catch (Exception ex)
-            {
-                if (ex.Message.GetType() != typeof(NullReferenceException))
-                {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.WithAuthor(user);
-                    eb.WithTitle("Error setting reminder message:");
-                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
-                    eb.WithCurrentTimestamp();
-                    eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
-                    await chan.SendMessageAsync("", false, eb.Build());
-                    return;
-                }
-            }
+            //catch (Exception ex)
+            //{
+            //    if (ex.Message.GetType() != typeof(NullReferenceException))
+            //    {
+            //        EmbedBuilder eb = new EmbedBuilder();
+            //        eb.WithAuthor(user);
+            //        eb.WithTitle("Error setting reminder message:");
+            //        eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+            //        eb.WithCurrentTimestamp();
+            //        eb.WithColor(Color.Red);
+            //        eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+            //        await chan.SendMessageAsync("", false, eb.Build());
+            //        return;
+            //    }
+            //}
         }
 
 

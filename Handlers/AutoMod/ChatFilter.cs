@@ -52,19 +52,19 @@ namespace FinBot.Handlers.AutoMod
                 ulong _id = chan.Guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
                 string itemVal = item?.GetValue("blacklistedterms").ToJson();
-                string message = msg.Content;
-                
-                foreach (KeyValuePair<string, string> x in Global.leetRules)
-                {
-                    message = message.Replace(x.Key, x.Value);
-                }
-                
-                message = message.ToLower();
 
                 if (itemVal != null)
                 {
                     List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
                     Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                    string message = msg.Content;
+
+                    foreach (KeyValuePair<string, string> x in Global.leetRules)
+                    {
+                        message = message.Replace(x.Key, x.Value);
+                    }
+
+                    message = message.ToLower();
 
                     if (re.IsMatch(message))
                     {
@@ -97,6 +97,7 @@ namespace FinBot.Handlers.AutoMod
                         eb.AddField("User", $"{user.Username}", true);
                         eb.AddField("Moderator", $"LexiBot automod.", true);
                         eb.AddField("Reason", $"\"Bad word usage.\"", true);
+                        //eb.AddField("Message with filter", message.Replace("\n", ""), true);
                         eb.AddField("Message", msg.ToString(), true);
                         eb.WithCurrentTimestamp();
                         await logchannel.SendMessageAsync("", false, eb.Build());
@@ -106,7 +107,7 @@ namespace FinBot.Handlers.AutoMod
 
                 else
                 {
-                    await msg.Channel.SendMessageAsync(itemVal.ToString());
+                    //await msg.Channel.SendMessageAsync(itemVal.ToString());
                 }
             }
 
@@ -145,7 +146,7 @@ namespace FinBot.Handlers.AutoMod
 
             Regex r = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?");
 
-            if (r.IsMatch(arg.ToString()) && !user.Roles.Any(r => r.Id == 794993948572516392))
+            if (r.IsMatch(arg.ToString()))
             {
                 await arg.DeleteAsync();
                 modCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Sent a link", chan.Guild.Id);
