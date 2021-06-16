@@ -95,7 +95,7 @@ namespace FinBot.Handlers.AutoMod
 
                         SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
                         eb.AddField("User", $"{user.Username}", true);
-                        eb.AddField("Moderator", $"LexiBot automod.", true);
+                        eb.AddField("Moderator", $"FinBot automod.", true);
                         eb.AddField("Reason", $"\"Bad word usage.\"", true);
                         //eb.AddField("Message with filter", message.Replace("\n", ""), true);
                         eb.AddField("Message", msg.ToString(), true);
@@ -174,7 +174,7 @@ namespace FinBot.Handlers.AutoMod
 
                 SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
                 eb.AddField("User", $"{user.Username}", true);
-                eb.AddField("Moderator", $"LexiBot automod.", true);
+                eb.AddField("Moderator", $"FinBot automod.", true);
                 eb.AddField("Reason", $"\"Sent a link.\"", true);
                 eb.AddField("Message", arg.ToString(), true);
                 eb.WithCurrentTimestamp();
@@ -220,7 +220,7 @@ namespace FinBot.Handlers.AutoMod
 
                 SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
                 eb.AddField("User", $"{user.Username}", true);
-                eb.AddField("Moderator", $"LexiBot automod.", true);
+                eb.AddField("Moderator", $"FinBot automod.", true);
                 eb.AddField("Reason", $"\"Mass ping.\"", true);
                 eb.AddField("Message", arg.ToString(), true);
                 eb.WithCurrentTimestamp();
