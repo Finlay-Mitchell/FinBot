@@ -455,7 +455,7 @@ namespace FinBot.Modules
                     user = Context.Message.Author;
                 }
 
-                Context.Channel.TriggerTypingAsync();
+                await Context.Channel.TriggerTypingAsync();
                 EmbedBuilder eb = new EmbedBuilder()
                 {
                     ImageUrl = user.GetAvatarUrl(size: 1024)
