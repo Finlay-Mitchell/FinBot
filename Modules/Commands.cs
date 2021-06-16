@@ -487,7 +487,7 @@ namespace FinBot.Modules
          */
 
         [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
-        public async Task Remind(string duration, [Remainder] string remindMsg)
+        public async Task Remind(string duration, [Remainder] string remindMsg = "No content set")
         {
             if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here") || Context.Message.MentionedUsers.Any() || Context.Message.MentionedRoles.Any())
             {
@@ -498,12 +498,9 @@ namespace FinBot.Modules
             else
             {
                 await Context.Channel.TriggerTypingAsync();
-                await ReminderService.SetReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);
+                await ReminderService.SetReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg, Context);
             }
         }
-
-
-
 
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")

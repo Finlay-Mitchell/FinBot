@@ -81,6 +81,8 @@ namespace FinBot
                 .AddSingleton<UserHandler>()
                 .AddSingleton<MemberCountHandler>()
                 .AddSingleton<StatusHandler>()
+                .AddSingleton<ReminderService>()
+                .AddSingleton<MuteService>()
                 .AddSingleton<LoggingService>();
 
             ConfigureServices(services);

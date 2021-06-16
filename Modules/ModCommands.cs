@@ -279,7 +279,8 @@ namespace FinBot.Modules
             Kicked,
             Banned,
             Muted,
-            VoiceMuted
+            VoiceMuted,
+            TempMuted
         }
 
         public async Task AddMuteAsync(ulong userId, ulong guildId)
@@ -1468,6 +1469,188 @@ namespace FinBot.Modules
         public Task Modlogs(params string[] arg)
         {
             return Task.CompletedTask;
+        }
+
+        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
+        public async Task Remind(SocketGuildUser user, string duration, [Remainder] string reason = "No reason provided.")
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (!GuildUser.GuildPermissions.ManageRoles)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+
+            else
+            {
+                if (user == Context.User)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "You don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                if (user.GuildPermissions.Administrator)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "I don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to mute an administrator.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                IRole role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+
+                if (role == null)
+                {
+                    role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(sendMessages: false), null, false, null);
+                }
+
+                if (role.Position > Context.Guild.CurrentUser.Hierarchy)
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "I don't have Permission!",
+                        Description = $"Sorry, {Context.Message.Author.Mention} but the role has a higher hierarchy than me.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+
+                if (user.Roles.Contains(role))
+                {
+                    await Context.Channel.TriggerTypingAsync();
+                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    {
+                        Color = Color.LightOrange,
+                        Title = "User is already muted!",
+                        Description = $"{user} is already muted.",
+                        Author = new EmbedAuthorBuilder()
+                        {
+                            Name = Context.Message.Author.ToString(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            Url = Context.Message.GetJumpUrl()
+                        }
+                    }.Build());
+
+                    return;
+                }
+                try
+                {
+                    await role.ModifyAsync(x => x.Position = Context.Guild.CurrentUser.Hierarchy);
+
+                    foreach (var channel in Context.Guild.TextChannels)
+                    {
+                        if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
+                        {
+                            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
+                        }
+                    }
+                }
+
+                catch { }
+
+                await user.AddRoleAsync(role);
+                AddModlogs(user.Id, Action.TempMuted, Context.Message.Author.Id, reason, Context.Guild.Id);
+                await MuteService.SetMute(Context.Guild, user, (SocketTextChannel)Context.Channel, DateTime.Now, duration, reason, (ShardedCommandContext)Context);
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.Green,
+                    Title = $"Muted user {user}!",
+                    Description = $"{user} has been successfully muted for {duration}\nreason: {reason}",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            await Context.Channel.TriggerTypingAsync();
         }
     }
 }   
