@@ -134,7 +134,7 @@ namespace FinBot.Handlers.AutoMod
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
                 ulong _id = chan.Guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("blacklistedterms").ToJson();
+                string itemVal = item?.GetValue("disablelinks").ToJson();
 
                 if (itemVal == null || itemVal == "false")
                 {

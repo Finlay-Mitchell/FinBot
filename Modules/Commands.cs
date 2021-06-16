@@ -27,6 +27,7 @@ using UptimeSharp;
 using UptimeSharp.Models;
 using SearchResult = Google.Apis.YouTube.v3.Data.SearchResult;
 using FinBot.Services;
+using MongoDB.Bson;
 
 namespace FinBot.Modules
 {
@@ -206,12 +207,12 @@ namespace FinBot.Modules
             eb.WithCurrentTimestamp();
             eb.WithAuthor(Context.Message.Author);
 
-            if (totalLatency <= 100)
+            if (totalLatency <= 400)
             {
                 eb.Color = Color.Green;
             }
 
-            else if (totalLatency <= 250)
+            else if (totalLatency <= 550)
             {
                 eb.Color = Color.Orange;
             }
@@ -241,7 +242,7 @@ namespace FinBot.Modules
 
             if (echo.Length != 0)
             {
-                await Context.Channel.SendMessageAsync(SayText(string.Join(' ', echo), Context));
+                await Context.Channel.SendMessageAsync(await SayTextAsync(string.Join(' ', echo), Context));
                 return;
             }
 
@@ -252,7 +253,7 @@ namespace FinBot.Modules
             }
         }
 
-        public string SayText(string text, SocketCommandContext context)
+        public async Task<string> SayTextAsync(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
             final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-@])", "");
@@ -263,112 +264,86 @@ namespace FinBot.Modules
                 final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
             }
 
-            return final;
+            MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+            IMongoDatabase database = mongoClient.GetDatabase("finlay");
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+            ulong _id = context.Guild.Id;
+            BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+            string itemVal = item?.GetValue("blacklistedterms").ToJson();
 
+            if (itemVal != null)
+            {
+                List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                string message = final;
 
-            /*
-             * 
-             * REDESIGN THE CHAT FILTRATION SYSTEM
-             * 
-             */
+                foreach (KeyValuePair<string, string> x in Global.leetRules)
+                {
+                    message = message.Replace(x.Key, x.Value);
+                }
 
-            //string final = text.ToLower();
-            //string finalcompare = final;
-            //string[] leetWords = File.ReadAllLines(Global.CensoredWordsPath);
-            //Dictionary<string, string> leetRules = Global.LoadLeetRules();
-            //Regex re = new Regex(@"\b(" + string.Join("|", leetWords.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
-            //final = Regex.Replace(final, $"([{Global.Prefix}-])", "");
-            //finalcompare = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
-            //final = Regex.Replace(final, "@", "");
+                if (re.IsMatch(message))
+                {
+                    final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
+                }
+            }
 
-            //foreach (KeyValuePair<string, string> x in leetRules)
-            //{
-            //    finalcompare = final.Replace(x.Key, x.Value);
-            //}
-
-            //final = final.ToLower();
-            //finalcompare = final;
-            //final = Regex.Replace(final, re.ToString(), "");
-
-            //if(re.IsMatch(finalcompare))
-            //{
-            //    return "Nice try";
-            //}
-
-            //if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
-            //{
-            //    final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
-            //}
-
-
-
-
-
-            //  return final;
-
+                return final;
         }
 
         [Command("userinfo"), Summary("shows information on a user"), Remarks("(PREFIX)userinfo || (PREFIX)userinfo <user>."), Alias("whois", "user", "info", "user-info")]
-        public async Task Userinfo(params string[] arg)
+        public async Task UserInfo([Remainder] SocketUser user = null)
         {
-            IDisposable tp = Context.Channel.EnterTypingState();
-
-            if (arg.Length == 0)
+            try
             {
-                await Context.Message.ReplyAsync("", false, UserInfo(Context.Message.Author));
-                tp.Dispose();
-            }
-
-            else
-            {
-                if (Context.Message.MentionedUsers.Any())
+                if (user == null)
                 {
-                    await Context.Message.ReplyAsync("", false, UserInfo(Context.Message.MentionedUsers.First()));
-                    tp.Dispose();
+                    user = Context.Message.Author;
                 }
 
-                else if (arg[0].Length == 17 || arg[0].Length == 18)
+                SocketGuildUser SGU = (SocketGuildUser)user;
+                string nickState = "";
+                string ClientError = "None(offline)";
+
+                if (SGU.Nickname != null)
                 {
-                    SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
-                    await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
-                    tp.Dispose();
+                    nickState = SGU.Nickname;
                 }
+
+                if (user.IsBot && user.Status.ToString().ToLower() == "online")
+                {
+                    ClientError = "Server hosted";
+                }
+
+                await Context.Channel.TriggerTypingAsync();
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.AddField("User name", user);
+                eb.AddField("Nickname?", nickState == "" ? "None" : nickState);
+                eb.AddField("ID:", $"{user.Id}");
+                eb.AddField("Status", user.Status);
+                eb.AddField("Active clients", string.IsNullOrEmpty(string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) || user.IsBot ? ClientError : string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
+                _ = eb.AddField("Created at UTC", user.CreatedAt.UtcDateTime.ToString("r"));
+                eb.AddField("Joined at UTC?", SGU.JoinedAt.HasValue ? SGU.JoinedAt.Value.UtcDateTime.ToString("r") : "No value :/");
+                _ = eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{string.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
+                _ = eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{string.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
+                eb.WithAuthor(SGU);
+                eb.WithColor(Color.DarkPurple);
+                eb.WithTitle($"{user.Username}");
+                eb.WithDescription($"Heres some stats for {user} <3");
+                eb.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, eb.Build());
             }
-        }
 
-        public Embed UserInfo([Remainder] SocketUser user)
-        {
-            SocketGuildUser SGU = (SocketGuildUser)user;
-            string nickState = "";
-            string ClientError = "None(offline)";
-
-            if (SGU.Nickname != null)
+            catch(Exception ex)
             {
-                nickState = SGU.Nickname;
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.WithAuthor(Context.Message.Author);
+                eb.WithColor(Color.Orange);
+                eb.WithTitle($"User not found");
+                eb.WithDescription($"Sorry, but I couldn't find that user.");
+                eb.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, eb.Build());
             }
-
-            if (user.IsBot && user.Status.ToString().ToLower() == "online")
-            {
-                ClientError = "Server hosted";
-            }
-
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.AddField("User name", user);
-            eb.AddField("Nickname?", nickState == "" ? "None" : nickState);
-            eb.AddField("ID:", $"{user.Id}");
-            eb.AddField("Status", user.Status);
-            eb.AddField("Active clients", string.IsNullOrEmpty(string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) || user.IsBot ? ClientError : string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
-            _ = eb.AddField("Created at UTC", user.CreatedAt.UtcDateTime.ToString("r"));
-            eb.AddField("Joined at UTC?", SGU.JoinedAt.HasValue ? SGU.JoinedAt.Value.UtcDateTime.ToString("r") : "No value :/");
-            _ = eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{string.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
-            _ = eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{string.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
-            eb.WithAuthor(SGU);
-            eb.WithColor(Color.DarkPurple);
-            eb.WithTitle($"{user.Username}");
-            eb.WithDescription($"Heres some stats for {user} <3");
-            eb.WithCurrentTimestamp();
-            eb.Build();
-            return eb.Build();
         }
 
         [Command("serverinfo"), Summary("Shows information on the server"), Remarks("(PREFIX)serverinfo"), Alias("server", "server-info")]
@@ -452,7 +427,7 @@ namespace FinBot.Modules
         }
 
         [Command("topic"), Summary("sends a random conversation starter"), Remarks("(PREFIX)topic")]
-        public async Task Topic()
+        public async Task Topic(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
             string[] topic = File.ReadAllLines(Global.TopicsPath);
@@ -471,47 +446,38 @@ namespace FinBot.Modules
         }
 
         [Command("av"), Summary("show users avatar"), Remarks("(PREFIX)av <user>"), Alias("Avatar", "profile")]
-        public async Task AvAsync(params string[] arg)
+        public async Task AV([Remainder] SocketUser user = null)
         {
-            IDisposable tp = Context.Channel.EnterTypingState();
-
-            if (arg.Length == 0)
+            try
             {
-                await Context.Message.ReplyAsync("", false, AV(Context.Message.Author));
-                tp.Dispose();
-            }
-
-            else
-            {
-                if (Context.Message.MentionedUsers.Any())
+                if (user == null)
                 {
-                    await Context.Message.ReplyAsync("", false, AV(Context.Message.MentionedUsers.First()));
-                    tp.Dispose();
+                    user = Context.Message.Author;
                 }
 
-                else if (arg[0].Length == 17 || arg[0].Length == 18)
+                Context.Channel.TriggerTypingAsync();
+                EmbedBuilder eb = new EmbedBuilder()
                 {
-                    SocketUser user = Context.Guild.GetUser(Convert.ToUInt64(arg[0]));
-                    await Context.Message.ReplyAsync("", false, await GetRankAsync(user, Context.Guild.Id));
-                    tp.Dispose();
-                }
+                    ImageUrl = user.GetAvatarUrl(size: 1024)
+                };
+                eb.WithAuthor(Context.Message.Author)
+                .WithColor(Color.DarkTeal)
+                .WithDescription($"Heres the profile picture for {user}")
+                .WithFooter($"{Context.Message.Author}")
+                .WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, eb.Build());
             }
-        }
 
-        public Embed AV(SocketUser user)
-        {
-            Context.Channel.TriggerTypingAsync();
-            EmbedBuilder eb = new EmbedBuilder()
+            catch
             {
-                ImageUrl = user.GetAvatarUrl(size: 1024)
-            };
-            eb.WithAuthor(Context.Message.Author)
-            .WithColor(Color.DarkTeal)
-            .WithDescription($"Heres the profile picture for {user}")
-            .WithFooter($"{Context.Message.Author}")
-            .WithCurrentTimestamp()
-            .Build();
-            return eb.Build();
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.WithAuthor(Context.Message.Author);
+                eb.WithColor(Color.Orange);
+                eb.WithTitle($"User not found");
+                eb.WithDescription($"Sorry, but I couldn't find that user.");
+                eb.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, eb.Build());
+            }
         }
 
         /*
@@ -535,6 +501,9 @@ namespace FinBot.Modules
                 await ReminderService.SetReminder(Context.Guild, Context.User, (SocketTextChannel)Context.Channel, DateTime.Now, duration, remindMsg);
             }
         }
+
+
+
 
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
@@ -962,7 +931,7 @@ namespace FinBot.Modules
         }
 
         [Command("fact"), Summary("Gives you a random fact"), Remarks("(PREFIX)fact")]
-        public async Task Fact()
+        public async Task Fact(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
@@ -981,7 +950,7 @@ namespace FinBot.Modules
         }
 
         [Command("catfact"), Summary("Gets a random cat fact"), Remarks("(PREFIX)catfact")]
-        public async Task CatFact()
+        public async Task CatFact(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
@@ -993,7 +962,7 @@ namespace FinBot.Modules
         }
 
         [Command("trivia"), Summary("Gives you a random trivia question and censored out answer"), Remarks("(PREFIX)trivia")]
-        public async Task Trivia()
+        public async Task Trivia(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
             HttpClient HTTPClient = new HttpClient();
@@ -1568,7 +1537,7 @@ namespace FinBot.Modules
         }
 
         [Command("dadjoke"), Summary("Gets a random dad joke"), Remarks("(PREFIX)dadjoke"), Alias("badjoke")]
-        public async Task DadJoke()
+        public async Task DadJoke(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
             DadJokeClient client = new DadJokeClient("ICanHazDadJoke.NET Readme", "https://github.com/mattleibow/ICanHazDadJoke.NET");
@@ -1775,7 +1744,7 @@ namespace FinBot.Modules
         }
 
         [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime"), Alias("status")]
-        public async Task Uptime()
+        public async Task Uptime(params string[] arg)
         {
             await Context.Channel.TriggerTypingAsync();
             UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);

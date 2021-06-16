@@ -254,13 +254,13 @@ namespace FinBot.Services
             SocketUserMessage author = (SocketUserMessage)await msg.GetOrDownloadAsync();
             SocketGuildChannel sGC = (SocketGuildChannel)arg2;
             string messagecontent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
-            string fields = "";
-            List<string> content = new List<string>();
 
             if (msg.HasValue)
             {
                 if (author.Embeds.Count > 0)
                 {
+                    string fields = "";
+                    List<string> content = new List<string>();
                     IEmbed message = author.Embeds.First();
                     var embed = message.ToEmbedBuilder();
 
@@ -277,7 +277,7 @@ namespace FinBot.Services
                     fields = string.IsNullOrEmpty(fields) ? "" : $"\n{fields}";
                     content.Add(string.IsNullOrEmpty(author.Content) ? "" : author.Content);
                     content.Add(string.IsNullOrEmpty(embed.Footer.Text) ? "" : embed.Footer.Text);
-                    messagecontent = $"{content[2]}\n\n{content[0]}\n\n{content[1]}\n{fields}\n{content[3]}";
+                    messagecontent = $"{content[2]}\n{content[0]}\n\n{content[1]}\n{fields}\n{content[3]}";
                 }
             }
 

@@ -320,7 +320,7 @@ namespace FinBot.Modules
             SocketGuildUser user = Context.User as SocketGuildUser;
             IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
 
-            if (!user.GuildPermissions.ManageMessages)
+            if (!user.GuildPermissions.Administrator)
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
@@ -401,7 +401,7 @@ namespace FinBot.Modules
             SocketGuildUser user = Context.User as SocketGuildUser;
             IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
 
-            if (!user.GuildPermissions.ManageMessages)
+            if (!user.GuildPermissions.Administrator)
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
@@ -495,80 +495,79 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+
+                return;
             }
 
-            else
+            if (user == Context.User)
             {
-                if (user == Context.User)
-                {
-                    await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                    {
-                        Color = Color.LightOrange,
-                        Title = "You don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to ban yourself.",
-                        Author = new EmbedAuthorBuilder()
-                        {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
-
-                    return;
-                }
-
-                if (user.GuildPermissions.Administrator)
-                {
-                    await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                    {
-                        Color = Color.LightOrange,
-                        Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to ban an administrator.",
-                        Author = new EmbedAuthorBuilder()
-                        {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
-
-                    return;
-                }
-
-                await Context.Message.DeleteAsync();
-
-                try
-                {
-                    await user.SendMessageAsync($"You've been banned from {Context.Guild}.\nReason: {reason}\nTime of ban: {DateTime.Now}.");
-                }
-
-                catch (Exception)
-                {
-                    await Context.Message.Channel.SendMessageAsync($"Could not send message to {user}.");
-                }
-
-                await user.BanAsync(0, $"{reason} by {Context.Message.Author}");
-                await Context.Guild.AddBanAsync(user, 0, reason);
-                AddModlogs(user.Id, Action.Banned, Context.Message.Author.Id, reason, Context.Guild.Id);
-                SocketGuildUser arg = Context.Guild.GetUser(Context.Message.Author.Id);
-                EmbedBuilder eb = new EmbedBuilder()
-                {
-                    Title = $"***{user.Username} has been banned***",
-                    Footer = new EmbedFooterBuilder()
-                    {
-                        IconUrl = arg.GetAvatarUrl(),
-                        Text = $"{arg.Username}#{arg.Discriminator}"
-                    },
-                    Description = $"{user} has been banned at {DateTime.Now}\n Reason: {reason}.",
-                    ThumbnailUrl = Global.BanMessageURL,
-                    Color = Color.DarkRed
-                };
-                eb.WithCurrentTimestamp();
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Channel.SendMessageAsync("", false, eb.Build());
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to ban yourself.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+
+                return;
             }
+
+            if (user.GuildPermissions.Administrator)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "I don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to ban an administrator.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+
+                return;
+            }
+
+            await Context.Message.DeleteAsync();
+
+            try
+            {
+                await user.SendMessageAsync($"You've been banned from {Context.Guild}.\nReason: {reason}\nTime of ban: {DateTime.Now}.");
+            }
+
+            catch (Exception)
+            {
+                await Context.Message.Channel.SendMessageAsync($"Could not send message to {user}.");
+            }
+
+            await user.BanAsync(0, $"{reason} by {Context.Message.Author}");
+            await Context.Guild.AddBanAsync(user, 0, reason);
+            AddModlogs(user.Id, Action.Banned, Context.Message.Author.Id, reason, Context.Guild.Id);
+            SocketGuildUser arg = Context.Guild.GetUser(Context.Message.Author.Id);
+            EmbedBuilder eb = new EmbedBuilder()
+            {
+                Title = $"***{user.Username} has been banned***",
+                Footer = new EmbedFooterBuilder()
+                {
+                    IconUrl = arg.GetAvatarUrl(),
+                    Text = $"{arg.Username}#{arg.Discriminator}"
+                },
+                Description = $"{user} has been banned at {DateTime.Now}\n Reason: {reason}.",
+                ThumbnailUrl = Global.BanMessageURL,
+                Color = Color.DarkRed
+            };
+            eb.WithCurrentTimestamp();
+            await Context.Channel.TriggerTypingAsync();
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("kick"), Summary("kicks member from the guild"), Remarks("(PREFIX)kick <user> (optional)<reason>")]
@@ -591,79 +590,78 @@ namespace FinBot.Modules
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
+
+                return;
             }
 
-            else
+            if (user == Context.User)
             {
-                if (user == Context.User)
-                {
-                    await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-                    {
-                        Color = Color.LightOrange,
-                        Title = "You don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to kick yourself.",
-                        Author = new EmbedAuthorBuilder()
-                        {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
-
-                    return;
-                }
-
-                if (user.GuildPermissions.Administrator)
-                {
-                    await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                    {
-                        Color = Color.LightOrange,
-                        Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to kick an administrator.",
-                        Author = new EmbedAuthorBuilder()
-                        {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
-
-                    return;
-                }
-
-                try
-                {
-                    await user.SendMessageAsync($"You've been kicked from {Context.Guild}.\nReason: {reason}\nTime of kick: {DateTime.Now}.");
-                }
-
-                catch (Exception)
-                {
-                    await Context.Message.Channel.SendMessageAsync($"Could not send kick message to {user}.");
-                }
-
-                await Context.Message.DeleteAsync();
-                await user.KickAsync($"{reason} by {Context.Message.Author}");
-                AddModlogs(user.Id, Action.Kicked, Context.Message.Author.Id, reason, Context.Guild.Id);
                 await Context.Channel.TriggerTypingAsync();
-                SocketGuildUser arg = Context.Guild.GetUser(Context.Message.Author.Id);
-                EmbedBuilder eb = new EmbedBuilder()
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
                 {
-                    Title = $"***{user.Username} has been kicked***",
-                    Footer = new EmbedFooterBuilder()
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to kick yourself.",
+                    Author = new EmbedAuthorBuilder()
                     {
-                        IconUrl = arg.GetAvatarUrl(),
-                        Text = $"{arg.Username}#{arg.Discriminator}"
-                    },
-                    Description = $"{user} has been kicked by {GuildUser} at {DateTime.Now}\n Reason: {reason}.",
-                    ThumbnailUrl = Global.KickMessageURL,
-                    Color = Color.Orange
-                };
-                eb.WithCurrentTimestamp()
-               .Build();
-                await Context.Channel.SendMessageAsync("", false, eb.Build());
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+
+                return;
             }
+
+            if (user.GuildPermissions.Administrator)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "I don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to kick an administrator.",
+                    Author = new EmbedAuthorBuilder()
+                    {
+                        Name = Context.Message.Author.ToString(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        Url = Context.Message.GetJumpUrl()
+                    }
+                }.Build());
+
+                return;
+            }
+
+            try
+            {
+                await user.SendMessageAsync($"You've been kicked from {Context.Guild}.\nReason: {reason}\nTime of kick: {DateTime.Now}.");
+            }
+
+            catch (Exception)
+            {
+                await Context.Message.Channel.SendMessageAsync($"Could not send kick message to {user}.");
+            }
+
+            await Context.Message.DeleteAsync();
+            await user.KickAsync($"{reason} by {Context.Message.Author}");
+            AddModlogs(user.Id, Action.Kicked, Context.Message.Author.Id, reason, Context.Guild.Id);
+            await Context.Channel.TriggerTypingAsync();
+            SocketGuildUser arg = Context.Guild.GetUser(Context.Message.Author.Id);
+            EmbedBuilder eb = new EmbedBuilder()
+            {
+                Title = $"***{user.Username} has been kicked***",
+                Footer = new EmbedFooterBuilder()
+                {
+                    IconUrl = arg.GetAvatarUrl(),
+                    Text = $"{arg.Username}#{arg.Discriminator}"
+                },
+                Description = $"{user} has been kicked by {GuildUser} at {DateTime.Now}\n Reason: {reason}.",
+                ThumbnailUrl = Global.KickMessageURL,
+                Color = Color.Orange
+            };
+            eb.WithCurrentTimestamp()
+           .Build();
+            await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("vcmute"), Summary("Mutes a user from voice channels"), Remarks("(PREFIX)vcmute <user> (optional) <user>"), Alias("voicechatmute")]
@@ -978,348 +976,6 @@ namespace FinBot.Modules
                 return;
             }
         }
-
-        /*
-         * 
-         * THIS IS DEV TEST CODE FOR A NEW MUTE FUNCTION
-         * THIS NEEDS TO BE MODIFIED NOT TO EDIT CHANNELS 
-         * CHECK FOR MUTE ROLE IN DATABASE
-         *
-         */
-
-        //        //[Command("mute"), Summary("mutes a user from the Guild)"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
-        //        //public async Task mute(IGuildUser user, [Remainder] string reason = "No reason provided")
-        //        //{
-        //        //    SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
-
-        //        //    if (GuildUser.GuildPermissions.MuteMembers)
-        //        //    {
-        //        //        //if (user == Context.User)
-        //        //        //{
-        //        //        //    await Context.Channel.TriggerTypingAsync();
-        //        //        //    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-        //        //        //    {
-        //        //        //        Color = Color.LightOrange,
-        //        //        //        Title = "You don't have Permission!",
-        //        //        //        Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
-        //        //        //        Author = new EmbedAuthorBuilder()
-        //        //        //        {
-        //        //        //            Name = Context.Message.Author.ToString(),
-        //        //        //            IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        //        //            Url = Context.Message.GetJumpUrl()
-        //        //        //        }
-        //        //        //    }.Build());
-
-        //        //        //    return;
-        //        //        //}
-
-        //        //        //if (user.GuildPermissions.Administrator)
-        //        //        //{
-        //        //        //    await Context.Channel.TriggerTypingAsync();
-        //        //        //    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-        //        //        //    {
-        //        //        //        Color = Color.LightOrange,
-        //        //        //        Title = "I don't have Permission!",
-        //        //        //        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to mute an administrator.",
-        //        //        //        Author = new EmbedAuthorBuilder()
-        //        //        //        {
-        //        //        //            Name = Context.Message.Author.ToString(),
-        //        //        //            IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        //        //            Url = Context.Message.GetJumpUrl()
-        //        //        //        }
-        //        //        //    }.Build());
-
-        //        //        //    return;
-        //        //        //}
-
-        //        //        SQLiteConnection conn = new SQLiteConnection($"data source = {Global.muteRoleFilepath}");
-        //        //        using var cmd = new SQLiteCommand(conn);
-        //        //        conn.Open();
-        //        //        cmd.CommandText = $"SELECT * FROM muteRole WHERE guildId = '{Context.Guild.Id}'";
-        //        //        using SQLiteDataReader rdr = cmd.ExecuteReader();
-        //        //        bool ran = false;
-
-        //        //        while (rdr.Read())
-        //        //        {
-        //        //            ran = true;
-        //        //            ulong role = Convert.ToUInt64(rdr.GetString(2));
-
-        //        //            if (!Context.Guild.Roles.Any(gR => gR.Id == role))
-        //        //            {
-        //        //                if (Context.Guild.Roles.Any(xx => xx.Name == "Muted"))
-        //        //                {
-        //        //                    SocketRole r = Context.Guild.Roles.First(x => x.Name == "Muted");
-        //        //                    using var cmd2 = new SQLiteCommand(conn);
-        //        //                    cmd2.CommandText = $"UPDATE muteRole SET roleId = '{r.Id}' WHERE guildId = '{Context.Guild.Id}'";
-        //        //                    cmd2.ExecuteNonQuery();
-
-        //        //                    if (!user.RoleIds.Contains(r.Id))
-        //        //                    {
-        //        //                        await user.AddRoleAsync(Context.Guild.GetRole(role));
-        //        //                        AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
-        //        //                        await Context.Channel.TriggerTypingAsync();
-        //        //                        EmbedBuilder eb2 = new EmbedBuilder()
-        //        //                        {
-        //        //                            Title = $"***{user.Username} has been muted***",
-        //        //                            Footer = new EmbedFooterBuilder()
-        //        //                            {
-        //        //                                IconUrl = user.GetAvatarUrl(),
-        //        //                                Text = $"{user.Username}#{user.Discriminator}"
-        //        //                            },
-        //        //                            Description = $"{user} has been muted at {DateTime.Now}\n Reason: {reason}.",
-        //        //                            ThumbnailUrl = Global.KickMessageURL,
-        //        //                            Color = Color.Orange
-        //        //                        };
-        //        //                        eb2.WithCurrentTimestamp()
-        //        //                       .Build();
-        //        //                        await Context.Channel.SendMessageAsync("", false, eb2.Build());
-        //        //                    }
-
-        //        //                    else
-        //        //                    {
-        //        //                        await Context.Channel.TriggerTypingAsync();
-        //        //                        await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-        //        //                        {
-        //        //                            Color = Color.LightOrange,
-        //        //                            Title = "User already muted!",
-        //        //                            Description = $"This user is already muted.",
-        //        //                            Author = new EmbedAuthorBuilder()
-        //        //                            {
-        //        //                                Name = Context.Message.Author.ToString(),
-        //        //                                IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        //                                Url = Context.Message.GetJumpUrl()
-        //        //                            }
-        //        //                        }.Build());
-
-        //        //                        return;
-        //        //                    }
-        //        //                }
-
-        //        //                else
-        //        //                {
-        //        //                    IRole mR = await Context.Guild.CreateRoleAsync("Muted", GuildPermissions.None, Color.DarkerGrey, false, null);
-        //        //                    using var cmd3 = new SQLiteCommand(conn);
-        //        //                    cmd3.CommandText = $"UPDATE muteRole SET roleId = '{mR.Id}' WHERE guildId = '{Context.Guild.Id}'";
-        //        //                    cmd3.ExecuteNonQuery();
-        //        //                    await user.AddRoleAsync(Context.Guild.GetRole(role));
-        //        //                    AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
-        //        //                    await Context.Channel.TriggerTypingAsync();
-        //        //                    EmbedBuilder eb = new EmbedBuilder()
-        //        //                    {
-        //        //                        Title = $"***{user.Username} has been muted***",
-        //        //                        Footer = new EmbedFooterBuilder()
-        //        //                        {
-        //        //                            IconUrl = user.GetAvatarUrl(),
-        //        //                            Text = $"{user.Username}#{user.Discriminator}"
-        //        //                        },
-        //        //                        Description = $"{user} has been muted at {DateTime.Now}\n Reason: {reason}.",
-        //        //                        ThumbnailUrl = Global.KickMessageURL,
-        //        //                        Color = Color.Orange
-        //        //                    };
-        //        //                    eb.WithCurrentTimestamp()
-        //        //                   .Build();
-        //        //                    await Context.Channel.SendMessageAsync("", false, eb.Build());
-        //        //                }
-        //        //            }
-
-        //        //            else
-        //        //            {
-        //        //                await user.AddRoleAsync(Context.Guild.GetRole(role));
-        //        //                AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
-        //        //                await Context.Channel.TriggerTypingAsync();
-        //        //                EmbedBuilder eb = new EmbedBuilder()
-        //        //                {
-        //        //                    Title = $"***{user.Username} has been muted***",
-        //        //                    Footer = new EmbedFooterBuilder()
-        //        //                    {
-        //        //                        IconUrl = user.GetAvatarUrl(),
-        //        //                        Text = $"{user.Username}#{user.Discriminator}"
-        //        //                    },
-        //        //                    Description = $"{user} has been muted at {DateTime.Now}\n Reason: {reason}.",
-        //        //                    ThumbnailUrl = Global.KickMessageURL,
-        //        //                    Color = Color.Orange
-        //        //                };
-        //        //                eb.WithCurrentTimestamp()
-        //        //               .Build();
-        //        //                await Context.Channel.SendMessageAsync("", false, eb.Build());
-        //        //            }
-        //        //        }
-
-        //        //            if (!ran)
-        //        //            {
-        //        //                IRole mR = await Context.Guild.CreateRoleAsync("Muted", GuildPermissions.None, Color.DarkerGrey, false, null);
-        //        //                using var cmd3 = new SQLiteCommand(conn);
-        //        //                cmd3.CommandText = $"INSERT INTO muteRole(guildId, roleId) VALUES ('{Context.Guild.Id}', '{mR.Id}')";
-        //        //                cmd3.ExecuteNonQuery();
-        //        //                await user.AddRoleAsync(mR);
-        //        //                AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
-        //        //                await Context.Channel.TriggerTypingAsync();
-        //        //                EmbedBuilder eb = new EmbedBuilder()
-        //        //                {
-        //        //                    Title = $"***{user.Username} has been muted***",
-        //        //                    Footer = new EmbedFooterBuilder()
-        //        //                    {
-        //        //                        IconUrl = user.GetAvatarUrl(),
-        //        //                        Text = $"{user.Username}#{user.Discriminator}"
-        //        //                    },
-        //        //                    Description = $"{user} has been muted at {DateTime.Now}\n Reason: {reason}.",
-        //        //                    ThumbnailUrl = Global.KickMessageURL,
-        //        //                    Color = Color.Orange
-        //        //                };
-        //        //                eb.WithCurrentTimestamp()
-        //        //               .Build();
-        //        //                await Context.Channel.SendMessageAsync("", false, eb.Build());
-        //        //            }
-
-        //        //        conn.Close();
-        //        //    }
-
-        //        //    else
-        //        //    {
-        //        //        await Context.Channel.TriggerTypingAsync();
-        //        //        await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-        //        //        {
-        //        //            Color = Color.LightOrange,
-        //        //            Title = "You don't have Permission!",
-        //        //            Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-        //        //            Author = new EmbedAuthorBuilder()
-        //        //            {
-        //        //                Name = Context.Message.Author.ToString(),
-        //        //                IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        //                Url = Context.Message.GetJumpUrl()
-        //        //            }
-        //        //        }.Build());
-        //        //    }
-        //        //}
-
-        //        ////public static async Task RemoveMutedRole(IGuildUser user, SocketGuild guild, SocketTextChannel channel, DateTime timesince)
-        //        ////{
-        //        ////    SQLiteConnection conn = new SQLiteConnection($"data source = {Global.muteRoleFilepath}");
-        //        ////    using var cmd = new SQLiteCommand(conn);
-        //        ////    conn.Open();
-        //        ////    cmd.CommandText = $"SELECT * FROM muteRole WHERE guildId = '{guild.Id}'";
-        //        ////    using SQLiteDataReader rdr = cmd.ExecuteReader();
-
-        //        ////    while (rdr.Read())
-        //        ////    {
-        //        ////        await user.RemoveRoleAsync(guild.GetRole(Convert.ToUInt64(rdr.GetString(2))));
-        //        ////    }
-
-        //        ////    conn.Close();
-        //        ////}
-
-        //        //[Command("unmute"), Summary("Unmutes a user"), Remarks("(PREFIX)unmute <user>")]
-        //        //public async Task Unmute(IGuildUser user)
-        //        //{
-        //        //    SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
-
-        //        //    if (GuildUser.GuildPermissions.MuteMembers)
-        //        //    {
-        //        //        SQLiteConnection conn = new SQLiteConnection($"data source = {Global.muteRoleFilepath}");
-        //        //        using var cmd = new SQLiteCommand(conn);
-        //        //        conn.Open();
-        //        //        cmd.CommandText = $"SELECT * FROM muteRole WHERE guildId = '{Context.Guild.Id}'";
-        //        //        using SQLiteDataReader rdr = cmd.ExecuteReader();
-
-        //        //        while (rdr.Read())
-        //        //        {
-        //        //            ulong role = Convert.ToUInt64(rdr.GetString(2));
-        //        //            SocketRole mutedrole = Context.Guild.GetRole(role);
-
-        //        //            if (!user.RoleIds.Contains(mutedrole.Id))
-        //        //            {
-        //        //                await Context.Channel.TriggerTypingAsync();
-        //        //                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-        //        //                {
-        //        //                    Color = Color.LightOrange,
-        //        //                    Title = "User is not muted!",
-        //        //                    Description = $"This user is not currently muted.",
-        //        //                    Author = new EmbedAuthorBuilder()
-        //        //                    {
-        //        //                        Name = Context.Message.Author.ToString(),
-        //        //                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        //                        Url = Context.Message.GetJumpUrl()
-        //        //                    }
-        //        //                }.Build());
-        //        //            }
-
-        //        //            else
-        //        //            {
-        //        //                await user.RemoveRoleAsync(mutedrole);
-        //        //                EmbedBuilder eb = new EmbedBuilder()
-        //        //                {
-        //        //                    Title = $"***{user.Username} has been ummuted***",
-        //        //                    Footer = new EmbedFooterBuilder()
-        //        //                    {
-        //        //                        IconUrl = user.GetAvatarUrl(),
-        //        //                        Text = $"{user.Username}#{user.Discriminator}"
-        //        //                    },
-        //        //                    Description = $"{user} has been unmuted by {Context.User} at {DateTime.Now}",
-        //        //                    ThumbnailUrl = Global.KickMessageURL,
-        //        //                    Color = Color.Orange
-        //        //                };
-        //        //                eb.WithCurrentTimestamp();
-        //        //                await Context.Channel.TriggerTypingAsync();
-        //        //                await Context.Channel.SendMessageAsync("", false, eb.Build());
-        //        //            }
-        //        //        }
-
-        //        //        conn.Close();
-        //        //    }
-
-        //        //    else
-        //        //    {
-        //        //        await Context.Channel.TriggerTypingAsync();
-        //        //        await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
-        //        //        {
-        //        //            Color = Color.LightOrange,
-        //        //            Title = "You don't have Permission!",
-        //        //            Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-        //        //            Author = new EmbedAuthorBuilder()
-        //        //            {
-        //        //                Name = Context.Message.Author.ToString(),
-        //        //                IconUrl = Context.Message.Author.GetAvatarUrl(),
-        //        //                Url = Context.Message.GetJumpUrl()
-        //        //            }
-        //        //        }.Build());
-        //        //    }
-        //        //}
-
-
-        //[Command("mute")]
-        //[RequireUserPermission(GuildPermission.KickMembers)]
-        //[RequireBotPermission(GuildPermission.ManageRoles)]
-        //public async Task Mute(SocketGuildUser user, int minutes, [Remainder] string reason = null)
-        //{
-        //    if (user.Hierarchy > Context.Guild.CurrentUser.Hierarchy)
-        //    {
-        //        await Context.Channel.SendErrorAsync("Invalid user", "That user has a higher position than the bot.");
-        //        return;
-        //    }
-
-        //    var role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
-        //    if (role == null)
-        //        role = await Context.Guild.CreateRoleAsync("Muted", new GuildPermissions(sendMessages: false), null, false, null);
-
-        //    if (role.Position > Context.Guild.CurrentUser.Hierarchy)
-        //    {
-        //        await Context.Channel.SendErrorAsync("Invalid permissions", "The muted role has a higher position than the bot.");
-        //        return;
-        //    }
-
-        //    if (user.Roles.Contains(role))
-        //    {
-        //        await Context.Channel.SendErrorAsync("Already muted", "That user is already muted.");
-        //        return;
-        //    }
-
-        //    await role.ModifyAsync(x => x.Position = Context.Guild.CurrentUser.Hierarchy);
-
-        //    foreach (var channel in Context.Guild.TextChannels)
-        //    {
-        //        if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
-        //        {
-        //            await channel.AddPermissionOverwriteAsync(role, new OverwritePermissions(sendMessages: PermValue.Deny));
 
         [Command("mute"), Summary("Mutes a user and stops them from talking in text channels"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
         public async Task Mute(SocketGuildUser user, [Remainder] string reason = null)
