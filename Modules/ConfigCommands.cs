@@ -168,6 +168,12 @@ namespace FinBot.Modules
                 embed.WithAuthor(Context.Message.Author);
                 embed.WithCurrentTimestamp();
                 await Context.Message.ReplyAsync("", false, embed.Build());
+                string msg = $"Total Users: {Context.Guild.MemberCount}";
+
+                if (channel.Name != msg)
+                {
+                    await channel.ModifyAsync(x => x.Name = msg);
+                }
             }
 
             else
@@ -178,12 +184,11 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }.Build());
             }
         }
@@ -243,13 +248,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -302,13 +306,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -361,12 +364,11 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }.Build());
             }
         }

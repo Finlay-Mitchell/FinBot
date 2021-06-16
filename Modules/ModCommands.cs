@@ -39,13 +39,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
 
             else
@@ -98,12 +97,11 @@ namespace FinBot.Modules
                             Color = Color.LightOrange,
                             Title = "Slowmode interval to large!",
                             Description = $"Sorry, {Context.Message.Author.Mention} but the max slowmode you can have is 21600 seconds (6 hours).",
-                            Author = new EmbedAuthorBuilder()
+                            Footer = new EmbedFooterBuilder()
                             {
-                                Name = Context.Message.Author.ToString(),
-                                IconUrl = Context.Message.Author.GetAvatarUrl(),
-                                Url = Context.Message.GetJumpUrl()
-                            }
+                                IconUrl = Context.User.GetAvatarUrl(),
+                                Text = $"{Context.User}"
+                            },
                         }.Build());
                     }
 
@@ -118,12 +116,11 @@ namespace FinBot.Modules
                         Color = Color.Green,
                         Title = $"Set the slowmode to {value}!",
                         Description = $"{Context.Message.Author.Mention} successfully modified the slowmode of <#{Context.Channel.Id}> to {value} seconds!",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
+                            IconUrl = Context.User.GetAvatarUrl(),
+                            Text = $"{Context.User}"
+                        },
                     }.Build());
                 }
 
@@ -142,12 +139,11 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }.Build());
             }
         }
@@ -325,10 +321,10 @@ namespace FinBot.Modules
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
                     },
                     Title = "You do not have permission to execute this command",
                     Description = "You do not have the valid permission to execute this command",
@@ -345,6 +341,7 @@ namespace FinBot.Modules
                 noUser.WithDescription("Please mention a user!");
                 noUser.WithColor(Color.Red);
                 noUser.WithAuthor(Context.Message.Author);
+                noUser.WithCurrentTimestamp();
                 await Context.Message.ReplyAsync("", false, noUser.Build());
 
                 return;
@@ -362,16 +359,16 @@ namespace FinBot.Modules
 
                     EmbedBuilder b = new EmbedBuilder()
                     {
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            IconUrl = u.GetAvatarUrl(),
+                            Text = $"{u}"
                         },
                         Title = $"Successfully cleared log for **{u.Username}**",
                         Color = Color.DarkMagenta,
                         Description = $"Log for {u.Username} cleared.",
                         Fields = new List<EmbedFieldBuilder>()
-                    };
+                    }.WithCurrentTimestamp();
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
@@ -406,15 +403,15 @@ namespace FinBot.Modules
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
                     },
                     Title = "You do not have permission to execute this command",
                     Description = "You do not have the valid permission to execute this command",
                     Color = Color.Red
-                }.Build());
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
@@ -426,6 +423,7 @@ namespace FinBot.Modules
                 noUser.WithDescription("Please mention a user!");
                 noUser.WithColor(Color.Red);
                 noUser.WithAuthor(Context.Message.Author);
+                noUser.WithCurrentTimestamp();
                 await Context.Message.ReplyAsync("", false, noUser.Build());
 
                 return;
@@ -442,10 +440,10 @@ namespace FinBot.Modules
                     DeleteFromModlogs(1, conn, Context.Guild.Id, u.Id);
                     EmbedBuilder b = new EmbedBuilder()
                     {
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            IconUrl = u.GetAvatarUrl(),
+                            Text = $"{u}"
                         },
                         Title = $"Successfully cleared all logs for **{u.Username}**",
                         Color = Color.DarkMagenta,
@@ -489,13 +487,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
@@ -508,63 +505,56 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to ban yourself.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
-
-                return;
-            }
-
-            if (user.GuildPermissions.Administrator)
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
-                {
-                    Color = Color.LightOrange,
-                    Title = "I don't have Permission!",
-                    Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to ban an administrator.",
-                    Author = new EmbedAuthorBuilder()
-                    {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
 
             await Context.Message.DeleteAsync();
 
+            if (user.GuildPermissions.ManageMessages)
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "I don't have Permission!",
+                    Description = "I do not have permission to ban a moderator.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = user.GetAvatarUrl(),
+                        Text = $"{user.Username}#{user.Discriminator}"
+                    },
+                }.WithCurrentTimestamp().Build());
+
+                return;
+            }
+
             try
             {
                 await user.SendMessageAsync($"You've been banned from {Context.Guild}.\nReason: {reason}\nTime of ban: {DateTime.Now}.");
             }
 
-            catch (Exception)
-            {
-                await Context.Message.Channel.SendMessageAsync($"Could not send message to {user}.");
-            }
+            catch { }
 
-            await user.BanAsync(0, $"{reason} by {Context.Message.Author}");
+            await user.BanAsync(0, $"{reason} - {Context.Message.Author}");
             await Context.Guild.AddBanAsync(user, 0, reason);
             AddModlogs(user.Id, Action.Banned, Context.Message.Author.Id, reason, Context.Guild.Id);
-            SocketGuildUser arg = Context.Guild.GetUser(Context.Message.Author.Id);
             EmbedBuilder eb = new EmbedBuilder()
             {
                 Title = $"***{user.Username} has been banned***",
                 Footer = new EmbedFooterBuilder()
                 {
-                    IconUrl = arg.GetAvatarUrl(),
-                    Text = $"{arg.Username}#{arg.Discriminator}"
+                    IconUrl = user.GetAvatarUrl(),
+                    Text = $"{user.Username}#{user.Discriminator}",
                 },
-                Description = $"{user} has been banned at {DateTime.Now}\n Reason: {reason}.",
-                ThumbnailUrl = Global.BanMessageURL,
-                Color = Color.DarkRed
+                Description = $"{user} has been banned at {DateTime.Now}\nReason: {reason}",
+                Color = Color.DarkRed,
             };
             eb.WithCurrentTimestamp();
             await Context.Channel.TriggerTypingAsync();
@@ -572,7 +562,7 @@ namespace FinBot.Modules
         }
 
         [Command("kick"), Summary("kicks member from the guild"), Remarks("(PREFIX)kick <user> (optional)<reason>")]
-        public async Task KickUser(IGuildUser user, [Remainder] string reason = "no reason provided.")
+        public async Task KickUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
@@ -584,13 +574,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
@@ -603,32 +592,32 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to kick yourself.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
 
-            if (user.GuildPermissions.Administrator)
+            await Context.Message.DeleteAsync();
+
+            if (user.GuildPermissions.ManageMessages)
             {
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.LightOrange,
                     Title = "I don't have Permission!",
-                    Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to kick an administrator.",
-                    Author = new EmbedAuthorBuilder()
+                    Description = "I do not have permission to kick a moderator.",
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = user.GetAvatarUrl(),
+                        Text = $"{user.Username}#{user.Discriminator}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
@@ -638,42 +627,37 @@ namespace FinBot.Modules
                 await user.SendMessageAsync($"You've been kicked from {Context.Guild}.\nReason: {reason}\nTime of kick: {DateTime.Now}.");
             }
 
-            catch (Exception)
-            {
-                await Context.Message.Channel.SendMessageAsync($"Could not send kick message to {user}.");
-            }
+            catch { }
 
-            await Context.Message.DeleteAsync();
-            await user.KickAsync($"{reason} by {Context.Message.Author}");
+            await user.KickAsync($"{reason} - {Context.Message.Author}");
             AddModlogs(user.Id, Action.Kicked, Context.Message.Author.Id, reason, Context.Guild.Id);
             await Context.Channel.TriggerTypingAsync();
-            SocketGuildUser arg = Context.Guild.GetUser(Context.Message.Author.Id);
             EmbedBuilder eb = new EmbedBuilder()
             {
                 Title = $"***{user.Username} has been kicked***",
                 Footer = new EmbedFooterBuilder()
                 {
-                    IconUrl = arg.GetAvatarUrl(),
-                    Text = $"{arg.Username}#{arg.Discriminator}"
+                    IconUrl = user.GetAvatarUrl(),
+                    Text = $"{user.Username}#{user.Discriminator}"
                 },
-                Description = $"{user} has been kicked by {GuildUser} at {DateTime.Now}\n Reason: {reason}.",
-                ThumbnailUrl = Global.KickMessageURL,
+                Description = $"{user} has been kicked at {DateTime.Now}\nReason: {reason}",
                 Color = Color.Orange
             };
-            eb.WithCurrentTimestamp()
-           .Build();
+            eb.WithCurrentTimestamp();
+            await Context.Channel.TriggerTypingAsync();
             await Context.Channel.SendMessageAsync("", false, eb.Build());
         }
 
         [Command("vcmute"), Summary("Mutes a user from voice channels"), Remarks("(PREFIX)vcmute <user> (optional) <user>"), Alias("voicechatmute")]
-        public async Task VcMute(SocketUser user, [Remainder] string reason = "No reason provided")
+        public async Task VcMute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
-            SocketVoiceChannel vc = Context.Guild.GetUser(user.Id).VoiceChannel;
-            SocketGuildUser User = Context.Guild.GetUser(user.Id);
 
             if (GuildUser.GuildPermissions.DeafenMembers)
             {
+                SocketVoiceChannel vc = Context.Guild.GetUser(user.Id).VoiceChannel;
+                SocketGuildUser User = Context.Guild.GetUser(user.Id);
+
                 if (user == Context.User)
                 {
                     await Context.Channel.TriggerTypingAsync();
@@ -682,32 +666,32 @@ namespace FinBot.Modules
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to vcmute yourself.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = Context.User.GetAvatarUrl(),
+                            Text = $"{Context.User}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
 
-                if (User.GuildPermissions.Administrator)
+                await Context.Message.DeleteAsync();
+
+                if (user.GuildPermissions.ManageMessages)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to vcmute an administrator.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = "I do not have permission to vcmute a moderator.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -715,18 +699,17 @@ namespace FinBot.Modules
                 if (vc == null)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "User not in voice channel!",
                         Description = $"User needs to be in a voice channel.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -736,18 +719,17 @@ namespace FinBot.Modules
                     if (vc.GetUser(user.Id).IsMuted)
                     {
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                        await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                         {
                             Color = Color.LightOrange,
                             Title = "User already muted!",
                             Description = $"This user is already muted.",
-                            Author = new EmbedAuthorBuilder()
+                            Footer = new EmbedFooterBuilder()
                             {
-                                Name = Context.Message.Author.ToString(),
-                                IconUrl = Context.Message.Author.GetAvatarUrl(),
-                                Url = Context.Message.GetJumpUrl()
-                            }
-                        }.Build());
+                                IconUrl = user.GetAvatarUrl(),
+                                Text = $"{user.Username}#{user.Discriminator}"
+                            },
+                        }.WithCurrentTimestamp().Build());
 
                         return;
                     }
@@ -764,13 +746,12 @@ namespace FinBot.Modules
                                 IconUrl = user.GetAvatarUrl(),
                                 Text = $"{user.Username}#{user.Discriminator}"
                             },
-                            Description = $"{user} has been muted by {Context.User} at {DateTime.Now}",
-                            ThumbnailUrl = Global.KickMessageURL,
+                            Description = $"{user} has been muted at {DateTime.Now}\nReason: {reason}",
                             Color = Color.Orange
                         };
                         eb.WithCurrentTimestamp();
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Message.ReplyAsync("", false, eb.Build());
+                        await Context.Channel.SendMessageAsync("", false, eb.Build());
 
                         return;
                     }
@@ -785,13 +766,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
@@ -810,25 +790,26 @@ namespace FinBot.Modules
                 {
                     if (vc == null)
                     {
+                        await Context.Message.DeleteAsync();
                         await Context.Channel.TriggerTypingAsync();
-                        await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                        await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                         {
                             Color = Color.LightOrange,
                             Title = "User not in voice channel!",
                             Description = $"User needs to be in a voice channel.",
-                            Author = new EmbedAuthorBuilder()
+                            Footer = new EmbedFooterBuilder()
                             {
-                                Name = Context.Message.Author.ToString(),
-                                IconUrl = Context.Message.Author.GetAvatarUrl(),
-                                Url = Context.Message.GetJumpUrl()
-                            }
-                        }.Build());
+                                IconUrl = user.GetAvatarUrl(),
+                                Text = $"{user.Username}#{user.Discriminator}"
+                            },
+                        }.WithCurrentTimestamp().Build());
 
                         return;
                     }
 
                     else
                     {
+                        await Context.Message.DeleteAsync();
                         await vc.GetUser(user.Id).ModifyAsync(x => x.Mute = false);
                         EmbedBuilder eb = new EmbedBuilder()
                         {
@@ -838,8 +819,7 @@ namespace FinBot.Modules
                                 IconUrl = user.GetAvatarUrl(),
                                 Text = $"{user.Username}#{user.Discriminator}"
                             },
-                            Description = $"{user} has been unmuted by {Context.User} at {DateTime.Now}",
-                            ThumbnailUrl = Global.KickMessageURL,
+                            Description = $"{user} has been unmuted at {DateTime.Now}",
                             Color = Color.Orange
                         };
                         eb.WithCurrentTimestamp();
@@ -852,18 +832,18 @@ namespace FinBot.Modules
 
                 else
                 {
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Message.DeleteAsync();
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "User not muted!",
                         Description = $"This user is not currently muted.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -877,26 +857,26 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
         }
 
         [Command("Warn"), Summary("Warns a user"), Remarks("(PREFIX)warn <user> (optional)<reason>")]
-        public async Task Warn(SocketUser user, [Remainder] string reason = "No reason provded")
+        public async Task Warn(SocketUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
-            SocketGuildUser User = Context.Guild.GetUser(user.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageMessages)
             {
+                SocketGuildUser User = Context.Guild.GetUser(user.Id);
+
                 if (user == Context.User)
                 {
                     await Context.Channel.TriggerTypingAsync();
@@ -905,38 +885,38 @@ namespace FinBot.Modules
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to warn yourself.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = Context.User.GetAvatarUrl(),
+                            Text = $"{Context.User}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
 
-                else if (User.GuildPermissions.Administrator)
+                else if (User.GuildPermissions.ManageMessages)
                 {
+                    await Context.Message.DeleteAsync();
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to warn an administrator.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = "I do not have permission to warn a moderator.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
 
                 else
                 {
+                    await Context.Message.DeleteAsync();
                     AddModlogs(user.Id, Action.Warned, Context.Message.Author.Id, reason, Context.Guild.Id);
                     EmbedBuilder eb = new EmbedBuilder()
                     {
@@ -946,8 +926,7 @@ namespace FinBot.Modules
                             IconUrl = user.GetAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
-                        Description = $"{user} has been warned by {Context.User} at {DateTime.Now}\n Reason: {reason}.",
-                        ThumbnailUrl = Global.KickMessageURL,
+                        Description = $"{user} has been warned at {DateTime.Now}\nReason: {reason}",
                         Color = Color.Orange
                     };
                     eb.WithCurrentTimestamp();
@@ -966,20 +945,19 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
 
                 return;
             }
         }
 
         [Command("mute"), Summary("Mutes a user and stops them from talking in text channels"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
-        public async Task Mute(SocketGuildUser user, [Remainder] string reason = null)
+        public async Task Mute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
@@ -991,12 +969,11 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }.Build());
             }
 
@@ -1010,32 +987,31 @@ namespace FinBot.Modules
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
+                            IconUrl = Context.User.GetAvatarUrl(),
+                            Text = $"{Context.User}"
+                        },
                     }.Build());
 
                     return;
                 }
 
-                if (user.GuildPermissions.Administrator)
+                if (user.GuildPermissions.ManageMessages)
                 {
+                    await Context.Message.DeleteAsync();
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to mute an administrator.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = "I do not have permission to mute a moderator.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1049,41 +1025,42 @@ namespace FinBot.Modules
 
                 if (role.Position > Context.Guild.CurrentUser.Hierarchy)
                 {
+                    await Context.Message.DeleteAsync();
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but the role has a higher hierarchy than me.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = $"Sorry, but the role has a higher hierarchy than me.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
 
                 if (user.Roles.Contains(role))
                 {
+                    await Context.Message.DeleteAsync();
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "User is already muted!",
                         Description = $"{user} is already muted.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
+
                 try
                 {
                     await role.ModifyAsync(x => x.Position = Context.Guild.CurrentUser.Hierarchy);
@@ -1099,21 +1076,21 @@ namespace FinBot.Modules
 
                 catch { }
 
+                await Context.Message.DeleteAsync();
                 await user.AddRoleAsync(role);
                 AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.Green,
                     Title = $"Muted user {user}!",
                     Description = $"{user} has been successfully muted for reason: {reason}",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = user.GetAvatarUrl(),
+                        Text = $"{user.Username}#{user.Discriminator}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -1130,34 +1107,33 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }.Build());
             }
 
             else
             {
                 IRole role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+                await Context.Message.DeleteAsync();
 
                 if (role == null)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "Role does not exist!",
                         Description = $"The muted role does not exist to unmute a member.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1165,18 +1141,17 @@ namespace FinBot.Modules
                 if (role.Position > Context.Guild.CurrentUser.Hierarchy)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but the role has a higher hierarchy than me.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = "This role has a higher hierarchy than me.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1190,13 +1165,12 @@ namespace FinBot.Modules
                         Color = Color.Green,
                         Title = $"Unmuted user {user}!",
                         Description = $"{user} has been successfully unmuted.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1204,18 +1178,17 @@ namespace FinBot.Modules
                 else
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = $"{user} is not muted!",
                         Description = $"{user} is not currently muted.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
                 }
             }
         }
@@ -1289,13 +1262,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -1328,13 +1300,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -1389,13 +1360,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -1454,13 +1424,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -1471,7 +1440,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
+        [Command("tempmute", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)tempmute <seconds> <message>"), Alias("tm")]
         public async Task Remind(SocketGuildUser user, string duration, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1484,13 +1453,12 @@ namespace FinBot.Modules
                     Color = Color.LightOrange,
                     Title = "You don't have Permission!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
 
             else
@@ -1498,37 +1466,37 @@ namespace FinBot.Modules
                 if (user == Context.User)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "You don't have Permission!",
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = Context.User.GetAvatarUrl(),
+                            Text = $"{Context.User}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
 
-                if (user.GuildPermissions.Administrator)
+                await Context.Message.DeleteAsync();
+
+                if (user.GuildPermissions.ManageMessages)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but I do not have permission to mute an administrator.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = "I do not have permission to mute a moderator.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1543,18 +1511,17 @@ namespace FinBot.Modules
                 if (role.Position > Context.Guild.CurrentUser.Hierarchy)
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "I don't have Permission!",
-                        Description = $"Sorry, {Context.Message.Author.Mention} but the role has a higher hierarchy than me.",
-                        Author = new EmbedAuthorBuilder()
+                        Description = "This role has a higher hierarchy than me.",
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1562,18 +1529,17 @@ namespace FinBot.Modules
                 if (user.Roles.Contains(role))
                 {
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.LightOrange,
                         Title = "User is already muted!",
                         Description = $"{user} is already muted.",
-                        Author = new EmbedAuthorBuilder()
+                        Footer = new EmbedFooterBuilder()
                         {
-                            Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
-                            Url = Context.Message.GetJumpUrl()
-                        }
-                    }.Build());
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
+                        },
+                    }.WithCurrentTimestamp().Build());
 
                     return;
                 }
@@ -1596,18 +1562,17 @@ namespace FinBot.Modules
                 AddModlogs(user.Id, Action.TempMuted, Context.Message.Author.Id, reason, Context.Guild.Id);
                 await MuteService.SetMute(Context.Guild, user, (SocketTextChannel)Context.Channel, DateTime.Now, duration, reason, (ShardedCommandContext)Context);
                 await Context.Channel.TriggerTypingAsync();
-                await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                 {
                     Color = Color.Green,
                     Title = $"Muted user {user}!",
                     Description = $"{user} has been successfully muted for {duration}\nreason: {reason}",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
-                }.Build());
+                        IconUrl = user.GetAvatarUrl(),
+                        Text = $"{user.Username}#{user.Discriminator}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
 
 

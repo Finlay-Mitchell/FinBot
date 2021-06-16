@@ -79,8 +79,7 @@ namespace FinBot.Handlers.AutoMod
                                 IconUrl = msg.Author.GetAvatarUrl(),
                                 Text = $"{msg.Author.Username}#{msg.Author.Discriminator}"
                             },
-                            Description = $"{msg.Author} has been warned at {DateTime.Now}\n Reason: Bad word usage.",
-                            ThumbnailUrl = Global.KickMessageURL,
+                            Description = $"{msg.Author} has been warned at {DateTime.Now}\nReason: Bad word usage.",
                             Color = Color.Orange
                         };
                         eb.WithCurrentTimestamp();
@@ -158,8 +157,7 @@ namespace FinBot.Handlers.AutoMod
                         IconUrl = arg.Author.GetAvatarUrl(),
                         Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
                     },
-                    Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: Sent a link.",
-                    ThumbnailUrl = Global.KickMessageURL,
+                    Description = $"{arg.Author} has been warned at {DateTime.Now}\nReason: Sent a link.",
                     Color = Color.Orange
                 };
                 eb.WithCurrentTimestamp();
@@ -179,7 +177,6 @@ namespace FinBot.Handlers.AutoMod
                 eb.AddField("Message", arg.ToString(), true);
                 eb.WithCurrentTimestamp();
                 await logchannel.SendMessageAsync("", false, eb.Build());
-
 
                 return;
             }
@@ -204,8 +201,7 @@ namespace FinBot.Handlers.AutoMod
                         IconUrl = arg.Author.GetAvatarUrl(),
                         Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
                     },
-                    Description = $"{arg.Author} has been warned at {DateTime.Now}\n Reason: mass ping.",
-                    ThumbnailUrl = Global.KickMessageURL,
+                    Description = $"{arg.Author} has been warned at {DateTime.Now}\nReason: mass ping.",
                     Color = Color.Orange
                 };
                 eb.WithCurrentTimestamp();

@@ -20,7 +20,6 @@ namespace FinBot
         public static string YouTubeAPIKey { get; set; }
         public static uint MaxUserPingCount { get; set; }
         public static uint MaxRolePingCount { get; set; }
-        public static uint LevelMultiplier { get; set; }
         public static uint MinMessageTimestamp { get; set; }
         public static string GoogleSearchAPIKey { get; set; }
         public static string GeniusAPIKey { get; set; }
@@ -43,10 +42,7 @@ namespace FinBot
         
 
         private static readonly string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
-        public static string WelcomeMessageURL { get; set; }
         internal static JsonItems CurrentJsonData;
-        public static string KickMessageURL { get; set; }
-        public static string BanMessageURL { get; set; }
         public static string TopicsPath = $"{Environment.CurrentDirectory}/Data/Topics.txt";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
@@ -65,7 +61,6 @@ namespace FinBot
             YouTubeAPIKey = data.YouTubeAPIKey;
             MaxUserPingCount = data.MaxUserPingCount;
             MaxRolePingCount = data.MaxRolePingCount;
-            LevelMultiplier = data.LevelMultiplier;
             MinMessageTimestamp = data.MinMessageTimestamp;
             GoogleSearchAPIKey = data.GoogleSearchAPIKey;
             MySQL.MySQLServer = data.MySQLServer;
@@ -91,7 +86,6 @@ namespace FinBot
             public string YouTubeAPIKey { get; set; }
             public uint MaxUserPingCount { get; set; }
             public uint MaxRolePingCount { get; set; }
-            public uint LevelMultiplier { get; set; }
             public uint MinMessageTimestamp { get; set; }
             public string GoogleSearchAPIKey { get; set; }
             public string MySQLServer { get; set; }
@@ -151,7 +145,7 @@ namespace FinBot
 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            ////gets the prefix for the guild in question - add Dictionary support for first prefix test.
+            //gets the prefix for the guild in question - add Dictionary support for first prefix test.
             try
             {
                 MongoClient MongoClient = new MongoClient(Mongoconnstr);

@@ -52,14 +52,14 @@ namespace FinBot.Modules
                 {
                     Title = "Subreddit not found!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but the [subreddit](https://www.reddit.com/r/{subreddit}) you tried to post from was not found or no images could be retrieved, please try again.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }
                 .WithColor(221, 65, 36)
+                .WithCurrentTimestamp()
                 .Build());
                 tp.Dispose();
 
@@ -76,12 +76,11 @@ namespace FinBot.Modules
                 {
                     Title = "NSFW post!",
                     Description = $"Sorry, {Context.Message.Author.Mention} but the post you tried to send has been flagged as NSFW. Please try this in a NSFW channel.",
-                    Author = new EmbedAuthorBuilder()
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
-                        Url = Context.Message.GetJumpUrl()
-                    }
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
                 }
                 .WithColor(221, 65, 36)
                 .Build());
@@ -480,13 +479,7 @@ namespace FinBot.Modules
             }
         }
 
-        /*
-         * 
-         * REDESIGN THIS FEATURE
-         * 
-         */
-
-        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remain <seconds> <message>"), Alias("Timer")]
+        [Command("remind", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)remind <seconds> <message>"), Alias("Timer")]
         public async Task Remind(string duration, [Remainder] string remindMsg = "No content set")
         {
             if (remindMsg.Contains("@everyone") || remindMsg.Contains("@here") || Context.Message.MentionedUsers.Any() || Context.Message.MentionedRoles.Any())

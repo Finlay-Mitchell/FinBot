@@ -88,7 +88,6 @@ namespace FinBot.Handlers
                             Text = $"{arg.Username}#{arg.Discriminator}"
                         },
                         Description = $"{arg} has left the server, goodbye",
-                        ThumbnailUrl = Global.WelcomeMessageURL,
                         Color = Color.Green
                     };
 
@@ -125,7 +124,6 @@ namespace FinBot.Handlers
                             Text = $"{arg.Username}#{arg.Discriminator}"
                         },
                         Description = $"Welcome, {arg.Mention} to {arg.Guild.Name}. You are member #{arg.Guild.MemberCount}!",
-                        ThumbnailUrl = Global.WelcomeMessageURL,
                         Color = Color.Green
                     };
 
