@@ -26,7 +26,7 @@ class FinBot(commands.Bot):
         # Initialises the actual commands.Bot class
         intents = discord.Intents.all()
         intents.members = True
-        super().__init__(command_prefix="*", description=config.description,
+        super().__init__(command_prefix=self.determine_prefix, description=config.description,
                          loop=asyncio.new_event_loop(), intents=intents, case_insensitive=True, help_command=None)
         self.guild = None
         self.error_channel = None
