@@ -22,7 +22,6 @@ namespace FinBot.Handlers.AutoMod
         public ChatFilter(IServiceProvider service)
         {
             _client = service.GetRequiredService<DiscordShardedClient>();
-
             modCommands = new ModCommands(service);
             _client.MessageReceived += CheckForCensoredWords;
             _client.MessageReceived += CheckForPingSpam;

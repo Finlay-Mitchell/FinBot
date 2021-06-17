@@ -457,31 +457,8 @@ class Music(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
                                                                                  f"{volume * 100}% for this guild!"))
 
-    @commands.command()
-    async def mute(self, ctx):
-        all_guilds = self.data.get("song_volumes", {})
-        all_guilds[str(ctx.guild.id)] = 0
-        self.data["song_volumes"] = all_guilds
-        ctx.voice_client.source.volume = 0
-        await ctx.reply(embed=self.bot.create_completed_embed(f"{config.mute_emoji}Muted bot!", f"muted bot for"
-                                                                                                f" this guild!\nTo undo"
-                                                                                                f" this, just type "
-                                                                                                f"{config.prefix}unmute"
-                                                                                                f" or {config.prefix}"
-                                                                                                f"volume <new volume>"))
-
-    @commands.command()
-    async def unmute(self, ctx):
-        all_guilds = self.data.get("song_volumes", {})
-        all_guilds[str(ctx.guild.id)] = 100
-        self.data["song_volumes"] = all_guilds
-        ctx.voice_client.source.volume = 1 - 0
-        await ctx.reply(embed=self.bot.create_completed_embed(f"unmuted bot!", "successfully unmuted the bot!"))
-
     @dequeue.before_invoke
     @shuffle.before_invoke
-    @unmute.before_invoke
-    @mute.before_invoke
     @queue.before_invoke
     @volume.before_invoke
     @pause.before_invoke
@@ -505,8 +482,6 @@ class Music(commands.Cog):
     @queue.error
     @dequeue.error
     @shuffle.error
-    @unmute.error
-    @mute.error
     @volume.error
     @pause.error
     @play.error
