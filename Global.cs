@@ -146,30 +146,32 @@ namespace FinBot
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
             //gets the prefix for the guild in question - add Dictionary support for first prefix test.
-            try
-            {
-                MongoClient MongoClient = new MongoClient(Mongoconnstr);
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("prefix").ToString();
+            //try
+            //{
+            //    MongoClient MongoClient = new MongoClient(Mongoconnstr);
+            //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
+            //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+            //    ulong _id = context.Guild.Id;
+            //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+            //    string itemVal = item?.GetValue("prefix").ToString();
 
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
+            //    if (itemVal != null)
+            //    {
+            //        return itemVal;
+            //    }
 
-                else
-                {
-                    return Prefix;
-                }
-            }
+            //    else
+            //    {
+            //        return Prefix;
+            //    }
+            //}
 
-            catch
-            {
-                return Prefix;
-            }
+            //catch
+            //{
+            //    return Prefix;
+            //}
+
+            return "dev.";
         }
 
         public static async Task<string> DetermineLevel(SocketGuild guild)

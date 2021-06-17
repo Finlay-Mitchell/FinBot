@@ -7,6 +7,8 @@ using System;
 using System.Threading.Tasks;
 
 using Discord.Commands;
+using MySql.Data.MySqlClient;
+using System.Linq;
 
 namespace FinBot.Handlers
 {
@@ -22,6 +24,36 @@ namespace FinBot.Handlers
             
             _client.UserJoined += HandleWelcomeAsync;
             _client.UserLeft += HandleGoodbyeAsync;
+            _client.UserJoined += CheckForMutedAsync;
+        }
+
+        private async Task CheckForMutedAsync(SocketGuildUser arg)
+        {
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+
+            try
+            {
+                conn.Open();
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM MutedUsers WHERE userId = {arg.Id} AND guildId = {arg.Guild.Id}", conn);
+                using MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    IRole role = (arg.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+                    await arg.AddRoleAsync(role);
+                }
+                conn.Close();
+            }
+
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
+
+            finally
+            {
+                conn.Close();
+            }
         }
 
         public async Task<string> GetWelcomeChannel(SocketGuild guild)
@@ -136,14 +168,13 @@ namespace FinBot.Handlers
                         Description = $"Welcome to {arg.Guild.Name} Please read the rules carefully and enjoy your stay!",
                         Color = Color.Green
 
-                    }.Build());
+                    }.WithCurrentTimestamp().Build());
                 }
             }
 
             catch(Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-                return;
             }
         }
     }

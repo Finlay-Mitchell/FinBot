@@ -55,14 +55,14 @@ namespace FinBot.Services
                     eb.WithCurrentTimestamp();
                     await channel.SendMessageAsync("", false, eb.Build());
 
-                    IRole role = (Context.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+                    IRole role = (guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
 
                     if (role == null)
                     {
                         return;
                     }
 
-                    if (role.Position > Context.Guild.CurrentUser.Hierarchy)
+                    if (role.Position > guild.CurrentUser.Hierarchy)
                     {
                         return;
                     }
@@ -99,13 +99,29 @@ namespace FinBot.Services
             {
                 if (type == 0)
                 {
-                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO Mutes(userId, guildId, chanId, timeSet, reminderTimestamp, message) VALUES ({userId}, {guildId}, {chan.Id}, {nowTimestamp}, {reminderTimestamp})", conn);
+                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO Mutes(userId, guildId, chanId, timeSet, reminderTimestamp) VALUES ({userId}, {guildId}, {chan.Id}, {nowTimestamp}, {reminderTimestamp})", conn);
+                    cmd.ExecuteNonQuery();
+                    cmd = new MySqlCommand($"INSERT INTO MutedUsers(userId, guildId) VALUES ({userId}, {guildId})", conn);
+                    cmd.ExecuteNonQuery();
+                }
+
+                else if (type == 1)
+                {
+                    MySqlCommand cmd = new MySqlCommand($"DELETE FROM Mutes where userId = {userId} AND guildId = {guildId}", conn);
+                    cmd.ExecuteNonQuery();
+                    cmd = new MySqlCommand($"DELETE FROM MutedUsers where userId = {userId} AND guildId = {guildId}", conn);
+                    cmd.ExecuteNonQuery();
+                }
+
+                else if (type == 3)
+                {
+                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO MutedUsers(userId, guildId) VALUES ({userId}, {guildId})", conn);
                     cmd.ExecuteNonQuery();
                 }
 
                 else
                 {
-                    MySqlCommand cmd = new MySqlCommand($"DELETE FROM Mutes where userId = {userId} AND guildId = {guildId}", conn);
+                    MySqlCommand cmd = new MySqlCommand($"DELETE FROM MutedUsers where userId = {userId} AND guildId = {guildId}", conn);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -122,12 +138,10 @@ namespace FinBot.Services
             TimeSpan time = TimeSpan.FromSeconds(Convert.ToInt64(await Parse_time(duration)));
             DateTime remindertime = DateTime.Now + time;
             long reminderTimestamp = Global.ConvertToTimestamp(remindertime);
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
             MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
-                conn.Close();
                 QueryConn.Open();
                 await InsertToDBAsync(0, QueryConn, user.Id, guild.Id, currentTime, reminderTimestamp, chan);
                 QueryConn.Close();

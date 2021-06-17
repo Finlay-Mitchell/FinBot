@@ -1076,6 +1076,20 @@ namespace FinBot.Modules
 
                 catch { }
 
+                MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
+
+                try
+                {
+                    QueryConn.Open();
+                    await MuteService.InsertToDBAsync(3, QueryConn, user.Id, Context.Guild.Id, 0, 0, (SocketTextChannel)Context.Channel);
+                    QueryConn.Close();
+                }
+
+                catch (Exception ex)
+                {
+
+                }
+
                 await Context.Message.DeleteAsync();
                 await user.AddRoleAsync(role);
                 AddModlogs(user.Id, Action.Muted, Context.Message.Author.Id, reason, Context.Guild.Id);
@@ -1084,7 +1098,7 @@ namespace FinBot.Modules
                 {
                     Color = Color.Green,
                     Title = $"Muted user {user}!",
-                    Description = $"{user} has been successfully muted for reason: {reason}",
+                    Description = $"{user} has been muted at {DateTime.Now}\nReason: {reason}",
                     Footer = new EmbedFooterBuilder()
                     {
                         IconUrl = user.GetAvatarUrl(),
@@ -1158,9 +1172,8 @@ namespace FinBot.Modules
 
                 if (user.Roles.Contains(role))
                 {
-                    await user.RemoveRoleAsync(role);
                     await Context.Channel.TriggerTypingAsync();
-                    await Context.Message.ReplyAsync("", false, new EmbedBuilder()
+                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Color = Color.Green,
                         Title = $"Unmuted user {user}!",
@@ -1171,25 +1184,27 @@ namespace FinBot.Modules
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
+                    await user.RemoveRoleAsync(role);
+                    MySqlConnection Queryconn = new MySqlConnection(Global.MySQL.ConnStr);
+                    Queryconn.Open();
+                    await MuteService.InsertToDBAsync(4, Queryconn, user.Id, Context.Guild.Id, 0, 0, (SocketTextChannel)Context.Channel);
+                    Queryconn.Close();
 
                     return;
                 }
 
-                else
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                 {
-                    await Context.Channel.TriggerTypingAsync();
-                    await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                    Color = Color.LightOrange,
+                    Title = $"{user} is not muted!",
+                    Description = $"{user} is not currently muted.",
+                    Footer = new EmbedFooterBuilder()
                     {
-                        Color = Color.LightOrange,
-                        Title = $"{user} is not muted!",
-                        Description = $"{user} is not currently muted.",
-                        Footer = new EmbedFooterBuilder()
-                        {
-                            IconUrl = user.GetAvatarUrl(),
-                            Text = $"{user.Username}#{user.Discriminator}"
-                        },
-                    }.WithCurrentTimestamp().Build());
-                }
+                        IconUrl = user.GetAvatarUrl(),
+                        Text = $"{user.Username}#{user.Discriminator}"
+                    },
+                }.WithCurrentTimestamp().Build());
             }
         }
 
@@ -1564,7 +1579,7 @@ namespace FinBot.Modules
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Channel.SendMessageAsync("", false, new EmbedBuilder()
                 {
-                    Color = Color.Green,
+                    Color = Color.Orange,
                     Title = $"Muted user {user}!",
                     Description = $"{user} has been successfully muted for {duration}\nreason: {reason}",
                     Footer = new EmbedFooterBuilder()
@@ -1574,48 +1589,6 @@ namespace FinBot.Modules
                     },
                 }.WithCurrentTimestamp().Build());
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            await Context.Channel.TriggerTypingAsync();
         }
     }
 }   
