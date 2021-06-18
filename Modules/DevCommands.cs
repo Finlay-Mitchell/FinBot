@@ -171,19 +171,17 @@ namespace FinBot.Modules
             }
         }
 
-        //[Command("clearalldata")]
-        //public async Task Clearalldata()
-        //{
-        //    if (Global.IsDev(Context.User))
-        //    {
-        //        MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-        //        IMongoDatabase database = mongoClient.GetDatabase("finlay");
-        //        IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-        //        ulong _id = Context.Guild.Id;
-        //        collection.DeleteOne(Builders<BsonDocument>.Filter.Eq("id", _id));
-        //        BsonDocument data = await MongoHandler.FindById(collection, _id);
-        //        await ReplyAsync(data.ToString());
-        //    }
-        //}
+        [Command("clearalldata")]
+        public async Task Clearalldata()
+        {
+            if (Global.IsDev(Context.User))
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                collection.DeleteOne(Builders<BsonDocument>.Filter.Eq("_id", _id));
+            }
+        }
     }
 }

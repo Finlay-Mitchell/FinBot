@@ -9,6 +9,7 @@ router.get('/discord/redirect', passport.authenticate('discord'), (request, resp
 
 router.get('/', (request, response) => {
     response.header('Access-Control-Allow-Origin', '*');
+    
     if(request.user)
     {
         response.send(request.user);
