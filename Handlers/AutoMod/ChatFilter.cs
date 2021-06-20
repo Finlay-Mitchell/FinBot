@@ -111,76 +111,85 @@ namespace FinBot.Handlers.AutoMod
 
             catch (Exception ex)
             {
+                Global.ConsoleLog(ex.Message);
                 //await msg.Channel.SendMessageAsync($"broke: {ex.Message}\n\n{ex.StackTrace}");
             }
         }
 
         private async Task CheckForLinks(SocketMessage arg)
         {
-            SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
-            SocketGuildUser user = (SocketGuildUser)arg.Author;
-
-            if (user.GuildPermissions.ManageMessages)
-            {
-                return;
-            }
-
             try
             {
-                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-                IMongoDatabase database = mongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = chan.Guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("disablelinks").ToJson();
+                SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
+                SocketGuildUser user = (SocketGuildUser)arg.Author;
 
-                if (itemVal == null || itemVal == "false")
+                if (user.GuildPermissions.ManageMessages)
                 {
                     return;
                 }
-            }
-            
-            catch { return; }
 
-            Regex r = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?");
-
-            if (r.IsMatch(arg.ToString()))
-            {
-                await arg.DeleteAsync();
-                modCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Sent a link", chan.Guild.Id);
-                EmbedBuilder eb = new EmbedBuilder()
+                try
                 {
-                    Title = $"***{arg.Author.Username} has been warned***",
-                    Footer = new EmbedFooterBuilder()
+                    MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                    IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                    ulong _id = chan.Guild.Id;
+                    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                    string itemVal = item?.GetValue("disablelinks").ToJson();
+
+                    if (itemVal == null || itemVal == "false")
                     {
-                        IconUrl = arg.Author.GetAvatarUrl(),
-                        Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
-                    },
-                    Description = $"{arg.Author} has been warned at {DateTime.Now}\nReason: Sent a link.",
-                    Color = Color.Orange
-                };
-                eb.WithCurrentTimestamp();
-                await arg.Channel.TriggerTypingAsync();
-                await arg.Channel.SendMessageAsync("", false, eb.Build());
-                string modlogchannel = await Global.GetModLogChannel(chan.Guild);
-
-                if(modlogchannel == "0")
-                {
-                    return;
+                        return;
+                    }
                 }
 
-                SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
-                eb.AddField("User", $"{user.Username}", true);
-                eb.AddField("Moderator", $"FinBot automod.", true);
-                eb.AddField("Reason", $"\"Sent a link.\"", true);
-                eb.AddField("Message", arg.ToString(), true);
-                eb.WithCurrentTimestamp();
-                await logchannel.SendMessageAsync("", false, eb.Build());
+                catch { return; }
+
+                Regex r = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?");
+
+                if (r.IsMatch(arg.ToString()))
+                {
+                    await arg.DeleteAsync();
+                    modCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Sent a link", chan.Guild.Id);
+                    EmbedBuilder eb = new EmbedBuilder()
+                    {
+                        Title = $"***{arg.Author.Username} has been warned***",
+                        Footer = new EmbedFooterBuilder()
+                        {
+                            IconUrl = arg.Author.GetAvatarUrl(),
+                            Text = $"{arg.Author.Username}#{arg.Author.Discriminator}"
+                        },
+                        Description = $"{arg.Author} has been warned at {DateTime.Now}\nReason: Sent a link.",
+                        Color = Color.Orange
+                    };
+                    eb.WithCurrentTimestamp();
+                    await arg.Channel.TriggerTypingAsync();
+                    await arg.Channel.SendMessageAsync("", false, eb.Build());
+                    string modlogchannel = await Global.GetModLogChannel(chan.Guild);
+
+                    if (modlogchannel == "0")
+                    {
+                        return;
+                    }
+
+                    SocketTextChannel logchannel = chan.Guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
+                    eb.AddField("User", $"{user.Username}", true);
+                    eb.AddField("Moderator", $"FinBot automod.", true);
+                    eb.AddField("Reason", $"\"Sent a link.\"", true);
+                    eb.AddField("Message", arg.ToString(), true);
+                    eb.WithCurrentTimestamp();
+                    await logchannel.SendMessageAsync("", false, eb.Build());
+
+                    return;
+                }
 
                 return;
             }
 
-            return;
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
         }
 
         private async Task CheckForPingSpam(SocketMessage arg)

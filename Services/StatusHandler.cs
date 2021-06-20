@@ -15,28 +15,45 @@ namespace FinBot.Services
 
         public StatusHandler(IServiceProvider services)
         {
-            _client = services.GetRequiredService<DiscordShardedClient>();            
-            Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 10, 30).TotalMilliseconds, Enabled = true };
-            t.Enabled = true;
-            t.Elapsed += HandleStatusChange;
-            t.Start();
+            _client = services.GetRequiredService<DiscordShardedClient>();
+            //Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 10, 30).TotalMilliseconds, Enabled = true };
+            //t.Enabled = true;
+            //t.Elapsed += HandleStatusChange;
+            //t.Start();
         }
 
         private void HandleStatusChange(object sender, ElapsedEventArgs e)
         {
-            string game = GetStatus();
-            _client.SetGameAsync(game, null, ActivityType.Playing);
+            try
+            {
+                string game = GetStatus();
+                _client.SetGameAsync(game, null, ActivityType.Playing);
+            }
+
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
         }
 
         private string GetStatus()
         {
-            long mem;
-            GetPhysicallyInstalledSystemMemory(out mem);
-            string[] Activity = { $"Uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}", $"Using {Process.GetCurrentProcess().PrivateMemorySize64 / (1024*1024)}%" +
+            try
+            {
+                long mem;
+                GetPhysicallyInstalledSystemMemory(out mem);
+                string[] Activity = { $"Uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}", $"Using {Process.GetCurrentProcess().PrivateMemorySize64 / (1024*1024)}%" +
                     $"of memory", $"Serving {_client.Guilds.Count} servers!", "Join our support server at server.finlaymitchell.ml", "Invite the bot at bot.finlaymitchell.ml" };
-            Random rand = new Random();
-            int index = rand.Next(Activity.Length);
-            return Activity[index];
+                Random rand = new Random();
+                int index = rand.Next(Activity.Length);
+                return Activity[index];
+            }
+
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+                return "oop";
+            }
         }
 
         [DllImport("kernel32.dll")]

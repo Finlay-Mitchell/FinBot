@@ -87,6 +87,7 @@ namespace FinBot.Services
 
             catch (Exception ex)
             {
+                Global.ConsoleLog(ex.Message);
                 await chan.SendMessageAsync(ex.Message);
             }
         }
@@ -138,6 +139,7 @@ namespace FinBot.Services
                 //    await chan.SendMessageAsync("", false, eb.Build());
                 //    return;
                 //}
+                Global.ConsoleLog(ex.Message);
             }
 
             finally

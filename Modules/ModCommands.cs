@@ -1087,7 +1087,7 @@ namespace FinBot.Modules
 
                 catch (Exception ex)
                 {
-
+                    Global.ConsoleLog(ex.Message);
                 }
 
                 await Context.Message.DeleteAsync();

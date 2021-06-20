@@ -54,7 +54,9 @@ namespace FinBot.Services
                     eb.WithFooter($"Reminder set at {Global.UnixTimeStampToDateTime(reader.GetInt64(3))}");
                     eb.WithCurrentTimestamp();
                     await channel.SendMessageAsync("", false, eb.Build());
-
+                    QueryConn.Open();
+                    await InsertToDBAsync(1, QueryConn, user.Id, guild.Id);
+                    QueryConn.Close();
                     IRole role = (guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
 
                     if (role == null)
@@ -72,11 +74,6 @@ namespace FinBot.Services
                         await user.RemoveRoleAsync(role);
                         return;
                     }
-
-
-                    QueryConn.Open();
-                    await InsertToDBAsync(1, QueryConn, user.Id, guild.Id);
-                    QueryConn.Close();
                 }
                 conn.Close();
             }
@@ -128,6 +125,7 @@ namespace FinBot.Services
 
             catch (Exception ex)
             {
+                Global.ConsoleLog(ex.Message);
                 await chan.SendMessageAsync(ex.Message);
             }
         }
@@ -161,6 +159,7 @@ namespace FinBot.Services
                 //    await chan.SendMessageAsync("", false, eb.Build());
                 //    return;
                 //}
+                Global.ConsoleLog(ex.Message);
             }
         }
 
