@@ -16,10 +16,10 @@ namespace FinBot.Services
         public StatusHandler(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
-            //Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 10, 30).TotalMilliseconds, Enabled = true };
-            //t.Enabled = true;
-            //t.Elapsed += HandleStatusChange;
-            //t.Start();
+            Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 10, 30).TotalMilliseconds, Enabled = true };
+            t.Enabled = true;
+            t.Elapsed += HandleStatusChange;
+            t.Start();
         }
 
         private void HandleStatusChange(object sender, ElapsedEventArgs e)
@@ -40,8 +40,6 @@ namespace FinBot.Services
         {
             try
             {
-                long mem;
-                GetPhysicallyInstalledSystemMemory(out mem);
                 string[] Activity = { $"Uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}", $"Using {Process.GetCurrentProcess().PrivateMemorySize64 / (1024*1024)}%" +
                     $"of memory", $"Serving {_client.Guilds.Count} servers!", "Join our support server at server.finlaymitchell.ml", "Invite the bot at bot.finlaymitchell.ml" };
                 Random rand = new Random();
@@ -55,9 +53,5 @@ namespace FinBot.Services
                 return "oop";
             }
         }
-
-        [DllImport("kernel32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool GetPhysicallyInstalledSystemMemory(out long TotalMemoryInKilobytes);
     }
 }
