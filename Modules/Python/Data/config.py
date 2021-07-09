@@ -29,3 +29,5 @@ dev_uids = [305797476290527235, 230778630597246983]
 
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
 extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs"]
+
+client_commands = False

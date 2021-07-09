@@ -33,13 +33,13 @@ class FinBot(commands.Bot):
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
-        self.aiml_kernel = aiml.Kernel()
-        if os.path.isfile("bot_brain.brn"):
-            self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
-        else:
-            self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
-            self.aiml_kernel.saveBrain("bot_brain.brn")
-        self.aiml_kernel.verbose(0)
+        # self.aiml_kernel = aiml.Kernel()
+        # if os.path.isfile("bot_brain.brn"):
+        #     self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
+        # else:
+        #     self.aiml_kernel.bootstrap(learnFiles="std-startup.xml", commands="load aiml b")
+        #     self.aiml_kernel.saveBrain("bot_brain.brn")
+        # self.aiml_kernel.verbose(0)
 
     async def determine_prefix(self, bot, message):
         if not hasattr(message, "guild") or message.guild is None:
@@ -96,6 +96,25 @@ def get_bot():
             bot.load_extension("Cogs.{}".format(extension_name))
             print("Loaded cog {}!".format(extension_name))
         print("Ready!")
+
+    @bot.event
+    async def on_message(message):
+        if message.author != bot.user:
+            await bot.process_commands(message=message)
+            return
+        else:
+            if message.content.startswith("fbd->") and config.client_commands is True:
+                msg = message.content[5:]
+                ctx = await bot.get_context(message)
+                msg = msg.split(" ", 2)
+
+                if len(msg) == 1:
+                    await ctx.invoke(bot.get_command(msg[0]))
+                else:
+                    await ctx.invoke(bot.get_command(msg[0]), msg[1])
+
+                return
+        return
 
     # noinspection PyUnusedLocal
     @bot.event

@@ -119,6 +119,17 @@ class Misc(commands.Cog):
                                              user=data["MySQLUser"], password=data["MySQLPassword"])
         return connection
 
+    @commands.command(Pass_Context=True)
+    @is_developer()
+    async def EnBotClientCommands(self, ctx, tof):
+        if "true" in tof:
+            config.client_commands = True
+            print(f"successfully set client_commands to {config.client_commands}")
+
+        else:
+            config.client_commands = False
+            print(f"successfully set client_commands to {config.client_commands}")
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

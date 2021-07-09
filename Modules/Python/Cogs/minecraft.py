@@ -19,7 +19,7 @@ class Minecraft(commands.Cog):
         async with aiohttp.ClientSession() as session:
             uuid = await mc_uuid(arg, session)
             if uuid is None:
-                ctx.reply(embed=self.create_error_embed(title="Minecraft User Not found"))
+                ctx.reply(embed=self.bot.create_error_embed(title="Minecraft User Not found"))
                 return
             else:
                 random_string = secrets.token_urlsafe(16).replace("-", "")
@@ -31,7 +31,7 @@ class Minecraft(commands.Cog):
         skin = get_skin(get_uuid(arg))
 
         if skin is None:
-            await ctx.reply(embed=self.create_error_embed(f"Could not find user \"{arg}\""))
+            await ctx.reply(embed=self.bot.create_error_embed(f"Could not find user \"{arg}\""))
         else:
             await ctx.reply(skin)
 
@@ -44,7 +44,7 @@ class Minecraft(commands.Cog):
                     futures.append(asyncio.create_task(bw_info(username, session)))
                 compare_stats = await asyncio.gather(*futures)
             if not all(compare_stats):
-                await ctx.reply(embed=self.create_error_embed("**Player either does not exist or has not played  enough"
+                await ctx.reply(embed=self.bot.create_error_embed("**Player either does not exist or has not played  enough"
                                                               " bedwars**"))
                 return
             embed = discord.Embed(title="Bedwars Statistics Comparison", color=0x0d0d77)
@@ -64,7 +64,7 @@ class Minecraft(commands.Cog):
             await ctx.reply(embed=embed)
 
         else:
-            await ctx.reply(embed=self.create_error_embed("**Not correct amount or arguments given**"))
+            await ctx.reply(embed=self.bot.create_error_embed("**Not correct amount or arguments given**"))
             return
 
 
