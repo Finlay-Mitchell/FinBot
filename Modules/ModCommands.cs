@@ -245,6 +245,35 @@ namespace FinBot.Modules
                     }
 
                     indx += 1;
+
+                    if (indx % 5 == 0)
+                    {
+                        await AddMuteAsync(userID, GuildId);
+                        SocketGuild guild = _client.GetGuild(GuildId);
+                        string modlogchannel = await Global.GetModLogChannel(guild);
+
+                        if (modlogchannel == "0")
+                        {
+                            return;
+                        }
+
+                        SocketUser user = guild.GetUser(userID);
+                        SocketTextChannel logchannel = guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.WithTitle($"{user} automuted");
+                        eb.AddField("User", $"{user.Username}", true);
+                        eb.AddField("Moderator", $"LexiBot automod.", true);
+                        eb.AddField("Reason", $"\"Too many infractions.\"", true);
+                        eb.AddField("Infraction count", indx.ToString(), true);
+                        eb.WithAuthor(user);
+                        eb.WithCurrentTimestamp();
+                        await logchannel.SendMessageAsync("", false, eb.Build());
+                        await MuteService.SetMute(guild, user, logchannel, DateTime.Now, "1h30m", null, null);
+                        //    string[] formats = { @"h\h", @"s\s", @"m\m\ s\s", @"h\h\ m\m\ s\s", @"m\m", @"h\h\ m\m", @"d\d h\h\ m\m\ s\s", @"d\d", @"d\d h\h", @"d\d h\h m\m", @"d\d h\h m\m s\s" };
+                        //    TimeSpan t = TimeSpan.ParseExact("1h", formats, null);
+                        //    await MuteService.MuteAsyncSeconds((SocketUser)user, Global.Client.GetGuild(Global.GuildId), t, Global.Client.GetGuild(Global.GuildId).GetTextChannel(Global.ModLogChannel));
+                    }
+
                     queryConn.Open();
                     AddToModlogs(queryConn, userID, action, ModeratorID, reason, GuildId, indx);
                     queryConn.Close();

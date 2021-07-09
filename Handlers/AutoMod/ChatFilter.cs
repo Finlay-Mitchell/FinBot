@@ -23,6 +23,7 @@ namespace FinBot.Handlers.AutoMod
         {
             _client = service.GetRequiredService<DiscordShardedClient>();
             modCommands = new ModCommands(service);
+
             _client.MessageReceived += CheckForCensoredWords;
             _client.MessageReceived += CheckForPingSpam;
             _client.MessageReceived += CheckForLinks;

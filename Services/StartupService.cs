@@ -31,6 +31,7 @@ namespace FinBot.Services
             await _discord.LoginAsync(TokenType.Bot, Global.Token);
             await _discord.StartAsync();
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            Global.clientCommands = false;
         }
     }
 }

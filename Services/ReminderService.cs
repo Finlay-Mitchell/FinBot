@@ -16,6 +16,7 @@ namespace FinBot.Services
 		public ReminderService(IServiceProvider service)
 		{
 			_client = service.GetRequiredService<DiscordShardedClient>();
+         
             Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 0, 10).TotalMilliseconds, Enabled = true };
             t.Enabled = true;
             t.Elapsed += RemindAsync;

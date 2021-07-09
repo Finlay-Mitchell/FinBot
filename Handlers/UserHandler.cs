@@ -21,7 +21,7 @@ namespace FinBot.Handlers
         public UserHandler(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
-            
+
             _client.UserJoined += HandleWelcomeAsync;
             _client.UserLeft += HandleGoodbyeAsync;
             _client.UserJoined += CheckForMutedAsync;

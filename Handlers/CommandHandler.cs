@@ -35,7 +35,10 @@ namespace FinBot.Handlers
                 return;
             }
 
-            if (message.Source != MessageSource.User)
+            SocketUser currUser = _client.GetUser(_client.CurrentUser.Id);
+            SocketUser execUser = _client.GetUser(message.Author.Id);
+
+            if (message.Source != MessageSource.User && execUser != currUser)
             {
                 return;
             }
@@ -45,6 +48,12 @@ namespace FinBot.Handlers
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
+                if (execUser == currUser && message.HasStringPrefix("fbd->", ref argPos) && Global.clientCommands == true)
+                {
+                    IResult devres = await _commands.ExecuteAsync(context, argPos, null, MultiMatchHandling.Best);
+                    await LogCommandUsage(context, devres); 
+                }
+
                 return;
             }
 

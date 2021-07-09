@@ -41,7 +41,7 @@ namespace FinBot.Services
             try
             {
                 string[] Activity = { $"Uptime: {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss")}", $"Using {Process.GetCurrentProcess().PrivateMemorySize64 / (1024*1024)}%" +
-                    $"of memory", $"Serving {_client.Guilds.Count} servers!", "Join our support server at server.finlaymitchell.ml", "Invite the bot at bot.finlaymitchell.ml" };
+                    $" of memory", $"Serving {_client.Guilds.Count} servers!", "Join our support server at server.finlaymitchell.ml", "Invite the bot at bot.finlaymitchell.ml", "View our website at finbot.finlaymitchell.ml!!!" };
                 Random rand = new Random();
                 int index = rand.Next(Activity.Length);
                 return Activity[index];

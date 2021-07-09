@@ -36,21 +36,22 @@ namespace FinBot
             public static string MySQLPassword { get; set; }
             public static string ConnStr { get; set; }
         }
-        
+
         public static string Mongoconnstr { get; set; }
         public static string StatusPageAPIKey { get; set; }
-        
+
 
         private static readonly string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
         internal static JsonItems CurrentJsonData;
         public static string TopicsPath = $"{Environment.CurrentDirectory}/Data/Topics.txt";
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata" }; // These are hidden from being shown in the help command in HelpHandler.cs
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata" }; // These are hidden from being shown in the help command in HelpHandler.cs
         public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 }; // Listed developer Ids
         public static string LeetsPath = $"{Environment.CurrentDirectory}/Data/LeetRules.txt";
         public static Dictionary<string, string> leetRules = LoadLeetRules();
-
+        public static bool clientCommands { get; set; }
+            
         public static void ReadConfig()
         {
             JsonItems data = JsonConvert.DeserializeObject<JsonItems>(File.ReadAllText(ConfigPath));
@@ -145,31 +146,33 @@ namespace FinBot
 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            //gets the prefix for the guild in question - add Dictionary support for first prefix test.
-            try
-            {
-                MongoClient MongoClient = new MongoClient(Mongoconnstr);
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("prefix").ToString();
+            ////gets the prefix for the guild in question - add Dictionary support for first prefix test.
+            //try
+            //{
+            //    MongoClient MongoClient = new MongoClient(Mongoconnstr);
+            //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
+            //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+            //    ulong _id = context.Guild.Id;
+            //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+            //    string itemVal = item?.GetValue("prefix").ToString();
 
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
+            //    if (itemVal != null)
+            //    {
+            //        return itemVal;
+            //    }
 
-                else
-                {
-                    return Prefix;
-                }
-            }
+            //    else
+            //    {
+            //        return Prefix;
+            //    }
+            //}
 
-            catch
-            {
-                return Prefix;
-            }
+            //catch
+            //{
+            //    return Prefix;
+            //}
+
+            return "dev.";
         }
 
         public static async Task<string> DetermineLevel(SocketGuild guild)
@@ -225,7 +228,7 @@ namespace FinBot
                     return "0";
                 }
             }
-            
+
             catch
             {
                 return "0";

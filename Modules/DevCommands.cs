@@ -26,12 +26,14 @@ using Color = Discord.Color;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using MongoDB.Bson.Serialization;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
 
 namespace FinBot.Modules
 {
     public class DevCommands : ModuleBase<ShardedCommandContext> //Dev commands hidden from regular users
     {
-        private readonly DiscordShardedClient _client;
+        public DiscordShardedClient _client;
 
         public DevCommands(IServiceProvider service)
         {
@@ -181,6 +183,25 @@ namespace FinBot.Modules
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
                 ulong _id = Context.Guild.Id;
                 collection.DeleteOne(Builders<BsonDocument>.Filter.Eq("_id", _id));
+            }
+        }
+
+        [Command("EnBotClientCommands")]
+        public async Task EnBotClientCommands(string tof)
+        {
+            if (Global.IsDev(Context.User))
+            {
+                if (tof == "true")
+                {
+                    Global.clientCommands = true;
+                    await Context.Message.ReplyAsync($"Success, clientCommands set to {Global.clientCommands}");
+                }
+
+                else
+                {
+                    Global.clientCommands = false;
+                    await Context.Message.ReplyAsync($"Success, clientCommands set to {Global.clientCommands}");
+                }
             }
         }
     }

@@ -33,7 +33,7 @@ namespace FinBot.Modules
 {
     public class Commands : ModuleBase<ShardedCommandContext>
     {
-        [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r")]
+        [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r", "subreddit")]
         public async Task Reddit([Remainder] string subreddit)
         {
             subreddit = subreddit.Replace(" ", "");
@@ -42,7 +42,7 @@ namespace FinBot.Modules
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
             RedditHandler data = JsonConvert.DeserializeObject<RedditHandler>(resp);
             Regex r = new Regex(@"https:\/\/i.redd.it\/(.*?)\.");
-            IEnumerable<Child> childs = data.Data.Children.Where(x => r.IsMatch(x.Data.Url.ToString()));
+            IEnumerable<Child> childs = data.Data.Children.Where(x => r.IsMatch(x.Data.Url.ToString())); //For some reason, this can still sometimes throw an exception. Not overly concerned since it doesn't cause any issues.
             SocketTextChannel Chan = Context.Message.Channel as SocketTextChannel;
             IDisposable tp = Context.Channel.EnterTypingState();
 
@@ -121,7 +121,7 @@ namespace FinBot.Modules
                     HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                     HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
                     string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                    Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\"");
+                    Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\""); //This is sometimes subject to change, so if all images aren't recognised, look here.
 
                     if (r.IsMatch(resp))
                     {
@@ -142,6 +142,7 @@ namespace FinBot.Modules
                 else
                 {
                     await Context.Message.ReplyAsync("invalid URL.");
+                    tp.Dispose();
                 }
             }
 
@@ -152,7 +153,7 @@ namespace FinBot.Modules
                 HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                 HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
                 string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\"");
+                Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\""); //This is sometimes subject to change, so if all images aren't recognised, look here.
 
                 if (r.IsMatch(resp))
                 {
@@ -300,7 +301,7 @@ namespace FinBot.Modules
                     user = Context.Message.Author;
                 }
 
-                SocketGuildUser SGU = (SocketGuildUser)user;
+                SocketGuildUser SGU = (SocketGuildUser)user; //Convert to SocketGuildUser to get more user options, such as nickname.
                 string nickState = "";
                 string ClientError = "None(offline)";
 
@@ -316,8 +317,8 @@ namespace FinBot.Modules
 
                 await Context.Channel.TriggerTypingAsync();
                 EmbedBuilder eb = new EmbedBuilder();
-                eb.AddField("User name", user);
-                eb.AddField("Nickname?", nickState == "" ? "None" : nickState);
+                eb.AddField("Username", user);
+                _ = nickState == "" ? null : eb.AddField("Nickname", nickState);
                 eb.AddField("ID:", $"{user.Id}");
                 eb.AddField("Status", user.Status);
                 eb.AddField("Active clients", string.IsNullOrEmpty(string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString()))) || user.IsBot ? ClientError : string.Join(separator: ", ", values: user.ActiveClients.ToList().Select(r => r.ToString())));
@@ -327,8 +328,6 @@ namespace FinBot.Modules
                 _ = eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{string.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
                 eb.WithAuthor(SGU);
                 eb.WithColor(Color.DarkPurple);
-                eb.WithTitle($"{user.Username}");
-                eb.WithDescription($"Heres some stats for {user} <3");
                 eb.WithCurrentTimestamp();
                 await Context.Message.ReplyAsync("", false, eb.Build());
             }
@@ -358,6 +357,7 @@ namespace FinBot.Modules
                 "Tier3" => "Tier 3",
                 _ => "None",
             };
+
             EmbedBuilder eb = new EmbedBuilder()
             {
                 Title = "Serverinfo",
@@ -415,9 +415,9 @@ namespace FinBot.Modules
 
             else
             {
-                string[] answers = { "As I see it, yes.", "Ask again later.", "It is certain.", "It is decidedly so.", "Don't count on it.", "Better not tell you now.", "Concentrate and ask again.", " Cannot predict now.",
-                "Most likely.", "My reply is no", "Yes.", "You may rely on it.", "Yes - definitely.", "Very doubtful.", "Without a doubt.", " My sources say no.", " Outlook not so good.", "Outlook good.", "Reply hazy, try again",
-                "Signs point to yes"};
+                string[] answers = { "As I see it, yes.", "Ask again later.", "It is certain.", "It is decidedly so.", "Don't count on it.", "Better not tell you now.", "Concentrate and ask again.", 
+                    "Cannot predict now.", "Most likely.", "My reply is no.", "Yes.", "You may rely on it.", "Yes - definitely.", "Very doubtful.", "Without a doubt.", " My sources say no.", 
+                    "Outlook not so good.", "Outlook good.", "Reply hazy, try again.", "Signs point to yes."};
                 Random rand = new Random();
                 int index = rand.Next(answers.Length);
                 await Context.Message.ReplyAsync(answers[index]);
@@ -498,21 +498,73 @@ namespace FinBot.Modules
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
         {
-            IDisposable tp = Context.Channel.EnterTypingState();
+            //string content = await CheckEmbedContent(text, Context);
+
+            //await ReplyAsync(content);
+
+            await Context.Channel.TriggerTypingAsync();
+
+            if (Context.Message.MentionedUsers.Any() || Context.Message.MentionedRoles.Any() || Context.Message.MentionedEveryone)
+            {
+                await Context.Message.Channel.SendMessageAsync("Sorry, but you can't mention people");
+                return;
+            }
+
+            //if (content == "")
+            //{
+            //    await Context.Message.ReplyAsync("Sorry, but your content was not suitable to embed, please try again with suitable text.");
+            //    return;
+            //}
 
             if (text.Contains(","))
             {
                 string[] result = text.Split(',');
                 await Context.Message.ReplyAsync("", false, Global.EmbedMessage(result[0], result[1]).Build());
-                tp.Dispose();
             }
 
             else
             {
                 await Context.Message.ReplyAsync("", false, Global.EmbedMessage(text).Build());
-                tp.Dispose();
             }
         }
+
+        //public async Task<string> CheckEmbedContent(string text, SocketCommandContext context)
+        //{
+        //    string final = text.ToLower();
+        //    final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-@])", "");
+        //    final = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
+
+        //    if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
+        //    {
+        //        final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
+        //    }
+
+        //    MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+        //    IMongoDatabase database = mongoClient.GetDatabase("finlay");
+        //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+        //    ulong _id = context.Guild.Id;
+        //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+        //    string itemVal = item?.GetValue("blacklistedterms").ToJson();
+
+        //    if (itemVal != null)
+        //    {
+        //        List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+        //        Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+        //        string message = final;
+
+        //        foreach (KeyValuePair<string, string> x in Global.leetRules)
+        //        {
+        //            message = message.Replace(x.Key, x.Value);
+        //        }
+
+        //        if (re.IsMatch(message))
+        //        {
+        //            final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
+        //        }
+        //    }
+
+        //    return final;
+        //}
 
         [Command("translate"), Summary("Translates inputted text to English"), Remarks("(PREFIX)translate <text>"), Alias("t", "trans")]
         public async Task Translate([Remainder] string translate)

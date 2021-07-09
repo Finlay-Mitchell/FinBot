@@ -37,7 +37,7 @@ namespace FinBot
 
         public async Task RunBotAsync()
         {
-            //states Intents, starts the client and adds singletons.
+            //states Intents, starts the client and configures singleton classes.
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
             Global.ReadConfig();
