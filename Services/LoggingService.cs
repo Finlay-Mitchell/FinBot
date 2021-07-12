@@ -248,7 +248,7 @@ namespace FinBot.Services
             }
         }
 
-        private async Task OnMessageDelete(Cacheable<IMessage, ulong> msg, ISocketMessageChannel arg2)
+        private async Task OnMessageDelete(Cacheable<IMessage, ulong> msg, Cacheable<IMessageChannel, ulong> arg2)
         {
             /*
              * Database consists of:
@@ -262,7 +262,7 @@ namespace FinBot.Services
             try
             {
                 SocketUserMessage author = (SocketUserMessage)await msg.GetOrDownloadAsync();
-                SocketGuildChannel sGC = (SocketGuildChannel)arg2;
+                SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
                 string messagecontent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
 
                 if (msg.HasValue)
@@ -336,7 +336,7 @@ namespace FinBot.Services
                         eb.WithCurrentTimestamp();
                         eb.WithColor(Color.Red);
                         eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
-                        await arg2.SendMessageAsync("", false, eb.Build());
+                        await author.Channel.SendMessageAsync("", false, eb.Build());
                         return;
                     }
 

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace FinBot.Handlers
 {
-    class CommandHandler : ModuleBase<SocketCommandContext>
+    class CommandHandler : ModuleBase<ShardedCommandContext>
     {
         private CommandService _commands;
         private DiscordShardedClient _client;
@@ -38,7 +38,7 @@ namespace FinBot.Handlers
             SocketUser currUser = _client.GetUser(_client.CurrentUser.Id);
             SocketUser execUser = _client.GetUser(message.Author.Id);
 
-            if (message.Source != MessageSource.User && execUser != currUser)
+            if (message.Source != MessageSource.User && execUser != currUser && (!message.Content.StartsWith(Global.clientPrefix)))
             {
                 return;
             }
@@ -48,10 +48,11 @@ namespace FinBot.Handlers
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
-                if (execUser == currUser && message.HasStringPrefix("fbd->", ref argPos) && Global.clientCommands == true)
+                if (execUser == currUser && message.HasStringPrefix(Global.clientPrefix, ref argPos) && Global.clientCommands == true)
                 {
                     IResult devres = await _commands.ExecuteAsync(context, argPos, null, MultiMatchHandling.Best);
-                    await LogCommandUsage(context, devres); 
+                    await LogCommandUsage(context, devres);
+                    return;
                 }
 
                 return;

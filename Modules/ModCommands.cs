@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using FinBot.Handlers;
 using FinBot.Services;
@@ -17,13 +16,22 @@ using Newtonsoft.Json;
 
 namespace FinBot.Modules
 {
-    public class ModCommands : ModuleBase<SocketCommandContext>
+    public class ModCommands : ModuleBase<ShardedCommandContext>
     {
-        public readonly DiscordShardedClient _client;
+        private DiscordShardedClient _client;
 
-        public ModCommands(IServiceProvider service)
+        public ModCommands(IServiceProvider services)
         {
-            _client = service.GetRequiredService<DiscordShardedClient>();
+            //Sometimes, when using a bot-initiated command, it throws an exception that there's no service for DiscordShardedClient, this works around that and allows it to work.
+            try
+            {
+                _client = services.GetRequiredService<DiscordShardedClient>();
+            }
+
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
         }
 
         [Command("clear"), Summary("clears a specified amount of messages from the chat"), Remarks("(PREFIX) clear<amount>"), Alias("purge", "clr")]
@@ -1372,16 +1380,29 @@ namespace FinBot.Modules
                 }
 
                 BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                int items = 0;
 
                 try
                 {
                     string itemVal = guild?.GetValue("blacklistedterms").ToJson();
                     List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    items = stringArray.Count();
                     Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
                     if (re.IsMatch(phrase))
                     {
                         collection.UpdateMany(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Pull("blacklistedterms", phrase));
+                    }
+
+                    else
+                    {
+                        EmbedBuilder errembed = new EmbedBuilder();
+                        errembed.WithTitle("Error");
+                        errembed.WithDescription("This word is not included in the censor list!");
+                        errembed.WithColor(Color.Red);
+                        errembed.WithAuthor(Context.Message.Author);
+                        await Context.Message.ReplyAsync("", false, errembed.Build());
+                        return;
                     }
                 }
 
@@ -1394,6 +1415,66 @@ namespace FinBot.Modules
                 embed.WithAuthor(Context.Message.Author);
                 embed.WithCurrentTimestamp();
                 await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
+
+                if(items == 1)
+                {
+                    collection.UpdateMany(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Unset("blacklistedterms"));
+                }
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = Context.User.GetAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
+            }
+        }
+
+        [Command("getcensors"), Summary("Gets the list of censored terms in a guild."), Remarks("(PREFIX)getcensors"), Alias("censors", "getguildcensors", "censoredlist", "censoredterms", "getcensoredterms", "censored")]
+        public async Task GetCensoredTerms()
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageChannels)
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument data = await MongoHandler.FindById(collection, _id);
+                string blacklistedItems = "";
+
+                try
+                {
+                    blacklistedItems += $"{data.GetElement("blacklistedterms").Value}";
+                    EmbedBuilder embed = new EmbedBuilder();
+                    embed.WithTitle("Guild blacklist!");
+                    embed.AddField("Items:", $"{Regex.Replace(blacklistedItems, @"[\]\[]", "")}");
+                    embed.WithColor(Color.Green);
+                    embed.WithAuthor(Context.Message.Author);
+                    embed.WithCurrentTimestamp();
+                    await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
+                }
+
+                catch (KeyNotFoundException)
+                {
+                    EmbedBuilder errembed = new EmbedBuilder();
+                    errembed.WithTitle("Error");
+                    errembed.WithDescription("There are no items in the censor list!");
+                    errembed.WithColor(Color.Red);
+                    errembed.WithAuthor(Context.Message.Author);
+                    await Context.Message.ReplyAsync("", false, errembed.Build());
+                    return;
+                }
             }
 
             else

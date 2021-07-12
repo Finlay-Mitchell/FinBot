@@ -39,6 +39,7 @@ namespace FinBot
 
         public static string Mongoconnstr { get; set; }
         public static string StatusPageAPIKey { get; set; }
+        public static string clientPrefix { get; set; }
 
 
         private static readonly string ConfigPath = $"{Environment.CurrentDirectory}/Data/Config.json";
@@ -47,11 +48,12 @@ namespace FinBot
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public static List<IEmote> reactions = new List<IEmote>() { new Emoji("✅"), new Emoji("❌") };
         public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata" }; // These are hidden from being shown in the help command in HelpHandler.cs
-        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235, 230778630597246983 }; // Listed developer Ids
+        public static List<ulong> DevUIDs = new List<ulong> { 305797476290527235 }; // Listed developer Ids
         public static string LeetsPath = $"{Environment.CurrentDirectory}/Data/LeetRules.txt";
         public static Dictionary<string, string> leetRules = LoadLeetRules();
         public static bool clientCommands { get; set; }
-            
+        public static ulong clientId = 730015197980262424;
+
         public static void ReadConfig()
         {
             JsonItems data = JsonConvert.DeserializeObject<JsonItems>(File.ReadAllText(ConfigPath));
@@ -75,6 +77,7 @@ namespace FinBot
             SupportGuildId = data.SupportGuildId;
             Mongoconnstr = data.Mongoconnstr;
             StatusPageAPIKey = data.StatusPageAPIKey;
+            clientPrefix = data.clientPrefix;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}";
         }
@@ -100,6 +103,7 @@ namespace FinBot
             public ulong SupportGuildId { get; set; }
             public string Mongoconnstr { get; set; }
             public string StatusPageAPIKey { get; set; }
+            public string clientPrefix { get; set; }
         }
 
         public static void ConsoleLog(string ConsoleMessage, ConsoleColor FColor = ConsoleColor.Green, ConsoleColor BColor = ConsoleColor.Black)
@@ -128,8 +132,17 @@ namespace FinBot
 
         public static bool IsDev(SocketUser user)
         {
-            //checks if user is a listed bot developer
-            return DevUIDs.Contains(user.Id);
+            if (clientCommands == true)
+            {
+                //checks if user is listed bot developer or bot with client commands enabled
+                return DevUIDs.Contains(user.Id) || user.Id == clientId;
+            }
+
+            else
+            {
+                //checks if user is a listed bot developer
+                return DevUIDs.Contains(user.Id);
+            }
         }
 
         public static async Task ModifyMessage(IUserMessage baseMessage, string newMessage)
@@ -147,32 +160,30 @@ namespace FinBot
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
             ////gets the prefix for the guild in question - add Dictionary support for first prefix test.
-            //try
-            //{
-            //    MongoClient MongoClient = new MongoClient(Mongoconnstr);
-            //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
-            //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-            //    ulong _id = context.Guild.Id;
-            //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-            //    string itemVal = item?.GetValue("prefix").ToString();
+            try
+            {
+                MongoClient MongoClient = new MongoClient(Mongoconnstr);
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("prefix").ToString();
 
-            //    if (itemVal != null)
-            //    {
-            //        return itemVal;
-            //    }
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
 
-            //    else
-            //    {
-            //        return Prefix;
-            //    }
-            //}
+                else
+                {
+                    return Prefix;
+                }
+            }
 
-            //catch
-            //{
-            //    return Prefix;
-            //}
-
-            return "dev.";
+            catch
+            {
+                return Prefix;
+            }
         }
 
         public static async Task<string> DetermineLevel(SocketGuild guild)

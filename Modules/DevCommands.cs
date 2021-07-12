@@ -35,9 +35,17 @@ namespace FinBot.Modules
     {
         public DiscordShardedClient _client;
 
-        public DevCommands(IServiceProvider service)
+        public DevCommands(IServiceProvider services)
         {
-            _client = service.GetRequiredService<DiscordShardedClient>();
+            try
+            {
+                _client = services.GetRequiredService<DiscordShardedClient>();
+            }
+
+            catch (Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
         }
 
         //[Command("testing")]
@@ -150,8 +158,17 @@ namespace FinBot.Modules
                     IMongoDatabase database = mongoClient.GetDatabase("finlay");
                     IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
                     ulong _id = Context.Guild.Id;
-                    BsonDocument data = await MongoHandler.FindById(collection, _id);
-                    await ReplyAsync(data.ToString());
+
+                    try
+                    {
+                        BsonDocument data = await MongoHandler.FindById(collection, _id);
+                        await ReplyAsync(data.ToString());
+                    }
+
+                    catch (KeyNotFoundException)
+                    {
+                        await ReplyAsync("No data was found for guild data.");
+                    }
                 }
 
                 else
@@ -163,9 +180,17 @@ namespace FinBot.Modules
                     BsonDocument data = await MongoHandler.FindById(collection, _id);
                     string results = "";
 
-                    for(int i = 0; i < inputOptions.Length; i++)
+                    for (int i = 0; i < inputOptions.Length; i++)
                     {
-                        results += $"{data.GetElement(inputOptions[i])}\n\n";
+                        try
+                        {
+                            results += $"{data.GetElement(inputOptions[i])}\n\n";
+                        }
+
+                        catch (KeyNotFoundException)
+                        {
+                            results += $"No data found for {inputOptions[i]}.\n\n";
+                        }
                     }
 
                     await ReplyAsync(results);

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FinBot.Modules
 {
-    public class ConfigCommands : ModuleBase<ShardedCommandContext> //Guild configuration python boilerplate code
+    public class ConfigCommands : ModuleBase<ShardedCommandContext>
     {
         [Command("prefix"), Summary("Sets the new bot prefix for the current guild"), Remarks("(PREFIX)prefix <new_prefix>")]
         public async Task prefix([Remainder] string new_prefix)

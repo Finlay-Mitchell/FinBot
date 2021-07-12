@@ -28,10 +28,10 @@ namespace FinBot.Services
                 throw new Exception("Token missing from config.json! Please enter your token there (root directory)");
             }
 
+            Global.clientCommands = false;
             await _discord.LoginAsync(TokenType.Bot, Global.Token);
             await _discord.StartAsync();
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-            Global.clientCommands = false;
         }
     }
 }
