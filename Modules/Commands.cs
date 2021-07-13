@@ -264,7 +264,7 @@ namespace FinBot.Modules
             string final = text.ToLower();
             final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}", "");
             final = Regex.Replace(final, $"{Global.clientPrefix}", "");
-            final = Regex.Replace(final, @"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)*(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)", ""); //Designing this regex was painful to say the least.
+            final = Regex.Replace(final, Global.URIAndIpRegex, "");
 
             if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
             {
@@ -542,7 +542,7 @@ namespace FinBot.Modules
             string final = text.ToLower();
             final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}", "");
             final = Regex.Replace(final, $"{Global.clientPrefix}", "");
-            final = Regex.Replace(final, @"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)*(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)", ""); //Designing this regex was painful to say the least.
+            final = Regex.Replace(final, Global.URIAndIpRegex, ""); 
 
             if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
             {

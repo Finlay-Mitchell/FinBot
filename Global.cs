@@ -144,6 +144,12 @@ namespace FinBot
         /// Command errors which won't print to Discord when called.
         /// </summary>
         public static List<CommandError> ErorrsToIgnore = new List<CommandError> { CommandError.UnknownCommand, CommandError.BadArgCount };
+        /// <summary>
+        /// A regular expression to search a string for any form of URI/Ip address.
+        /// Designing this regex was painful and yes, I am undergoing therapy.
+        /// </summary>
+        public static string URIAndIpRegex = @"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))[a-zA-Z._]|(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*)@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])";
+        //OLD ONE IN CASE IT GOES ALL WRONG: ((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))
 
         /// <summary>
         /// This reads data from json.config and assigns the values to the variables labeled above.

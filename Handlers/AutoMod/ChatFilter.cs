@@ -159,7 +159,7 @@ namespace FinBot.Handlers.AutoMod
 
                 catch { return; }
 
-                Regex r = new Regex(@"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)*(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)"); //Regex I painfully developed to search for all forms of links and addresses.
+                Regex r = new Regex(Global.URIAndIpRegex);
 
                 if (r.IsMatch(arg.ToString()))
                 {
