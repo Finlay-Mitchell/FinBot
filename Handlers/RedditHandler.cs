@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// The Reddit data separated into different sections(classes).
+/// </summary>
 namespace FinBot.Handlers
 {
     public partial class RedditHandler

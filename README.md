@@ -4,7 +4,7 @@ An advanced Discord utility/commands bot with:
 - mod logging
 - levelling with ability to turn on and off
 - chatbot/image guessing
-- customisable behaviour 
+- customizable behavior 
   * Custom guild prefix
   * Cusrom welcome messages
   * ability to turn on and off commands (in the works)
@@ -52,7 +52,7 @@ For this project, you will need to install the following libraries:
  * mee6
  * YoutubeDL
  * motor
- * mysql
+ * mySql
 
 # Node.js
 ### Packages
@@ -69,7 +69,7 @@ If you encounter an error, use this table of contents to try help you:
 
 | Error                 | Fix                                      |
 |-----------------------|------------------------------------------|
-| Pip isn't recognised? | Try: `py -3 -m pip install -U <package>` |
+| Pip isn't recognized? | Try: `py -3 -m pip install -U <package>` |
 | Unknown package?      | Do: `pip install -u <package name>`      |
 | Out of date package?  | Do: `pip install <package> -U`           |
 | Rate limited(Error code 429)?         | You're sending too many requests. Wait a few minutes and try again |
@@ -83,5 +83,10 @@ Check License.md for license information.
 # Other notes
 Thomas is a walking talking God.
 
-The YouTube searching alogrithm is in development still. It should work completely fine without any/many miss-named videos.
+The YouTube searching algorithm is in development still. It should work completely fine without any/many miss-named videos.
 This also requires ffmpeg to run for python and C#, and opus/libsodum for C#
+
+#ToDo:
+ - Add a dictionary for the first few hundred guild Ids to potentially reduce time taken to execute command, this being because a dictionary is faster than reading from a MongoDB database - impact on non-stored guilds is negligible.
+ - Contain the MySql connection string as done with the MongoDB connection string.
+ - Redesign poll database implementation.

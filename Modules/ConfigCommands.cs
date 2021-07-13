@@ -70,12 +70,25 @@ namespace FinBot.Modules
 
         [Command("setwelcomechannel"), Summary("Sets the channel where welcome messages for new members/leaving members are sent"),
             Remarks("(PREFIX)setwelcomechannel <channel>"), Alias("set_welcome_channel", "welcomechannel", "welcome_channel", "welcomemessages", "welcome_messages")]
-        public async Task SetWelcomeChannel([Remainder] SocketTextChannel channel)
+        public async Task SetWelcomeChannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
             if (GuildUser.GuildPermissions.ManageChannels)
             {
+                if(channel.GetType() == typeof(SocketVoiceChannel))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithTitle("Error setting welcome channel");
+                    eb.WithDescription($"The welcome channel type must be a text channel!");
+                    eb.WithColor(Color.Red);
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+
+                    return;
+                }
+
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
@@ -130,12 +143,26 @@ namespace FinBot.Modules
 
         [Command("membercountchannel"), Summary("Sets the membercount channel"), Remarks("(PREFIX)membercountchannel <voice_channel>"),
             Alias("setmembercountchannel", "membercount_channel", "set_membercount_channel", "setmembercount")]
-        public async Task SetMembercountChannel([Remainder] SocketVoiceChannel channel)
+        public async Task SetMembercountChannel([Remainder] SocketChannel parsedChannel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
             if (GuildUser.GuildPermissions.ManageChannels)
             {
+                if (parsedChannel.GetType() != typeof(SocketVoiceChannel))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithTitle("Error setting membercount channel");
+                    eb.WithDescription($"You must set the membercount channel to a voice channel!");
+                    eb.WithColor(Color.Red);
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+                    return;
+                }
+
+                SocketVoiceChannel channel = (SocketVoiceChannel)parsedChannel;
+
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
@@ -257,13 +284,26 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("levellingchannel"), Summary("Sets the channel where users level up messages are setn"), Remarks("(PREFIX)levellingchannel <channel>"), Alias("levelling_channel")]
-        public async Task LevellingChannel([Remainder] SocketTextChannel channel)
+        [Command("levellingchannel"), Summary("Sets the channel where users level up messages are setn"), Remarks("(PREFIX)levellingchannel <channel>"), Alias("levelling_channel", "levelingchannel", "leveling_channel")]
+        public async Task LevellingChannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
             if (GuildUser.GuildPermissions.ManageChannels)
             {
+                if (channel.GetType() == typeof(SocketVoiceChannel))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithTitle("Error setting levelling channel");
+                    eb.WithDescription($"The levelling channel type must be a text channel!");
+                    eb.WithColor(Color.Red);
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+
+                    return;
+                }
+
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
@@ -315,13 +355,26 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("modchannel"), Summary("sets the log channel for all user infractions"), Remarks("(PREFIX)modchannel <text channel>")]
-        public async Task Modchannel([Remainder] SocketTextChannel channel)
+        [Command("modchannel"), Summary("sets the log channel for all user infractions"), Remarks("(PREFIX)modchannel <text_channel>"), Alias("modlogchannel", "mod_channel", "mod_log_channel", "moderatorlogchannel", "loggingchannel", "logchannel")]
+        public async Task Modchannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
             if (GuildUser.GuildPermissions.ManageChannels)
             {
+                if (channel.GetType() == typeof(SocketVoiceChannel))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithTitle("Error setting moderation log channel channel");
+                    eb.WithDescription($"The moderation log channel type must be a text channel!");
+                    eb.WithColor(Color.Red);
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+
+                    return;
+                }
+
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");

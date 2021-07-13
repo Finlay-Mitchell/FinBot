@@ -27,6 +27,10 @@ namespace FinBot.Handlers
             _client.UserJoined += CheckForMutedAsync;
         }
 
+        /// <summary>
+        /// Check whether the user who joined was previously muted during the time where they left the guild, if true, re-add the muted role.
+        /// </summary>
+        /// <param name="arg">The user who joined the guild.</param>
         private async Task CheckForMutedAsync(SocketGuildUser arg)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
@@ -56,10 +60,14 @@ namespace FinBot.Handlers
             }
         }
 
+        /// <summary>
+        /// Get the welcome channel where the announcements for users joining/leaving are sent.
+        /// </summary>
+        /// <param name="guild">The guild to get the edata for.</param>
+        /// <returns>A string containing the channel id.</returns>
         public async Task<string> GetWelcomeChannel(SocketGuild guild)
         {
-            //This tries to get the welcome channel ID from the database, if not found, defaults to 0
-
+            //If no data found, defaults to 0.
             try
             {
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
@@ -85,6 +93,10 @@ namespace FinBot.Handlers
             }
         }
 
+        /// <summary>
+        /// Sends a message to the welcome/leave channel, if specified, when the user leaves.
+        /// </summary>
+        /// <param name="arg">The user who left the guild.</param>
         public async Task HandleGoodbyeAsync(SocketGuildUser arg)
         {
             try
@@ -134,6 +146,11 @@ namespace FinBot.Handlers
             }
         }
 
+        /// <summary>
+        /// Sends a message to the welcome/leave channel, if specified, when the user joins.
+        /// </summary>
+        /// <param name="arg">The user who joined the guild.</param>
+        /// <returns></returns>
         public async Task HandleWelcomeAsync(SocketGuildUser arg)
         {
             try

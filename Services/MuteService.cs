@@ -31,6 +31,11 @@ namespace FinBot.Services
             t.Start();
         }
 
+        /// <summary>
+        /// Handles the unmuting of a user.
+        /// </summary>
+        /// <param name="sender">Timer-generated variable.</param>
+        /// <param name="e">Timer-generated variable.</param>
         public async void UnmuteAsync(object sender, ElapsedEventArgs e)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
@@ -91,6 +96,16 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Inserts/removes data from the mutes database.
+        /// </summary>
+        /// <param name="type">The option for what kind of interaction is made with the database.</param>
+        /// <param name="conn">The connection string to the database.</param>
+        /// <param name="userId">The id of the user who was muted/unmuted.</param>
+        /// <param name="guildId">The guild id of where the mute/unmute took place.</param>
+        /// <param name="nowTimestamp">The unix timestamp of the current time.</param>
+        /// <param name="reminderTimestamp">The unix timestamp of when the user is to be unmuted.</param>
+        /// <param name="chan">The channel where the user was muted.</param>
         public async static Task InsertToDBAsync(uint type, MySqlConnection conn, ulong userId, ulong guildId, long nowTimestamp = 0, long reminderTimestamp = 0, SocketTextChannel chan = null)
         {
             try
@@ -131,6 +146,16 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Handles calling the database-setting function to mute a user.
+        /// </summary>
+        /// <param name="guild">The guild where the user was muted.</param>
+        /// <param name="user">The user who has been muted.</param>
+        /// <param name="chan">The channel where the user was muted.</param>
+        /// <param name="timeSet">The current time.</param>
+        /// <param name="duration">How long they're to be muted for.</param>
+        /// <param name="message">The reason they were muted.</param>
+        /// <param name="context">Context of the mute message.</param>
         public async static Task SetMute(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message, ShardedCommandContext context)
         {
             long currentTime = Global.ConvertToTimestamp(timeSet);
@@ -164,7 +189,11 @@ namespace FinBot.Services
             }
         }
 
-
+        /// <summary>
+        /// Converts a string of how long to mute a user for into seconds, e.g: "1h" will return "3600";
+        /// </summary>
+        /// <param name="time">The duration for how long to mute the user for.</param>
+        /// <returns>Returns the duration in seconds.</returns>
         public static Task<string> Parse_time(string time)
         {
             time = "time " + time;

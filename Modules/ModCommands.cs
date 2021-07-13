@@ -156,6 +156,16 @@ namespace FinBot.Modules
             }
         }
 
+        /// <summary>
+        /// Writes a query to the moderation log database.
+        /// </summary>
+        /// <param name="conn">The connection string.</param>
+        /// <param name="userId">The id of the user of whom has earned the infraction.</param>
+        /// <param name="action">The action taken towards the user.</param>
+        /// <param name="ModeratorId">The id of the moderator who gave the user the infraction.</param>
+        /// <param name="reason">The reason for the infraction.</param>
+        /// <param name="GuildId">The id of the guild that the user earned their infraction in.</param>
+        /// <param name="indx">The option for what kind of interaction is made with the database.</param>
         public static void AddToModlogs(MySqlConnection conn, ulong userId, Action action, ulong ModeratorId, string reason, ulong GuildId, int indx)
         {
             try
@@ -172,6 +182,14 @@ namespace FinBot.Modules
             }
         }
 
+        /// <summary>
+        /// Makes a DELETE query from the database.
+        /// </summary>
+        /// <param name="type">The option for what kind of interaction is made with the database.</param>
+        /// <param name="conn">The connection string.</param>
+        /// <param name="guildId">The guild id of which the request is being made from.</param>
+        /// <param name="id">The id of the user in question.</param>
+        /// <param name="number">The index of the infraction being removed.</param>
         public void DeleteFromModlogs(uint type, MySqlConnection conn, ulong guildId, ulong id, int number = 0)
         {
             try
@@ -195,7 +213,15 @@ namespace FinBot.Modules
             }
         }
 
-        public async void AddModlogs(ulong userID, Action action, ulong ModeratorID, string reason, ulong GuildId)
+        /// <summary>
+        /// Where a users infraction is dealt with.
+        /// </summary>
+        /// <param name="userId">The id of the user whom earned the infraction.</param>
+        /// <param name="action">The action taken towards the user.</param>
+        /// <param name="ModeratorId">The id of the moderator who gave the user the infraction.</param>
+        /// <param name="reason">The reason for the infraction.</param>
+        /// <param name="GuildId">The id of the guild where the infraction took place.</param>
+        public async void AddModlogs(ulong userId, Action action, ulong ModeratorId, string reason, ulong GuildId)
         {
             try
             {
@@ -205,7 +231,7 @@ namespace FinBot.Modules
                 {
                     MySqlConnection queryConn = new MySqlConnection(Global.MySQL.ConnStr);
                     conn.Open();
-                    MySqlCommand query = new MySqlCommand($"SELECT * FROM modlogs WHERE guildId = {GuildId} AND userId = {userID}", conn);
+                    MySqlCommand query = new MySqlCommand($"SELECT * FROM modlogs WHERE guildId = {GuildId} AND userId = {userId}", conn);
                     using MySqlDataReader rdr = query.ExecuteReader();
                     int indx = 0;
 
@@ -233,7 +259,7 @@ namespace FinBot.Modules
 //                                return;
 //                            }
 
-//                            SocketUser user = guild.GetUser(userID);
+//                            SocketUser user = guild.GetUser(userId);
 //                            SocketTextChannel logchannel = guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
 //                            EmbedBuilder eb = new EmbedBuilder();
 //                            eb.WithTitle($"{user} automuted");
@@ -256,7 +282,7 @@ namespace FinBot.Modules
 
                     if (indx % 5 == 0)
                     {
-                        await AddMuteAsync(userID, GuildId);
+                        await AddMuteAsync(userId, GuildId);
                         SocketGuild guild = _client.GetGuild(GuildId);
                         string modlogchannel = await Global.GetModLogChannel(guild);
 
@@ -265,7 +291,7 @@ namespace FinBot.Modules
                             return;
                         }
 
-                        SocketUser user = guild.GetUser(userID);
+                        SocketUser user = guild.GetUser(userId);
                         SocketTextChannel logchannel = guild.GetTextChannel(Convert.ToUInt64(modlogchannel));
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.WithTitle($"{user} automuted");
@@ -283,7 +309,7 @@ namespace FinBot.Modules
                     }
 
                     queryConn.Open();
-                    AddToModlogs(queryConn, userID, action, ModeratorID, reason, GuildId, indx);
+                    AddToModlogs(queryConn, userId, action, ModeratorId, reason, GuildId, indx);
                     queryConn.Close();
                 }
 
@@ -306,6 +332,10 @@ namespace FinBot.Modules
             }
         }
 
+
+        /// <summary>
+        /// An emum containing the different obtainable infractions.
+        /// </summary>
         public enum Action
         {
             Warned,
@@ -316,6 +346,11 @@ namespace FinBot.Modules
             TempMuted
         }
 
+        /// <summary>
+        /// Handles the mute of a user.
+        /// </summary>
+        /// <param name="userId">The id of the user to be muted.</param>
+        /// <param name="guildId">The id of the guild where the user has been muted from.</param>
         public async Task AddMuteAsync(ulong userId, ulong guildId)
         {
             SocketGuild guild = _client.GetGuild(guildId);
@@ -1387,6 +1422,7 @@ namespace FinBot.Modules
                     string itemVal = guild?.GetValue("blacklistedterms").ToJson();
                     List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
                     items = stringArray.Count();
+                    await ReplyAsync($"{items}");
                     Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
 
                     if (re.IsMatch(phrase))
@@ -1416,7 +1452,7 @@ namespace FinBot.Modules
                 embed.WithCurrentTimestamp();
                 await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
 
-                if(items == 1)
+                if (items >= 1) //This simply means that if there was 1 or less elements in the array at the time of counting, there will be 0 at this point so we can just remove the array to save storage & because it fixes lots of silly bugs with matching.
                 {
                     collection.UpdateMany(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Unset("blacklistedterms"));
                 }
@@ -1439,7 +1475,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("getcensors"), Summary("Gets the list of censored terms in a guild."), Remarks("(PREFIX)getcensors"), Alias("censors", "getguildcensors", "censoredlist", "censoredterms", "getcensoredterms", "censored")]
+        [Command("getcensors"), Summary("Gets the list of censored terms in a guild."), Remarks("(PREFIX)getcensors"), Alias("censors", "getguildcensors", "censoredlist", "censoredterms", "getcensoredterms", "censored", "censorlist", "censor_list")]
         public async Task GetCensoredTerms()
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);

@@ -9,6 +9,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
+/// <summary>
+/// The YouTube data separated into different sections(classes).
+/// </summary>
 namespace FinBot.Handlers
 {
     public class YouTubeModel
@@ -83,8 +86,16 @@ namespace FinBot.Handlers
         }
     }
 
+    /// <summary>
+    /// functions to search through the YouTube API and manipulate data.
+    /// </summary>
     public class YouTubeSearcher
     {
+        /// <summary>
+        /// Searches YouTube for a particular term.
+        /// </summary>
+        /// <param name="url">The search term for the YouTube request.</param>
+        /// <returns>The data from the search in a json format.</returns>
         public string getYouTubeApiRequest(string url)
         {
             string reponse = string.Empty;
@@ -99,6 +110,12 @@ namespace FinBot.Handlers
             return response;
         }
 
+        /// <summary>
+        /// Gets the latest video from a channel.
+        /// </summary>
+        /// <param name="id">Id of the YouTube channel..</param>
+        /// <param name="numVideos">The number of videos data to retrieve.</param>
+        /// <returns>Returns the URL of the video.</returns>
         public string getLatestVideoByID(string id, int numVideos = 1)
         {
             string videoURL = string.Empty;
@@ -108,6 +125,12 @@ namespace FinBot.Handlers
             return videoURL;
         }
 
+        /// <summary>
+        /// Gets a "random" video by a creator.
+        /// </summary>
+        /// <param name="id">Id of the YouTube channel.</param>
+        /// <param name="numVideos">The number of videos data to retrieve.</param>
+        /// <returns>Returns the URL of the video.</returns>
         public string getRandomVideoByID(string id, int numVideos = 50)
         {
             string videoURL = string.Empty;
@@ -119,7 +142,13 @@ namespace FinBot.Handlers
             return videoURL;
         }
 
-        public async Task<List<Google.Apis.YouTube.v3.Data.SearchResult>> SearchChannelsAsync(string keyword = "space", int maxResults = 5)
+        /// <summary>
+        /// Searches a channel for a keyword.
+        /// </summary>
+        /// <param name="keyword">The keyword to search the channel for.</param>
+        /// <param name="maxResults">The maximum number of results to retrieve.</param>
+        /// <returns></returns>
+        public async Task<List<SearchResult>> SearchChannelsAsync(string keyword = "space", int maxResults = 5)
         {
             YouTubeService youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {

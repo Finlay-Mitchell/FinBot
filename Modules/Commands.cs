@@ -242,7 +242,7 @@ namespace FinBot.Modules
 
             if (echo.Length != 0)
             {
-                await Context.Channel.SendMessageAsync(await SayTextAsync(string.Join(' ', echo), Context));
+                await Context.Channel.SendMessageAsync(await SayTextAsync(echo, Context));
                 return;
             }
 
@@ -253,42 +253,54 @@ namespace FinBot.Modules
             }
         }
 
+        /// <summary>
+        /// Checks and modifies the message parsed to become acceptable to be sent to that guild.
+        /// </summary>
+        /// <param name="text">The text to check and modify.</param>
+        /// <param name="context">The context for the message.</param>
+        /// <returns>A string for the suitable message.</returns>
         public async Task<string> SayTextAsync(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
-            final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-@])", "");
-            final = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
+            final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}", "");
+            final = Regex.Replace(final, $"{Global.clientPrefix}", "");
+            final = Regex.Replace(final, @"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)*(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)", ""); //Designing this regex was painful to say the least.
 
             if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
             {
                 final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
             }
 
-            MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-            IMongoDatabase database = mongoClient.GetDatabase("finlay");
-            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-            ulong _id = context.Guild.Id;
-            BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-            string itemVal = item?.GetValue("blacklistedterms").ToJson();
-
-            if (itemVal != null)
+            try
             {
-                List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
-                Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-                string message = final;
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("blacklistedterms").ToJson();
 
-                foreach (KeyValuePair<string, string> x in Global.leetRules)
+                if (itemVal != null)
                 {
-                    message = message.Replace(x.Key, x.Value);
-                }
+                    List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                    string message = final;
 
-                if (re.IsMatch(message))
-                {
-                    final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
+                    foreach (KeyValuePair<string, string> x in Global.leetRules)
+                    {
+                        message = message.Replace(x.Key, x.Value);
+                    }
+
+                    if (re.IsMatch(message))
+                    {
+                        final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
+                    }
                 }
-            }
 
                 return final;
+            }
+
+            catch { return final; }
         }
 
         [Command("userinfo"), Summary("shows information on a user"), Remarks("(PREFIX)userinfo || (PREFIX)userinfo <user>."), Alias("whois", "user", "info", "user-info")]
@@ -498,10 +510,7 @@ namespace FinBot.Modules
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
         public async Task CmdEmbedMessage([Remainder] string text = "")
         {
-            //string content = await CheckEmbedContent(text, Context);
-
-            //await ReplyAsync(content);
-
+            string content = await CheckEmbedContent(text, Context);
             await Context.Channel.TriggerTypingAsync();
 
             if (Context.Message.MentionedUsers.Any() || Context.Message.MentionedRoles.Any() || Context.Message.MentionedEveryone)
@@ -510,61 +519,67 @@ namespace FinBot.Modules
                 return;
             }
 
-            //if (content == "")
-            //{
-            //    await Context.Message.ReplyAsync("Sorry, but your content was not suitable to embed, please try again with suitable text.");
-            //    return;
-            //}
-
-            if (text.Contains(","))
+            if (content.Contains(","))
             {
-                string[] result = text.Split(',');
+                string[] result = content.Split(',');
                 await Context.Message.ReplyAsync("", false, Global.EmbedMessage(result[0], result[1]).Build());
             }
 
             else
             {
-                await Context.Message.ReplyAsync("", false, Global.EmbedMessage(text).Build());
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage(content).Build());
             }
         }
 
-        //public async Task<string> CheckEmbedContent(string text, SocketCommandContext context)
-        //{
-        //    string final = text.ToLower();
-        //    final = Regex.Replace(final, $"([{Global.DeterminePrefix(context).Result}-@])", "");
-        //    final = Regex.Replace(final, @"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?", "");
+        /// <summary>
+        /// Checks the embed content and makes it suitable for the guild.
+        /// </summary>
+        /// <param name="text">The text to parse in.</param>
+        /// <param name="context">The context for the command.</param>
+        /// <returns>A string of the valid text to send.</returns>
+        public async Task<string> CheckEmbedContent(string text, SocketCommandContext context)
+        {
+            string final = text.ToLower();
+            final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}", "");
+            final = Regex.Replace(final, $"{Global.clientPrefix}", "");
+            final = Regex.Replace(final, @"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)*(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)", ""); //Designing this regex was painful to say the least.
 
-        //    if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
-        //    {
-        //        final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
-        //    }
+            if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
+            {
+                final = "Invalid.";
+            }
 
-        //    MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-        //    IMongoDatabase database = mongoClient.GetDatabase("finlay");
-        //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-        //    ulong _id = context.Guild.Id;
-        //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-        //    string itemVal = item?.GetValue("blacklistedterms").ToJson();
+            try
+            {
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("blacklistedterms").ToJson();
 
-        //    if (itemVal != null)
-        //    {
-        //        List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
-        //        Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-        //        string message = final;
+                if (itemVal != null)
+                {
+                    List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                    string message = final;
 
-        //        foreach (KeyValuePair<string, string> x in Global.leetRules)
-        //        {
-        //            message = message.Replace(x.Key, x.Value);
-        //        }
+                    foreach (KeyValuePair<string, string> x in Global.leetRules)
+                    {
+                        message = message.Replace(x.Key, x.Value);
+                    }
 
-        //        if (re.IsMatch(message))
-        //        {
-        //            final = "Whoopsie daisy, my filter has filtered your text and it's returned an empty string, try again, with more sufficient text.";
-        //        }
-        //    }
+                    if (re.IsMatch(message))
+                    {
+                        final = "Invalid.";
+                    }
+                }
 
-        //    return final;
-        //}
+                return final;
+            }
+
+            catch { return final; }
+        }
 
         [Command("translate"), Summary("Translates inputted text to English"), Remarks("(PREFIX)translate <text>"), Alias("t", "trans")]
         public async Task Translate([Remainder] string translate)
@@ -646,6 +661,14 @@ namespace FinBot.Modules
             await WikiSearch(search, Context.Channel, Context.Message);
         }
 
+        /// <summary>
+        /// Searches Wikipedia and gathers results.
+        /// </summary>
+        /// <param name="search">The term to search Wikipedia for.</param>
+        /// <param name="channel">The text channel where the command was called from.</param>
+        /// <param name="msg">The message which executed the command.</param>
+        /// <param name="maxSearch">The maximum number of search results.</param>
+        /// <returns></returns>
         private async Task WikiSearch(string search, ISocketMessageChannel channel, SocketUserMessage msg, int maxSearch = 10)
         {
             await channel.TriggerTypingAsync();
@@ -1020,6 +1043,9 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
+        /// <summary>
+        /// Holds the data which features such as fact, trivia, catfact etc use in their API.
+        /// </summary>
         public class APIJsonItems
         {
             public string Answer { get; set; }
@@ -1274,6 +1300,12 @@ namespace FinBot.Modules
             }
         }
 
+        /// <summary>
+        /// Gets the users rank from the database.
+        /// </summary>
+        /// <param name="user">The user to get the rank for.</param>
+        /// <param name="guild">The guild to get the users rank for.</param>
+        /// <returns>An embed containing the users progress, level and XP.</returns>
         public Task<Embed> GetRankAsync(SocketUser user, ulong guild)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
@@ -1855,6 +1887,5 @@ namespace FinBot.Modules
         {
             return Task.CompletedTask;
         }
-
     }
 }

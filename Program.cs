@@ -14,9 +14,13 @@ namespace FinBot
 {
     class Program
     {
+        /// <summary>
+        /// This starts up the bot and sets the console up.
+        /// </summary>
+        /// <param name="args"></param>
         static void Main(string[] args)
         {
-            Console.Title = "Finbot";
+            Console.Title = "Finbot"; //Set the console title, because why not?
 
             while (true)
             {
@@ -35,12 +39,14 @@ namespace FinBot
             }
         }
 
+        /// <summary>
+        /// Handles the startup and configuration of the bot.
+        /// </summary>
         public async Task RunBotAsync()
         {
-            //states Intents, starts the client and configures singleton classes.
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
-            Global.ReadConfig();
+            Global.ReadConfig(); //Reads json.config file, this setting lots of our global members.
             IServiceCollection services = new ServiceCollection()
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
@@ -84,18 +90,20 @@ namespace FinBot
                 .AddSingleton<ReminderService>()
                 .AddSingleton<MuteService>()
                 .AddSingleton<LoggingService>();
-
             ConfigureServices(services);
             ServiceProvider serviceProvider = services.BuildServiceProvider();
             serviceProvider.GetRequiredService<LoggingService>();
             await serviceProvider.GetRequiredService<StartupService>().StartAsync();
             serviceProvider.GetRequiredService<CommandHandler>();
-            await Task.Delay(-1);
+            await Task.Delay(-1); //This keeps our application running.
         }
 
+        /// <summary>
+        /// Configures the services for the bot.
+        /// </summary>
+        /// <param name="services">The services.</param>
         private static void ConfigureServices(IServiceCollection services)
         {
-            //configure levelling type.
             //Read level type from config.json
             services.AddLogging(configure => configure.AddSerilog());
             Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Error;

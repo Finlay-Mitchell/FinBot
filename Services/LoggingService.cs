@@ -34,6 +34,15 @@ namespace FinBot.Services
             _discord.MessageReceived += OnMessageReceived;
         }
 
+        /// <summary>
+        /// Appends data to the Levels database.
+        /// </summary>
+        /// <param name="type">The option for what kind of interaction is made with the database.</param>
+        /// <param name="conn">The connection string to the database.</param>
+        /// <param name="arg">The users message.</param>
+        /// <param name="level">The level for the user.</param>
+        /// <param name="XP">The XP for the user.</param>
+        /// <param name="totalXP">The total XP for the user.</param>
         private async Task AddToDatabase(uint type, MySqlConnection conn, SocketMessage arg, long level, long XP, long totalXP)
         {
             try
@@ -61,6 +70,15 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Adds data to the snipelogs database.
+        /// </summary>
+        /// <param name="type">The option for what kind of interaction is made with the database.</param>
+        /// <param name="conn">The connection string to the database.</param>
+        /// <param name="content">The content to append to the database.</param>
+        /// <param name="message">The message that we're appending.</param>
+        /// <param name="socketGuildChannel">The channel where the message was deleted.</param>
+        /// <returns></returns>
         private async Task AddToSnipe(uint type, MySqlConnection conn, string content, SocketUserMessage message, SocketGuildChannel socketGuildChannel)
         {
             try
@@ -92,6 +110,11 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Gets the level-up notification channel.
+        /// </summary>
+        /// <param name="guild">The guild to get the channel for.</param>
+        /// <returns>A string containing the channel id.</returns>
         public async Task<string> GetLevellingChannel(SocketGuild guild)
         {
             try
@@ -119,6 +142,10 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Handles levelling and XP for users when they send a message.
+        /// </summary>
+        /// <param name="arg">The message which was sent.</param>
         public async Task OnMessageReceived(SocketMessage arg)
         {
             if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
@@ -248,6 +275,11 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Handles building the snipe embed for a deleted message & logs it to the console.
+        /// </summary>
+        /// <param name="msg">The cached message that was deleted.</param>
+        /// <param name="arg2">The cached channel where the message was sent.</param>
         private async Task OnMessageDelete(Cacheable<IMessage, ulong> msg, Cacheable<IMessageChannel, ulong> arg2)
         {
             /*
@@ -360,6 +392,10 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Logs the message and some basic information about it to the console.
+        /// </summary>
+        /// <param name="arg">The message to log.</param>
         private async Task<Task> OnLogMessage(SocketMessage arg)
         {
             if (arg.Channel.GetType() == typeof(SocketTextChannel))
@@ -384,6 +420,10 @@ namespace FinBot.Services
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Writes to the console when a shard becomes available.
+        /// </summary>
+        /// <param name="arg">The shard that opened.</param>
         private async Task<Task> OnShardReady(DiscordSocketClient arg)
         {
             _logger.LogInformation($"Connected as -> {arg.CurrentUser.Username}");
@@ -391,6 +431,10 @@ namespace FinBot.Services
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Handles the logging severity of the message.
+        /// </summary>
+        /// <param name="msg">The message to log.</param>
         public async Task<Task> OnLogAsync(LogMessage msg)
         {
             string logText = $"{msg.Source}: {msg.Exception?.ToString() ?? msg.Message}";

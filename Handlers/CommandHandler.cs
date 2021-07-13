@@ -26,6 +26,10 @@ namespace FinBot.Handlers
             _client.MessageReceived += HandleCommandAsync;
         }
 
+        /// <summary>
+        /// Handles command execution.
+        /// </summary>
+        /// <param name="s">User message</param>
         public async Task HandleCommandAsync(SocketMessage s)
         {
             SocketUserMessage message = s as SocketUserMessage;
@@ -35,20 +39,30 @@ namespace FinBot.Handlers
                 return;
             }
 
-            SocketUser currUser = _client.GetUser(_client.CurrentUser.Id);
+            //These next two variables are so we can get the same type to compare the two users. I SocketSelfUser is not comparable to SocketGuildUser, stupidly. But this, whilst not ideal, works.
+            SocketUser currUser = _client.GetUser(_client.CurrentUser.Id); 
             SocketUser execUser = _client.GetUser(message.Author.Id);
 
-            if (message.Source != MessageSource.User && execUser != currUser && (!message.Content.StartsWith(Global.clientPrefix)))
+            if (message.Source != MessageSource.User || message.Channel.GetType() == typeof(SocketDMChannel))
             {
+                if (execUser == currUser && message.Content.StartsWith(Global.clientPrefix) && Global.clientCommands == true)
+                {
+                    goto repos; //This is absolutely vile, but for now it'll do.
+                }
+
+                await CheckSupportAsync(s); //Checks whether the support feature has been called.
+
                 return;
             }
+
+            repos: //Vile, vile I tell you! NEVER DO THIS! This & goto are disgraces to C#, absolutely vulgar. I am in a river of tears simply writing this. For the love of all that's holy, never do this.
 
             int argPos = 0;
             ShardedCommandContext context = new ShardedCommandContext(_client, message);
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
-                if (execUser == currUser && message.HasStringPrefix(Global.clientPrefix, ref argPos) && Global.clientCommands == true)
+                if (execUser == currUser && message.HasStringPrefix(Global.clientPrefix, ref argPos) && Global.clientCommands == true) //If we've enabled Global.clientCommands, the current user is executing the commands & the prefix matches, run command from bot.
                 {
                     IResult devres = await _commands.ExecuteAsync(context, argPos, null, MultiMatchHandling.Best);
                     await LogCommandUsage(context, devres);
@@ -58,61 +72,80 @@ namespace FinBot.Handlers
                 return;
             }
 
-            if(s.Channel.GetType() == typeof(SocketDMChannel))
-            {
-                string msg = s.ToString();
-
-                if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"{Global.Prefix}support") || msg.ToLower().StartsWith($"{Global.Prefix}support "))
-                {
-                    msg = Regex.Replace(msg, "support", "");
-                    IUserMessage reply = (IUserMessage)s;
-                    await reply.ReplyAsync($"Thank you for submitting your support ticket. A developer will review it shortly.\nYour ticket Id is: {s.Id}");
-
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.WithAuthor(s.Author);
-                    eb.WithCurrentTimestamp();
-                    eb.WithFooter($"DM channel Id: {context.Channel.Id}\nSupport ticket Id: {s.Id}");
-                    eb.WithTitle("New support ticket");
-                    eb.WithDescription($"```{msg}```");
-                    eb.WithColor(Color.DarkPurple);
-                    IUserMessage replyMessage = await _client.GetGuild(Global.SupportGuildId).GetTextChannel(Global.SupportChannelId).SendMessageAsync("", false, eb.Build());
-                    
-                    return;
-                }
-
-                await message.ReplyAsync("Sorry, but commands are not enabled in DM's. Please try using bot commands in a server.");
-                return;
-            }
-
-            IResult result = await _commands.ExecuteAsync(context, argPos, _services);
+            IResult result = await _commands.ExecuteAsync(context, argPos, _services, MultiMatchHandling.Best);
             await LogCommandUsage(context, result);
 
-            if (!result.IsSuccess)
+            if (!result.IsSuccess && !Global.ErorrsToIgnore.Contains(result.Error.Value))
             {
                 EmbedBuilder b = new EmbedBuilder
                 {
                     Color = Color.Red,
-                    Description = $"The following info is the Command error info, `{message.Author.Username}#{message.Author.Discriminator}` tried to use the `{message}` Command in {message.Channel}: \n \n **COMMAND ERROR**: ```{result.Error.Value}``` \n \n **COMMAND ERROR REASON**: ```{result.ErrorReason}```",
+                    Description = $"The following info is the Command error info, `{message.Author.Username}#{message.Author.Discriminator}` tried to use the `{message}` Command in {context.Guild.Name}/{message.Channel}: \n \n **COMMAND ERROR**: ```{result.Error.Value}``` \n \n **COMMAND ERROR REASON**: ```{result.ErrorReason}```",
                     Author = new EmbedAuthorBuilder()
                 };
                 b.Author.Name = message.Author.Username + "#" + message.Author.Discriminator;
                 b.Author.IconUrl = message.Author.GetAvatarUrl();
                 b.Footer = new EmbedFooterBuilder
                 {
-                    Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " ZULU"
+                    Text = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
                 };
                 b.Title = "Bot Command Error!";
 
                 try
                 {
-                    //await _client.GetGuild(725886999646437407).GetTextChannel(784231099324301312).SendMessageAsync("", false, b.Build());
+                    await _client.GetGuild(Global.SupportGuildId).GetTextChannel(Global.ErrorLogChannelId).SendMessageAsync("", false, b.Build());
                 }
 
                 catch { }
             }
         }
 
-        private async Task LogCommandUsage(SocketCommandContext context, IResult result)
+        /// <summary>
+        /// Checks whether the user is trying to get support.
+        /// </summary>
+        /// <param name="s">Current user message.</param>
+        private async Task CheckSupportAsync(SocketMessage s)
+        {
+            if (s.Source == MessageSource.User)
+            {
+                if (s.Channel.GetType() == typeof(SocketDMChannel))
+                {
+                    string msg = s.ToString();
+                    SocketUserMessage message = s as SocketUserMessage;
+
+                    if (msg.ToLower().StartsWith("support ") || msg.ToLower().StartsWith("support") || msg.ToLower().StartsWith($"&support") || msg.ToLower().StartsWith($"&support "))
+                    {
+                        msg = Regex.Replace(msg, "support", "");
+                        IUserMessage reply = (IUserMessage)s;
+                        EmbedBuilder b = Global.EmbedMessage("Support ticket submitted", "Thank you for submitting your support ticket. A developer will review it shortly.", true, Color.Magenta);
+                        b.WithFooter($"Your ticked id is: {s.Id}");
+                        b.WithCurrentTimestamp();
+                        await reply.ReplyAsync("", false, b.Build());
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.WithAuthor(s.Author);
+                        eb.WithCurrentTimestamp();
+                        eb.WithFooter($"DM channel Id: {s.Channel.Id}\nSupport ticket Id: {s.Id}");
+                        eb.WithTitle("New support ticket");
+                        eb.WithDescription($"```{msg}```");
+                        eb.WithColor(Color.DarkPurple);
+                        await _client.GetGuild(Global.SupportGuildId).GetTextChannel(Global.SupportChannelId).SendMessageAsync("", false, eb.Build());
+
+                        return;
+                    }
+
+                    await message.ReplyAsync("Sorry, but commands are not enabled in DM's. Please try using bot commands in a server.");
+
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Logs when a command is used.
+        /// </summary>
+        /// <param name="context">The context for the command.</param>
+        /// <param name="result">The result of the command executed.</param>
+        private async Task LogCommandUsage(ShardedCommandContext context, IResult result)
         {
             await Task.Run(() =>
             {

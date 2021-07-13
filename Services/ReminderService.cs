@@ -23,6 +23,11 @@ namespace FinBot.Services
             t.Start();
         }
 
+        /// <summary>
+        /// Checks the database for any reminders to send.
+        /// </summary>
+        /// <param name="sender">Timer-generated variable.</param>
+        /// <param name="e">Timer-generated variable.</param>
         public async void RemindAsync(object sender, ElapsedEventArgs e)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
@@ -68,7 +73,18 @@ namespace FinBot.Services
             }
         }
 
-
+        /// <summary>
+        /// Inserts a reminder into the database.
+        /// </summary>
+        /// <param name="type">The option for what kind of interaction is made with the database.</param>
+        /// <param name="conn">The database connection string.</param>
+        /// <param name="userId">The id of the user who set the reminder.</param>
+        /// <param name="guildId">The id of the guild where the reminder was set.</param>
+        /// <param name="nowTimestamp">The unix timestamp of when the reminder was set.</param>
+        /// <param name="reminderTimestamp">The unix timestamp of when to remind the user.</param>
+        /// <param name="message">The message to send alongside the reminder.</param>
+        /// <param name="chan">The channel where the reminder was set.</param>
+        /// <returns></returns>
         public async static Task InsertToDBAsync(uint type, MySqlConnection conn, ulong userId, ulong guildId, long nowTimestamp = 0, long reminderTimestamp = 0, string message = null, SocketTextChannel chan = null)
         {
             try
@@ -93,6 +109,17 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Sets a user-set reminder.
+        /// </summary>
+        /// <param name="guild">The guild where the reminder was set.</param>
+        /// <param name="user">The user who set the reminder.</param>
+        /// <param name="chan">The channel where the reminder was set.</param>
+        /// <param name="timeSet">The current time(when the reminder was set).</param>
+        /// <param name="duration">The duration for the reminder timer.</param>
+        /// <param name="message">The reminder message.</param>
+        /// <param name="context">The context of the message to set the reminder.</param>
+        /// <returns></returns>
         public async static Task SetReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message, ShardedCommandContext context)
         {
             long currentTime = Global.ConvertToTimestamp(timeSet);
@@ -149,7 +176,11 @@ namespace FinBot.Services
             }
         }
 
-
+        /// <summary>
+        /// Converts a string of how long to mute a user for into seconds, e.g: "1h" will return "3600";
+        /// </summary>
+        /// <param name="time">The duration for how long to mute the user for.</param>
+        /// <returns>Returns the duration in seconds.</returns>
         public static Task<string> Parse_time(string time)
         {
             time = "time " + time;

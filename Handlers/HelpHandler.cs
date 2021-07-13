@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -34,6 +33,9 @@ namespace FinBot.Handlers
             }
         }
 
+        /// <summary>
+        /// Gets a list of all the available commands to the user.
+        /// </summary>
         public async Task HelpAsync()
         {
             EmbedBuilder builder = new EmbedBuilder()
@@ -143,6 +145,10 @@ namespace FinBot.Handlers
             await Context.Message.ReplyAsync("", false, builder.Build());
         }
 
+        /// <summary>
+        /// Searches for a certain command and gives you detailed information on it.
+        /// </summary>
+        /// <param name="command">The name of the command the user is searching for.</param>
         public async Task HelpAsync(string command)
         {
             SearchResult result = _service.Search(Context, command);
@@ -165,7 +171,7 @@ namespace FinBot.Handlers
                 CommandInfo cmd = match.Command;
                 builder.AddField(x =>
                 {
-                    x.Name = $"_ _"; //This makes an empty space, leaving the field without a name throws an exception and so this is essentially the only way to make a seemingly empty space.
+                    x.Name = "_ _"; //This makes an empty space, leaving the field without a name throws an exception and so this is essentially the only way to make a seemingly empty space.
                     x.Value = $"__**Aliases**__: {string.Join(", ", cmd.Aliases)}\n\n__**Summary**__: {cmd.Summary.Replace("(PREFIX)", ($"{guild_prefix}"))}\n\n__**Syntax**__: {cmd.Remarks.Replace("(PREFIX)", $"{guild_prefix}")}";
                     x.IsInline = true;
                 });

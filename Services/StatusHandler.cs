@@ -22,6 +22,11 @@ namespace FinBot.Services
             t.Start();
         }
 
+        /// <summary>
+        /// Handles changing the bot status.
+        /// </summary>
+        /// <param name="sender">Timer-generated variable.</param>
+        /// <param name="e">Timer-generated variable.</param>
         private void HandleStatusChange(object sender, ElapsedEventArgs e)
         {
             try
@@ -36,6 +41,10 @@ namespace FinBot.Services
             }
         }
 
+        /// <summary>
+        /// Retrieves a "random" status to set.
+        /// </summary>
+        /// <returns>Returns a status as a string.</returns>
         private string GetStatus()
         {
             try

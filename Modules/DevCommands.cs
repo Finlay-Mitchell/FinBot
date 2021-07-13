@@ -6,28 +6,10 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using System.IO;
-using System.Timers;
-using Discord.Audio;
-using VideoLibrary;
-using MediaToolkit.Model;
-using MediaToolkit;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using Colour = System.Drawing.Color;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using FinBot.Handlers;
-using Color = Discord.Color;
-using Newtonsoft.Json;
 using System.Collections.Generic;
-using MongoDB.Bson.Serialization;
-using System.Reflection;
-using Microsoft.CodeAnalysis;
 
 namespace FinBot.Modules
 {
@@ -118,8 +100,14 @@ namespace FinBot.Modules
                     eb.WithCurrentTimestamp();
                     eb.WithDescription(msg);
                     eb.WithColor(DiscColour.Purple);
-                    await chn.SendMessageAsync("", false, eb.Build());
-                    await Context.Message.ReplyAsync("Sent support message response successfully");
+
+                    try
+                    {
+                        await chn.SendMessageAsync("", false, eb.Build()); //This throws an exception claiming chn is null....yet it still sends the message.
+                        await Context.Message.ReplyAsync("Sent support message response successfully");
+                    }
+
+                    catch { return; }
                 }
 
                 catch (Exception ex)

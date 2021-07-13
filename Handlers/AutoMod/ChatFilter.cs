@@ -29,11 +29,15 @@ namespace FinBot.Handlers.AutoMod
             _client.MessageReceived += CheckForLinks;
         }
 
+        /// <summary>
+        /// Checks for censored phrases in the parsed message.
+        /// </summary>
+        /// <param name="msg">The message the user sent.</param>
         public async Task CheckForCensoredWords(SocketMessage msg)
         {
             try
             {
-                if (msg.Author.IsBot)
+                if (msg.Author.IsBot || msg.Channel.GetType() == typeof(SocketDMChannel))
                 {
                     return;
                 }
@@ -56,10 +60,10 @@ namespace FinBot.Handlers.AutoMod
                 if (itemVal != null)
                 {
                     List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
-                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled); //Generates the regular expression to search the message for guild blacklisted terms.
                     string message = msg.Content;
 
-                    foreach (KeyValuePair<string, string> x in Global.leetRules)
+                    foreach (KeyValuePair<string, string> x in Global.leetRules) //Assigns leet rules to the message to avoid people avoiding word filtration.
                     {
                         message = message.Replace(x.Key, x.Value);
                     }
@@ -68,7 +72,6 @@ namespace FinBot.Handlers.AutoMod
 
                     if (re.IsMatch(message))
                     {
-
                         await msg.DeleteAsync();
                         modCommands.AddModlogs(msg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Bad word usage", chan.Guild.Id);
                         EmbedBuilder eb = new EmbedBuilder()
@@ -96,7 +99,7 @@ namespace FinBot.Handlers.AutoMod
                         eb.AddField("User", $"{user.Username}", true);
                         eb.AddField("Moderator", $"FinBot automod.", true);
                         eb.AddField("Reason", $"\"Bad word usage.\"", true);
-                        //eb.AddField("Message with filter", message.Replace("\n", ""), true);
+                        //eb.AddField("Message with filter", message.Replace("\n", ""), true); //See how the message was caught - fix in future.
                         eb.AddField("Message", msg.ToString(), true);
                         eb.WithCurrentTimestamp();
                         await logchannel.SendMessageAsync("", false, eb.Build());
@@ -106,28 +109,38 @@ namespace FinBot.Handlers.AutoMod
 
                 else
                 {
-                    //await msg.Channel.SendMessageAsync(itemVal.ToString());
+                    //Add some handling later on.
                 }
             }
 
             catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-                //await msg.Channel.SendMessageAsync($"broke: {ex.Message}\n\n{ex.StackTrace}");
             }
         }
 
+        /// <summary>
+        /// Checks for URI's in sent message.
+        /// </summary>
+        /// <param name="arg">User sent message.</param>
+        /// <returns></returns>
         private async Task CheckForLinks(SocketMessage arg)
         {
             try
             {
-                SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
+                if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
+                {
+                    return;
+                }
+
                 SocketGuildUser user = (SocketGuildUser)arg.Author;
 
                 if (user.GuildPermissions.ManageMessages)
                 {
                     return;
                 }
+
+                SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
 
                 try
                 {
@@ -146,7 +159,7 @@ namespace FinBot.Handlers.AutoMod
 
                 catch { return; }
 
-                Regex r = new Regex(@"(http|ftp|https)://([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?");
+                Regex r = new Regex(@"((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)*(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)"); //Regex I painfully developed to search for all forms of links and addresses.
 
                 if (r.IsMatch(arg.ToString()))
                 {
@@ -193,8 +206,18 @@ namespace FinBot.Handlers.AutoMod
             }
         }
 
+        /// <summary>
+        /// Checks whether the message contains mass ping, roles & members.
+        /// </summary>
+        /// <param name="arg">The message.</param>
         private async Task CheckForPingSpam(SocketMessage arg)
         {
+
+            if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
+            {
+                return;
+            }
+
             SocketGuildUser user = (SocketGuildUser)arg.Author;
 
             if (!user.GuildPermissions.ManageMessages && arg.MentionedUsers.Count >= Global.MaxUserPingCount || arg.MentionedRoles.Count >= Global.MaxRolePingCount)

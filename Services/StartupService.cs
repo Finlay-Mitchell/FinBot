@@ -21,6 +21,9 @@ namespace FinBot.Services
             _commands = _services.GetRequiredService<CommandService>();
         }
 
+        /// <summary>
+        /// Starts the bot up.
+        /// </summary>
         public async Task StartAsync()
         {
             if (string.IsNullOrWhiteSpace(Global.Token))
