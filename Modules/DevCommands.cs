@@ -10,10 +10,12 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using FinBot.Handlers;
 using System.Collections.Generic;
+using FinBot.Interactivity;
+using System.Threading;
 
 namespace FinBot.Modules
 {
-    public class DevCommands : ModuleBase<ShardedCommandContext> //Dev commands hidden from regular users
+    public class DevCommands : InteractiveBase //Dev commands hidden from regular users
     {
         public DiscordShardedClient _client;
 
@@ -187,7 +189,7 @@ namespace FinBot.Modules
         }
 
         [Command("clearalldata")]
-        public async Task Clearalldata()
+        public Task Clearalldata()
         {
             if (Global.IsDev(Context.User))
             {
@@ -197,6 +199,8 @@ namespace FinBot.Modules
                 ulong _id = Context.Guild.Id;
                 collection.DeleteOne(Builders<BsonDocument>.Filter.Eq("_id", _id));
             }
+
+            return Task.CompletedTask;
         }
 
         [Command("EnBotClientCommands")]

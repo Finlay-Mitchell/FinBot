@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
+using FinBot.Interactivity;
 
 namespace FinBot
 {
@@ -89,6 +90,7 @@ namespace FinBot
                 .AddSingleton<StatusHandler>()
                 .AddSingleton<ReminderService>()
                 .AddSingleton<MuteService>()
+                .AddSingleton<InteractiveService>()
                 .AddSingleton<LoggingService>();
             ConfigureServices(services);
             ServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -139,6 +141,7 @@ namespace FinBot
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
+                .WriteTo.File(Global.LogPath)
                 .MinimumLevel.Is(level)
                 .CreateLogger();
         }

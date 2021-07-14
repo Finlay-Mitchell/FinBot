@@ -13,10 +13,11 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Newtonsoft.Json;
+using FinBot.Interactivity;
 
 namespace FinBot.Modules
 {
-    public class ModCommands : ModuleBase<ShardedCommandContext>
+    public class ModCommands : InteractiveBase
     {
         private DiscordShardedClient _client;
 
@@ -35,7 +36,7 @@ namespace FinBot.Modules
         }
 
         [Command("clear"), Summary("clears a specified amount of messages from the chat"), Remarks("(PREFIX) clear<amount>"), Alias("purge", "clr")]
-        public async Task Purge(uint amount)
+        public async Task Purge(int amount)
         {
             SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
 
@@ -57,12 +58,71 @@ namespace FinBot.Modules
 
             else
             {
-                IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 1).FlattenAsync();
-                await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
-                await Context.Channel.TriggerTypingAsync();
-                IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Purge completed!");
-                await Task.Delay(2000);
-                await msg.DeleteAsync();
+                if (amount >= 15 && amount > 1)
+                {
+                    IUserMessage conformMessage = await Context.Channel.SendMessageAsync("", false, Global.EmbedMessage("Purge conformation", $"Please type \"yes\" to purge {amount} of messages.", false, Color.Orange).Build());
+                    SocketMessage conformation = await NextMessageAsync(timeout: TimeSpan.FromSeconds(10));
+
+                    if (conformation.Content != null)
+                    {
+                        await conformMessage.DeleteAsync();
+
+                        if (conformation.Content == "yes")
+                        {
+                            IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 1).FlattenAsync();
+                            await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
+                            await Context.Channel.TriggerTypingAsync();
+                            IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Purge completed!");
+                            await Task.Delay(2000);
+                            await msg.DeleteAsync();
+
+                            return;
+                        }
+
+                        else
+                        {
+                            await Context.Message.DeleteAsync();
+                            IUserMessage msg = await Context.Message.Channel.SendMessageAsync("Purge canceled.");
+                            await Task.Delay(2000);
+                            await msg.DeleteAsync();
+
+                            return;
+                        }
+                    }
+
+                    else
+                    {
+                        await Context.Message.DeleteAsync();
+                        await conformMessage.DeleteAsync();
+                        IUserMessage msg = await Context.Message.Channel.SendMessageAsync("Purge canceled.");
+                        await Task.Delay(2000);
+                        await msg.DeleteAsync();
+                        
+                        return;
+                    }
+                }
+
+                else if (amount < 15 && amount > 1)
+                {
+                    IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 1).FlattenAsync();
+                    await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
+                    await Context.Channel.TriggerTypingAsync();
+                    IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Purge completed!");
+                    await Task.Delay(2000);
+                    await msg.DeleteAsync();
+
+                    return;
+                }
+
+                else
+                {
+                    await Context.Message.DeleteAsync();
+                    IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Please enter a number larger than 1.");
+                    await Task.Delay(2000);
+                    await msg.DeleteAsync();
+
+                    return;
+                }
             }
         }
 
@@ -316,8 +376,6 @@ namespace FinBot.Modules
                 catch (Exception ex)
                 {
                     Global.ConsoleLog(ex.Message);
-
-                    //do stuffs
                 }
 
                 finally
@@ -326,12 +384,8 @@ namespace FinBot.Modules
                 }
             }
 
-            catch
-            {
-                // do more stuffs
-            }
+            catch { }
         }
-
 
         /// <summary>
         /// An emum containing the different obtainable infractions.
@@ -420,6 +474,7 @@ namespace FinBot.Modules
             }
 
             SocketUser u = mentions.First();
+
             try
             {
                 MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
@@ -428,7 +483,6 @@ namespace FinBot.Modules
                 {
                     conn.Open();
                     DeleteFromModlogs(0, conn, Context.Guild.Id, u.Id, number);
-
                     EmbedBuilder b = new EmbedBuilder()
                     {
                         Footer = new EmbedFooterBuilder()
@@ -447,8 +501,6 @@ namespace FinBot.Modules
                 catch (Exception ex)
                 {
                     Global.ConsoleLog(ex.Message);
-
-                    // do stuff
                 }
 
                 finally
@@ -460,8 +512,6 @@ namespace FinBot.Modules
             catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-
-                // do stuff
             }
         }
 
@@ -528,8 +578,6 @@ namespace FinBot.Modules
                 catch (Exception ex)
                 {
                     Global.ConsoleLog(ex.Message);
-
-                    //do stuffs
                 }
 
                 finally
@@ -541,8 +589,6 @@ namespace FinBot.Modules
             catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-
-                //do stuffs
             }
         }
 

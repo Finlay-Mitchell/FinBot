@@ -55,7 +55,7 @@ namespace FinBot.Handlers
                 return;
             }
 
-            repos: //Vile, vile I tell you! NEVER DO THIS! This & goto are disgraces to C#, absolutely vulgar. I am in a river of tears simply writing this. For the love of all that's holy, never do this.
+            repos: //This isn't fantastic and I'll probably make a workaround soon, but it'll work for now.
 
             int argPos = 0;
             ShardedCommandContext context = new ShardedCommandContext(_client, message);

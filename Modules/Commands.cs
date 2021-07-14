@@ -51,7 +51,7 @@ namespace FinBot.Modules
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
                 {
                     Title = "Subreddit not found!",
-                    Description = $"Sorry, {Context.Message.Author.Mention} but the [subreddit](https://www.reddit.com/r/{subreddit}) you tried to post from was not found or no images could be retrieved, please try again.",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but the [subreddit](https://www.reddit.com/r/{subreddit}) you tried to post from was not found or no images/gifs could be retrieved, please try again.",
                     Footer = new EmbedFooterBuilder()
                     {
                         IconUrl = Context.User.GetAvatarUrl(),
@@ -83,6 +83,7 @@ namespace FinBot.Modules
                     },
                 }
                 .WithColor(221, 65, 36)
+                .WithCurrentTimestamp()
                 .Build());
                 tp.Dispose();
 
@@ -93,14 +94,14 @@ namespace FinBot.Modules
             {
                 Color = new Color(0xFF4301),
                 Title = subreddit,
-                Description = $"{post.Data.Title}\n",
+                Description = $"{post.Data.title}\n",
                 ImageUrl = post.Data.Url.ToString(),
                 Footer = new EmbedFooterBuilder()
                 {
-                    Text = "u/" + post.Data.Author
+                    Text = "u/" + post.Data.author
                 }
             };
-            b.AddField("Post info", $"{post.Data.Ups} upvotes\nurl: https://reddit.com/{post.Data.Permalink}\nCreated at: {Global.UnixTimeStampToDateTime(post.Data.Created)}");
+            b.AddField("Post info", $"Score: {post.Data.score}\nTotal awards received: {post.Data.total_awards_received}\nurl: [Visit post here](https://reddit.com/{post.Data.permalink})\nCreated at: {Global.UnixTimeStampToDateTime(post.Data.created)}");
             b.WithCurrentTimestamp();
             await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync("", false, b.Build());
@@ -121,7 +122,7 @@ namespace FinBot.Modules
                     HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                     HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
                     string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                    Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\""); //This is sometimes subject to change, so if all images aren't recognised, look here.
+                    Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\""); //This is sometimes subject to change, so if all images aren't recognized, look here.
 
                     if (r.IsMatch(resp))
                     {
@@ -153,7 +154,7 @@ namespace FinBot.Modules
                 HTTPClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36");
                 HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
                 string resp = await HTTPResponse.Content.ReadAsStringAsync();
-                Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\""); //This is sometimes subject to change, so if all images aren't recognised, look here.
+                Regex r = new Regex("value=\"(.*?)\" aria-label=\"Search\""); //This is sometimes subject to change, so if all images aren't recognized, look here.
 
                 if (r.IsMatch(resp))
                 {
@@ -181,7 +182,7 @@ namespace FinBot.Modules
 
                 else
                 {
-                    await Context.Message.ReplyAsync("There's nothing to guess. Please only provide one parameter.");
+                    await Context.Message.ReplyAsync("Please only provide one parameter.");
                     tp.Dispose();
                 }
             }
@@ -229,7 +230,7 @@ namespace FinBot.Modules
             });
         }
 
-        [Command("say"), Summary("repeats the text you enter to it"), Remarks("(PREFIX)say <text>"), Alias("echo", "repeat", "reply")]
+        [Command("say"), Summary("repeats the text you enter to it"), Remarks("(PREFIX)say <text>"), Alias("echo", "repeat", "reply", "shout")]
         public async Task Echo([Remainder] string echo)
         {
             await Context.Channel.TriggerTypingAsync();
@@ -262,9 +263,7 @@ namespace FinBot.Modules
         public async Task<string> SayTextAsync(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
-            final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}", "");
-            final = Regex.Replace(final, $"{Global.clientPrefix}", "");
-            final = Regex.Replace(final, Global.URIAndIpRegex, "");
+            final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}|{Global.URIAndIpRegex}|{Global.clientPrefix}|@", "");
 
             if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
             {
@@ -313,7 +312,7 @@ namespace FinBot.Modules
                     user = Context.Message.Author;
                 }
 
-                SocketGuildUser SGU = (SocketGuildUser)user; //Convert to SocketGuildUser to get more user options, such as nickname.
+                SocketGuildUser SGU = (SocketGuildUser)user; //Convert to SocketGuildUser to get more user options, such as their nickname(if one is set).
                 string nickState = "";
                 string ClientError = "None(offline)";
 
@@ -322,7 +321,7 @@ namespace FinBot.Modules
                     nickState = SGU.Nickname;
                 }
 
-                if (user.IsBot && user.Status.ToString().ToLower() == "online")
+                if (user.IsBot && user.Status.ToString().ToLower() != "offline")
                 {
                     ClientError = "Server hosted";
                 }
@@ -344,7 +343,7 @@ namespace FinBot.Modules
                 await Context.Message.ReplyAsync("", false, eb.Build());
             }
 
-            catch(Exception ex)
+            catch
             {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.WithAuthor(Context.Message.Author);
@@ -540,9 +539,7 @@ namespace FinBot.Modules
         public async Task<string> CheckEmbedContent(string text, SocketCommandContext context)
         {
             string final = text.ToLower();
-            final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}", "");
-            final = Regex.Replace(final, $"{Global.clientPrefix}", "");
-            final = Regex.Replace(final, Global.URIAndIpRegex, ""); 
+            final = Regex.Replace(final, $"{Global.DeterminePrefix(context).Result}|{Global.URIAndIpRegex}|{Global.clientPrefix}", "");
 
             if (string.IsNullOrEmpty(final) || string.IsNullOrWhiteSpace(final))
             {
@@ -748,7 +745,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("roles"), Summary("Gets a list of all the roles in the server"), Remarks("(PREFIX)roles")]
+        [Command("roles"), Summary("Gets a list of all the roles in the server"), Remarks("(PREFIX)roles"), Alias("getroles", "allroles", "getallroless")]
         public async Task GetRoles()
         {
             EmbedBuilder eb = new EmbedBuilder();
@@ -870,7 +867,7 @@ namespace FinBot.Modules
             if (string.IsNullOrEmpty(args))
             {
                 embed.Title = $"No search term provided!";
-                embed.WithColor(new Discord.Color(255, 0, 0));
+                embed.WithColor(new Color(255, 0, 0));
                 sb.AppendLine("Please provide a term to search for!");
                 embed.Description = sb.ToString();
                 await Context.Message.ReplyAsync("", false, embed.Build());
@@ -1002,7 +999,7 @@ namespace FinBot.Modules
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://uselessfacts.jsph.pl/random.json");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
-            resp = Regex.Replace(resp, @"[\[\]]", "");
+            resp = Regex.Replace(resp, @"[\]\[]", "");
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
             string URL = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q={HttpUtility.UrlEncode(APIData.Text)}";
             WebClient webClient = new WebClient
@@ -1021,7 +1018,7 @@ namespace FinBot.Modules
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("https://meowfacts.herokuapp.com/");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
-            resp = Regex.Replace(resp, @"[\[\]]", "");
+            resp = Regex.Replace(resp, @"[\]\[]", "");
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
             await Context.Message.ReplyAsync(APIData.Data);
         }
@@ -1033,7 +1030,7 @@ namespace FinBot.Modules
             HttpClient HTTPClient = new HttpClient();
             HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync("http://jservice.io/api/random");
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
-            resp = Regex.Replace(resp, @"[\[\]]", "");
+            resp = Regex.Replace(resp, @"[\]\[]", "");
             APIJsonItems APIData = JsonConvert.DeserializeObject<APIJsonItems>(resp);
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithTitle("Trivia question");
@@ -1175,10 +1172,7 @@ namespace FinBot.Modules
 
                 try
                 {
-                    Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>>
-                    {
-                        { "scores", scores }
-                    };
+                    Dictionary<string, List<Dictionary<string, dynamic>>> final_object = new Dictionary<string, List<Dictionary<string, dynamic>>> { { "scores", scores } };
                     HttpClient HTTPClient = new HttpClient();
                     string content = JsonConvert.SerializeObject(final_object);
                     byte[] buffer = Encoding.UTF8.GetBytes(content);
@@ -1198,7 +1192,7 @@ namespace FinBot.Modules
                     await Context.Message.ReplyAsync("", false, b.Build());
                 }
 
-                catch (Exception)
+                catch
                 {
                     b.WithCurrentTimestamp();
                     b.Description = format + "```";
