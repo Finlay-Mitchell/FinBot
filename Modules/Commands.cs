@@ -1613,6 +1613,35 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync(dadJoke);
         }
 
+        private async Task AddToPolls(uint type, MySqlConnection conn, ulong msgId, ulong guildId, ulong authorId, string state, ulong chanId)
+        {
+            try
+            {
+                if (type == 0)
+                {
+                    MySqlCommand cmd = new MySqlCommand($"UPDATE Polls SET message = {msgId}, guildId = {guildId}, author = {authorId}, state = '{state}', chanId = {chanId} WHERE guildId = {guildId} AND author = {authorId}", conn);
+                    cmd.ExecuteNonQuery();
+                }
+
+                if (type == 1)
+                {
+                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO Polls(message, guildId, author, state, chanId) VALUES ({msgId}, {guildId}, {authorId}, '{state}', {chanId})", conn);
+                    cmd.ExecuteNonQuery();
+                }
+
+                if (type == 2)
+                {
+                    MySqlCommand cmd = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {guildId} AND author = {authorId}", conn);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            catch (Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
+        }
+
         [Command("poll")]
         public async Task Poll([Remainder] string question)
         {
@@ -1627,29 +1656,50 @@ namespace FinBot.Modules
                 using MySqlDataReader reader = cmd.ExecuteReader();
                 bool hasRan = false;
 
-                while (reader.Read())
+                try
                 {
-                    hasRan = true;
-
-                    if (reader.GetString(3) == "Active")
+                    while (reader.Read())
                     {
-                        EmbedBuilder eb = new EmbedBuilder
-                        {
-                            Title = "Poll already active",
-                            Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {await Global.DeterminePrefix(Context)}endpoll"
-                        };
-                        eb.WithAuthor(Context.Message.Author);
-                        eb.WithCurrentTimestamp();
-                        eb.Color = Color.Red;
-                        await Context.Message.ReplyAsync("", false, eb.Build());
-                        tp.Dispose();
+                        hasRan = true;
 
-                        return;
+                        if (reader.GetString(3) == "Active")
+                        {
+                            EmbedBuilder eb = new EmbedBuilder
+                            {
+                                Title = "Poll already active",
+                                Description = $"Your poll with ID {reader.GetInt64(0)} is already active, please close this poll by doing {await Global.DeterminePrefix(Context)}endpoll"
+                            };
+                            eb.WithAuthor(Context.Message.Author);
+                            eb.WithCurrentTimestamp();
+                            eb.Color = Color.Red;
+                            await Context.Message.ReplyAsync("", false, eb.Build());
+                            tp.Dispose();
+
+                            return;
+                        }
+
+                        else
+                        {
+                            EmbedBuilder eb = new EmbedBuilder
+                            {
+                                Title = $"{question}"
+                            };
+                            eb.WithAuthor(Context.Message.Author);
+                            eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
+                            var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                            tp.Dispose();
+                            await msg.AddReactionsAsync(Global.reactions.ToArray());
+                            queryConn.Open();
+                            await AddToPolls(0, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Active", Context.Channel.Id);
+                            queryConn.Close();
+                        }
                     }
 
-                    else
+                    conn.Close();
+
+                    if (!hasRan)
                     {
-                        EmbedBuilder eb = new EmbedBuilder
+                        EmbedBuilder eb = new EmbedBuilder()
                         {
                             Title = $"{question}"
                         };
@@ -1659,28 +1709,15 @@ namespace FinBot.Modules
                         tp.Dispose();
                         await msg.AddReactionsAsync(Global.reactions.ToArray());
                         queryConn.Open();
-                        MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET message = {msg.Id}, guildId = {Context.Guild.Id}, author = {Context.Message.Author.Id}, state = 'Active', chanId = {Context.Message.Channel.Id} WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
-                        cmd1.ExecuteNonQuery();
+                        await AddToPolls(1, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Active", Context.Channel.Id);
                         queryConn.Close();
                     }
                 }
 
-                conn.Close();
+                catch { }
 
-                if (!hasRan)
+                finally
                 {
-                    EmbedBuilder eb = new EmbedBuilder()
-                    {
-                        Title = $"{question}"
-                    };
-                    eb.WithAuthor(Context.Message.Author);
-                    eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
-                    var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
-                    tp.Dispose();
-                    await msg.AddReactionsAsync(Global.reactions.ToArray());
-                    queryConn.Open();
-                    MySqlCommand cmd1 = new MySqlCommand($"INSERT INTO Polls(message, guildId, author, state, chanId) VALUES ({msg.Id}, {Context.Guild.Id}, {Context.Message.Author.Id}, 'Active', {Context.Message.Channel.Id})", queryConn);
-                    cmd1.ExecuteNonQuery();
                     queryConn.Close();
                 }
             }
@@ -1700,6 +1737,11 @@ namespace FinBot.Modules
                     tp.Dispose();
                 }
             }
+
+            finally
+            {
+                conn.Close();
+            }
         }
 
         [Command("endpoll")]
@@ -1716,53 +1758,72 @@ namespace FinBot.Modules
                 using MySqlDataReader reader = cmd.ExecuteReader();
                 bool hasRan = false;
 
-                while (reader.Read())
+                try
                 {
-                    hasRan = true;
-
-                    if (reader.GetString(3) == "Active")
+                    while (reader.Read())
                     {
-                        try
+                        hasRan = true;
+
+                        if (reader.GetString(3) == "Active")
                         {
-                            ulong mId = (ulong)reader.GetInt64(0);
-                            ulong chanId = (ulong)reader.GetInt64(4);
-                            ITextChannel channel = (ITextChannel)Context.Guild.GetChannel(chanId);
-                            IMessage msg = await channel.GetMessageAsync(mId);
-                            EmbedBuilder eb = new EmbedBuilder();
-                            eb.WithTitle("Getting poll results...");
-                            eb.Color = Color.Orange;
-                            RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("", false, eb.Build());
-                            msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
-                            msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
-                            eb.Title = $"{msg.Embeds.First().Title}";
+                            try
+                            {
+                                ulong mId = (ulong)reader.GetInt64(0);
+                                ulong chanId = (ulong)reader.GetInt64(4);
+                                ITextChannel channel = (ITextChannel)Context.Guild.GetChannel(chanId);
+                                IMessage msg = await channel.GetMessageAsync(mId);
+                                EmbedBuilder eb = new EmbedBuilder();
+                                eb.WithTitle("Getting poll results...");
+                                eb.Color = Color.Orange;
+                                RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("", false, eb.Build());
+                                msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
+                                msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
+                                eb.Title = $"{msg.Embeds.First().Title}";
+                                eb.WithAuthor(Context.Message.Author);
+                                eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
+                                eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
+                                eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
+                                await Global.ModifyMessage(message, eb);
+                                queryConn.Open();
+                                await AddToPolls(2, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                queryConn.Close();
+                                tp.Dispose();
+                            }
+
+                            catch (Exception ex)
+                            {
+                                await Context.Message.ReplyAsync($"Error: {ex}");
+                                queryConn.Open();
+                                await AddToPolls(2, queryConn, Context.Message.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                queryConn.Close();
+                                tp.Dispose();
+                            }
+
+                            finally
+                            {
+                                queryConn.Close();
+                                tp.Dispose();
+                            }
+                        }
+
+                        else
+                        {
+                            EmbedBuilder eb = new EmbedBuilder
+                            {
+                                Title = "Poll not active",
+                                Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command"
+                            };
                             eb.WithAuthor(Context.Message.Author);
-                            eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
-                            eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
-                            eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
-                            await Global.ModifyMessage(message, eb);
-                            queryConn.Open();
-                            MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
-                            cmd1.ExecuteNonQuery();
-                            queryConn.Close();
-                        }
-
-                        catch (Exception ex)
-                        {
-                            await Context.Message.ReplyAsync($"Error: {ex.Message}");
-                            queryConn.Open();
-                            MySqlCommand cmd1 = new MySqlCommand($"UPDATE Polls SET state = 'Inactive' WHERE guildId = {Context.Guild.Id} AND author = {Context.Message.Author.Id}", queryConn);
-                            cmd1.ExecuteNonQuery();
-                            queryConn.Close();
-                        }
-
-                        finally
-                        {
-                            queryConn.Open();
+                            eb.WithCurrentTimestamp();
+                            eb.Color = Color.Red;
+                            await Context.Message.ReplyAsync("", false, eb.Build());
                             tp.Dispose();
                         }
                     }
 
-                    else
+                    conn.Close();
+
+                    if (!hasRan)
                     {
                         EmbedBuilder eb = new EmbedBuilder
                         {
@@ -1777,20 +1838,11 @@ namespace FinBot.Modules
                     }
                 }
 
-                conn.Close();
+                catch { }
 
-                if (!hasRan)
+                finally
                 {
-                    EmbedBuilder eb = new EmbedBuilder
-                    {
-                        Title = "Poll not active",
-                        Description = $"You currently do not have any active polls. You can initiate one by using the {await Global.DeterminePrefix(Context)}poll command"
-                    };
-                    eb.WithAuthor(Context.Message.Author);
-                    eb.WithCurrentTimestamp();
-                    eb.Color = Color.Red;
-                    await Context.Message.ReplyAsync("", false, eb.Build());
-                    tp.Dispose();
+                    conn.Close();
                 }
             }
 
@@ -1808,6 +1860,13 @@ namespace FinBot.Modules
                     await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                     tp.Dispose();
                 }
+            }
+
+            catch { }
+
+            finally
+            {
+                conn.Close();
             }
         }
 

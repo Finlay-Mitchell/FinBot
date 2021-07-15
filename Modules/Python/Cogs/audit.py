@@ -19,6 +19,14 @@ class Audit(commands.Cog):
     @commands.command(pass_context=True)
     async def audit(self, ctx, command, member: Optional[discord.Member], channel: Optional[discord.TextChannel], *,
                     other_info=""):
+        """
+        Gets data from the audit log.
+        :param ctx: The context.
+        :param command: The type of entry.
+        :param member: The member to get the entry for.
+        :param channel: The channel to get the entry for.
+        :param other_info: Any other parameters parsed in.
+        """
         if not is_staff_backend(ctx.author):
             raise commands.CheckFailure
         if command.lower() == "roles":
@@ -31,6 +39,11 @@ class Audit(commands.Cog):
             pass
 
     async def audit_overwrites(self, ctx, channel: Optional[discord.TextChannel]):
+        """
+        Checks audit log for channel overwrites.
+        :param ctx: Context for the command.
+        :param channel: The channel to check overwrites too.
+        """
         if channel is None:
             await ctx.reply(self.bot.create_error_embed("No channel mentioned!"))
             return
@@ -41,12 +54,22 @@ class Audit(commands.Cog):
 
     @staticmethod
     async def create_channel_updates_embed(channel: discord.TextChannel, author: discord.Member):
+        """
+        Gets audit log data about channel updates.
+        :param channel: The channel to get the audit log data on.
+        :param author: The author who initiated the command.
+        """
         embed = discord.Embed(timestamp=datetime.datetime.utcnow())
         embed.colour = discord.Colour.blue()
         embed.title = "Channel updates for {} - {}".format(channel.id, channel.name)
         embed.set_author(name=author.id)
 
     async def audit_roles(self, ctx, member: Optional[discord.Member]):
+        """
+        Gets role history information for a user.
+        :param ctx: Context for the command.
+        :param member: The member to get the data on.
+        """
         if member is None:
             await ctx.reply(self.bot.create_error_embed("No member mentioned!"))
             return
@@ -58,6 +81,13 @@ class Audit(commands.Cog):
         await sent_message.add_reaction("⏩")
 
     async def create_role_changes_embed(self, member, before=None, start_index=0, after=None):
+        """
+        Gets the role updates for the user from `audit_roles`
+        :param member: The member to get the role updates for.
+        :param before: Gets the data before a certain date.
+        :param start_index: The starting index.
+        :param after: Gets audit data after a certain date.
+        """
         embed = discord.Embed(timestamp=datetime.datetime.utcnow())
         embed.colour = discord.Colour.blue()
         embed.title = "Role changes for {} - {}".format(member.id, member.name)
@@ -84,6 +114,13 @@ class Audit(commands.Cog):
 
     @staticmethod
     async def get_role_updates(member: discord.Member, before=None, after=None):
+        """
+
+        :param member:
+        :param before:
+        :param after:
+        :return:
+        """
         guild = member.guild
         action = discord.AuditLogAction.member_role_update
         entries = []

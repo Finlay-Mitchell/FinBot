@@ -87,6 +87,3 @@ The YouTube searching algorithm is in development still. It should work complete
 This also requires ffmpeg to run for python and C#, and opus/libsodum for C#
 
 # ToDo:
- - Add a dictionary for the first few hundred guild Ids to potentially reduce time taken to execute command, this being because a dictionary is faster than reading from a MongoDB database - impact on non-stored guilds is negligible.
- - Contain the MySql connection string as done with the MongoDB connection string.
- - Redesign poll database implementation.

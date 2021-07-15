@@ -12,6 +12,7 @@ using FinBot.Handlers;
 using System.Collections.Generic;
 using FinBot.Interactivity;
 using System.Threading;
+using Discord.Rest;
 
 namespace FinBot.Modules
 {
@@ -219,6 +220,27 @@ namespace FinBot.Modules
                     Global.clientCommands = false;
                     await Context.Message.ReplyAsync($"Success, clientCommands set to {Global.clientCommands}");
                 }
+            }
+        }
+
+        [Command("test")]
+        public async Task test()
+        {
+            if (Global.IsDev(Context.User))
+            {
+                var auditlogs = Context.Guild.GetAuditLogsAsync(35, null, null, null, ActionType.ChannelUpdated).FlattenAsync();
+                string result = "";
+
+                foreach (var audit in auditlogs.Result)
+                {
+                    if (audit.Data is ChannelUpdateAuditLogData data)
+                    {
+                        result += $"{data.Before.Name} -> {data.After.Name} - ({data.ChannelId})\n";
+                    }
+
+                }
+
+                await ReplyAsync(result);
             }
         }
     }

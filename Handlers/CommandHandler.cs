@@ -74,6 +74,7 @@ namespace FinBot.Handlers
 
             IResult result = await _commands.ExecuteAsync(context, argPos, _services, MultiMatchHandling.Best);
             await LogCommandUsage(context, result);
+            Global.AppendPrefixes(context.Guild.Id, await Global.DeterminePrefix(context)); //Adds the prefix to the dictionary.
 
             if (!result.IsSuccess && !Global.ErorrsToIgnore.Contains(result.Error.Value))
             {

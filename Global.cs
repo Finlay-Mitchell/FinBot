@@ -117,6 +117,10 @@ namespace FinBot
         /// </summary>
         public static string LogPath = $"{Environment.CurrentDirectory}/Data/logs.json";
         /// <summary>
+        /// THe directory to the prefixes to load.
+        /// </summary>
+        public static string PrefixPath = $"{Environment.CurrentDirectory}/Data/guildPrefixes.load";
+        /// <summary>
         /// The epoch time set to the first of Jan, 1970. 
         /// </summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -153,7 +157,11 @@ namespace FinBot
         /// Designing this regex was painful and yes, I am undergoing therapy.
         /// </summary>
         public static string URIAndIpRegex = @"(?i)((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))[a-zA-Z._]|(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*)@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])";
-        //OLD ONE IN CASE IT GOES ALL WRONG: ((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))
+                                                //OLD ONE IN CASE IT GOES ALL WRONG: ((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))
+         /// <summary>
+         /// Loads a list of recent guild ids and prefixes.
+         /// </summary>
+        public static List<Dictionary<ulong, string>> demandPrefixes = new List<Dictionary<ulong, string>>();
 
         /// <summary>
         /// This reads data from json.config and assigns the values to the variables labeled above.
@@ -294,11 +302,16 @@ namespace FinBot
         /// </summary>
         /// <param name="context">The context of the command.</param>
         /// <returns>A string containing the prefix for the guild.</returns>
+        /// 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            //Add Dictionary support for first prefix test to reduce time for the top guilds.
             try
             {
+                if (demandPrefixes[0].TryGetValue(context.Guild.Id, out string prefix))
+                {
+                    return prefix;
+                }
+
                 MongoClient MongoClient = new MongoClient(Mongoconnstr);
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
@@ -322,7 +335,6 @@ namespace FinBot
                 return Prefix;
             }
         }
-
         /// <summary>
         /// Determines whether guild user levelling is enabled or not - if a value is not found or an error occurs, we return "False" to be handled to the user.
         /// </summary>
@@ -424,7 +436,7 @@ namespace FinBot
         /// <returns>A dictionary containing the keys respective values.</returns>
         public static Dictionary<string, string> LoadLeetRules()
         {
-            var t = File.ReadAllText(LeetsPath);
+            string t = File.ReadAllText(LeetsPath);
             Dictionary<string, string> list = new Dictionary<string, string>();
             
             if (t == "")
@@ -442,6 +454,67 @@ namespace FinBot
             }
 
             return list;
+        }
+
+        /// <summary>
+        /// Gets the last saved prefixes from the prefix dictionary file.
+        /// </summary>
+        public static void LoadPrefixes()
+        {
+            string data = File.ReadAllText(PrefixPath);
+            Dictionary<ulong, string> dict = new Dictionary<ulong, string>();
+
+            if(data == "")
+            {
+                
+            }
+
+            foreach(string str in data.Split("\n"))
+            {
+                if(str != "")
+                {
+                    string[] spl = str.Split(",");
+                    dict.Add(Convert.ToUInt64(spl[0]), spl[1]);
+                }
+            }
+
+            demandPrefixes.Add(dict);
+        }
+
+        /// <summary>
+        /// Saves all prefixes to the dictionary file within the demandPrefixes List.
+        /// </summary>
+        /// <param name="dict">Dictionary containing the guild id and prefix.</param>
+        public static void savePrefixes(Dictionary<ulong, string> dict)
+        {
+            ulong _id = 0;
+            string prefix = "";
+
+            foreach (KeyValuePair<ulong, string> x in dict)
+            {
+                _id = x.Key;
+                prefix = x.Value;
+            }
+
+            File.AppendAllText(PrefixPath, $"{_id}, {prefix}\n");
+        }
+
+        /// <summary>
+        /// Appends a prefix to the dictionary list.
+        /// </summary>
+        /// <param name="_id">The guild id.</param>
+        /// <param name="prefix">The guild prefix.</param>
+        public static void AppendPrefixes(ulong _id, string prefix)
+        {
+            Dictionary<ulong, string> dict = new Dictionary<ulong, string>();
+            dict.Add(_id, prefix);
+
+            if (demandPrefixes.Count > 1000)
+            {
+                demandPrefixes.RemoveAt(0);
+            }
+
+            demandPrefixes.Add(dict);
         }
     }
 }

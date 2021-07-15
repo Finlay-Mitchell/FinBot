@@ -33,6 +33,9 @@ class FinBot(commands.Bot):
         self.data = DataHelper()
         self.database_handler = None
         self.mongo: Union[MongoDB, None] = None
+
+        # This initializes
+
         # self.aiml_kernel = aiml.Kernel()
         # if os.path.isfile("bot_brain.brn"):
         #     self.aiml_kernel.bootstrap(brainFile="bot_brain.brn")
@@ -42,6 +45,12 @@ class FinBot(commands.Bot):
         # self.aiml_kernel.verbose(0)
 
     async def determine_prefix(self, bot, message):
+        """
+        Gets the prefix for the guild when a message is sent.
+        :param bot: The bot.
+        :param message: The message which was sent.
+        :return: Returns the prefix for the guild.
+        """
         if not hasattr(message, "guild") or message.guild is None:
             return ""
         if self.mongo is None:
@@ -55,18 +64,33 @@ class FinBot(commands.Bot):
 
     @staticmethod
     def create_completed_embed(title, text):
+        """
+        Generates an embed to signify about a successful operation.
+        :param title: The title of the embed.
+        :param text: The text for the embed.
+        :return: Returns an embed.
+        """
         embed = discord.Embed(title=title, description=text, colour=discord.Colour.green(),
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
     def create_error_embed(text):
+        """
+        Generates an embed to signify about an unsuccessful operation.
+        :param text: The text to put inside the embed.
+        :return: Returns an embed.
+        """
         embed = discord.Embed(title="Error", description=text, colour=discord.Colour.red(),
                               timestamp=datetime.datetime.utcnow())
         return embed
 
     @staticmethod
     def split_text(full_text):
+        """
+        Splits the given text into 2000 character size chunks.
+        :param full_text: The full text to split up.
+        """
         while len(full_text) > 2000:
             newline_indices = [m.end() for m in re.finditer("\n", full_text[:2000])]
             if len(newline_indices) == 0:
@@ -86,6 +110,9 @@ def get_bot():
 
     @bot.event
     async def on_ready():
+        """
+        Loads the bot extensions.
+        """
         bot.guild = bot.get_guild(config.monkey_guild_id)
         bot.error_channel = bot.get_channel(config.error_channel_id)
         bot.mongo = motor.motor_asyncio.AsyncIOMotorClient(config.mongo_connection_uri)
@@ -99,6 +126,10 @@ def get_bot():
 
     @bot.event
     async def on_message(message):
+        """
+        Checks whether the bot is executing a command or whether to pass it straight to the command handler.
+        :param message: The message which was sent.
+        """
         if message.author != bot.user:
             await bot.process_commands(message=message)
             return
@@ -161,6 +192,9 @@ def get_bot():
 
 
 if __name__ == '__main__':
+    """
+    Runs the bot.
+    """
     FinBot_bot = get_bot()
 
     try:
