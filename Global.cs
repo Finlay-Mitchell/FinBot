@@ -131,7 +131,7 @@ namespace FinBot
         /// <summary>
         /// Commands hidden from regular users - available to developers.
         /// </summary>
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata", "test" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
@@ -307,10 +307,10 @@ namespace FinBot
         {
             try
             {
-                if (demandPrefixes[0].TryGetValue(context.Guild.Id, out string prefix))
-                {
-                    return prefix;
-                }
+                //if (demandPrefixes[0].TryGetValue(context.Guild.Id, out string prefix))
+                //{
+                //    return prefix;
+                //}
 
                 MongoClient MongoClient = new MongoClient(Mongoconnstr);
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
@@ -466,7 +466,7 @@ namespace FinBot
 
             if(data == "")
             {
-                
+                ConsoleLog("PREFIX DATA WAS NULL");
             }
 
             foreach(string str in data.Split("\n"))
@@ -474,7 +474,7 @@ namespace FinBot
                 if(str != "")
                 {
                     string[] spl = str.Split(",");
-                    dict.Add(Convert.ToUInt64(spl[0]), spl[1]);
+                    dict.Add((ulong)Convert.ToUInt64(spl[0]), spl[1].Substring(1));
                 }
             }
 
@@ -485,18 +485,21 @@ namespace FinBot
         /// Saves all prefixes to the dictionary file within the demandPrefixes List.
         /// </summary>
         /// <param name="dict">Dictionary containing the guild id and prefix.</param>
-        public static void savePrefixes(Dictionary<ulong, string> dict)
+        public static void savePrefixes(List<Dictionary<ulong, string>> dict)
         {
             ulong _id = 0;
             string prefix = "";
 
-            foreach (KeyValuePair<ulong, string> x in dict)
+            foreach(Dictionary<ulong, string> value in dict)
             {
-                _id = x.Key;
-                prefix = x.Value;
-            }
+                foreach (KeyValuePair<ulong, string> x in value)
+                {
+                    _id = x.Key;
+                    prefix = x.Value;
+                }
 
-            File.AppendAllText(PrefixPath, $"{_id}, {prefix}\n");
+                File.AppendAllText(PrefixPath, $"{_id}, {prefix}\n");
+            }
         }
 
         /// <summary>
@@ -506,6 +509,11 @@ namespace FinBot
         /// <param name="prefix">The guild prefix.</param>
         public static void AppendPrefixes(ulong _id, string prefix)
         {
+            if(demandPrefixes.Where(dic => dic.ContainsKey(_id)).Any())
+            {
+                return;
+            }
+
             Dictionary<ulong, string> dict = new Dictionary<ulong, string>();
             dict.Add(_id, prefix);
 
@@ -515,6 +523,16 @@ namespace FinBot
             }
 
             demandPrefixes.Add(dict);
+        }
+
+        public static void UpdatePrefix(ulong _id, string prefix)
+        {
+            if (demandPrefixes.Where(dic => dic.ContainsKey(_id)).Any())
+            {
+                demandPrefixes[0].Remove(_id);
+            }
+
+            AppendPrefixes(_id, prefix);
         }
     }
 }

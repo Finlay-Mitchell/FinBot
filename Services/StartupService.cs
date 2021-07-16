@@ -31,7 +31,8 @@ namespace FinBot.Services
                 throw new Exception("Token missing from config.json! Please enter your token there (root directory)");
             }
 
-            Global.clientCommands = false;
+            Global.clientCommands = false; // By default, this is set to false for extra security - meaning that calling a command via the bot is not possible.
+            // Global.LoadPrefixes(); // Loads prefixes from the guildprefixes.load file to the Global.demandPrefixes variable.
             await _discord.LoginAsync(TokenType.Bot, Global.Token);
             await _discord.StartAsync();
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);

@@ -11,20 +11,23 @@ using MongoDB.Driver;
 using FinBot.Handlers;
 using System.Collections.Generic;
 using FinBot.Interactivity;
-using System.Threading;
+using FinBot.Services;
 using Discord.Rest;
+using System.IO;
 
 namespace FinBot.Modules
 {
-    public class DevCommands : InteractiveBase //Dev commands hidden from regular users
+    public class DevCommands : ModuleBase<ShardedCommandContext> //Dev commands hidden from regular users
     {
         public DiscordShardedClient _client;
+        public IServiceProvider _services;
 
         public DevCommands(IServiceProvider services)
         {
             try
             {
                 _client = services.GetRequiredService<DiscordShardedClient>();
+                _services = services;
             }
 
             catch (Exception ex)
@@ -74,8 +77,7 @@ namespace FinBot.Modules
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync($"Restarting bot with reason \"{reason}\"\n");
-                Process.Start($"{AppDomain.CurrentDomain.FriendlyName}.exe");
-                Environment.Exit(1);
+                _services.GetRequiredService<ShutdownService>().Shutdown(1);
             }
         }
 
@@ -84,8 +86,8 @@ namespace FinBot.Modules
         {
             if (Global.IsDev(Context.User))
             {
-                await Context.Message.ReplyAsync($"Shutting down services.");
-                Environment.Exit(1);
+                await Context.Message.ReplyAsync($"Shutting down services...");
+                _services.GetRequiredService<ShutdownService>().Shutdown(0);
             }
         }
 
@@ -228,19 +230,38 @@ namespace FinBot.Modules
         {
             if (Global.IsDev(Context.User))
             {
-                var auditlogs = Context.Guild.GetAuditLogsAsync(35, null, null, null, ActionType.ChannelUpdated).FlattenAsync();
-                string result = "";
+                //var auditlogs = Context.Guild.GetAuditLogsAsync(35, null, null, null, ActionType.ChannelUpdated).FlattenAsync();
+                //string result = "";
 
-                foreach (var audit in auditlogs.Result)
+                //foreach (var audit in auditlogs.Result)
+                //{
+                //    if (audit.Data is ChannelUpdateAuditLogData data)
+                //    {
+                //        result += $"{data.Before.Name} -> {data.After.Name} - ({data.ChannelId})\n";
+                //    }
+
+                //}
+
+                //await ReplyAsync(result);
+
+                //await ReplyAsync(await Global.DeterminePrefix(Context));
+
+                ulong _id = 0;
+                string prefix = "";
+                string dbg = "";
+                foreach (Dictionary<ulong, string> value in Global.demandPrefixes)
                 {
-                    if (audit.Data is ChannelUpdateAuditLogData data)
+                    dbg += $"{value.TryGetValue(_id, out string val)} - {val}";
+                    foreach (KeyValuePair<ulong, string> x in value)
                     {
-                        result += $"{data.Before.Name} -> {data.After.Name} - ({data.ChannelId})\n";
+                        _id = x.Key;
+                        prefix = x.Value;
                     }
 
+                    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
+                    await ReplyAsync(dbg);
                 }
 
-                await ReplyAsync(result);
             }
         }
     }

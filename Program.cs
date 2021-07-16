@@ -91,6 +91,7 @@ namespace FinBot
                 .AddSingleton<ReminderService>()
                 .AddSingleton<MuteService>()
                 .AddSingleton<InteractiveService>()
+                .AddSingleton<ShutdownService>()
                 .AddSingleton<LoggingService>();
             ConfigureServices(services);
             ServiceProvider serviceProvider = services.BuildServiceProvider();
