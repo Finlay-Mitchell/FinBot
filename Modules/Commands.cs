@@ -1930,7 +1930,7 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
-        [Command("changelog")]
+        [Command("changelog"), Summary("Gets information on the most recent update to the bots code."), Remarks("(PREFIX)changelog"), Alias("changes", "updates", "updatelog")]
         public async Task Changelog()
         {
             HttpClient client = new HttpClient();
