@@ -1946,7 +1946,7 @@ namespace FinBot.Modules
             string commitDate = commits[0].commit.author.date;
             EmbedBuilder eb = new EmbedBuilder();
             eb.WithTitle(title[0]);
-            eb.AddField("Most recent update:", title[1]);
+            _ = title.Length == 2 ? eb.AddField("Most recent update:", title[1]) : eb.AddField("Most recent update:", "No description could be retrieved");
             eb.Color = Color.Magenta;
             eb.Footer = new EmbedFooterBuilder()
             {
