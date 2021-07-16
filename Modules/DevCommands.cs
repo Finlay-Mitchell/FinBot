@@ -14,6 +14,8 @@ using FinBot.Interactivity;
 using FinBot.Services;
 using Discord.Rest;
 using System.IO;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
 
 namespace FinBot.Modules
 {
@@ -246,22 +248,21 @@ namespace FinBot.Modules
 
                 //await ReplyAsync(await Global.DeterminePrefix(Context));
 
-                ulong _id = 0;
-                string prefix = "";
-                string dbg = "";
-                foreach (Dictionary<ulong, string> value in Global.demandPrefixes)
-                {
-                    dbg += $"{value.TryGetValue(_id, out string val)} - {val}";
-                    foreach (KeyValuePair<ulong, string> x in value)
-                    {
-                        _id = x.Key;
-                        prefix = x.Value;
-                    }
+                //ulong _id = 0;
+                //string prefix = "";
+                //string dbg = "";
+                //foreach (Dictionary<ulong, string> value in Global.demandPrefixes)
+                //{
+                //    dbg += $"{value.TryGetValue(_id, out string val)} - {val}";
+                //    foreach (KeyValuePair<ulong, string> x in value)
+                //    {
+                //        _id = x.Key;
+                //        prefix = x.Value;
+                //    }
 
-                    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
-                    await ReplyAsync(dbg);
-                }
-
+                //    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
+                //    await ReplyAsync(dbg);
+                //}
             }
         }
     }

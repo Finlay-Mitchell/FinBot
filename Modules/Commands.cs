@@ -28,6 +28,7 @@ using UptimeSharp.Models;
 using SearchResult = Google.Apis.YouTube.v3.Data.SearchResult;
 using FinBot.Services;
 using MongoDB.Bson;
+using Newtonsoft.Json.Linq;
 
 namespace FinBot.Modules
 {
@@ -1926,6 +1927,32 @@ namespace FinBot.Modules
                 Url = "https://finbot.finlaymitchell.ml"
             };
 
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
+        [Command("changelog")]
+        public async Task Changelog()
+        {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)");
+            HttpResponseMessage response = await client.GetAsync("https://api.github.com/repos/Finlay-Mitchell/FinBot/commits");
+            string json = await response.Content.ReadAsStringAsync();
+            dynamic commits = JArray.Parse(json);
+            string commit = commits[0].commit.message;
+            string[] title = commit.Split(new string[] { "\n\n" }, StringSplitOptions.None);
+            string email = commits[0].commit.author.email;
+            string[] authorId = email.Split('+');
+            string authorName = commits[0].commit.author.name;
+            string commitDate = commits[0].commit.author.date;
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithTitle(title[0]);
+            eb.AddField("Most recent update:", title[1]);
+            eb.Color = Color.Magenta;
+            eb.Footer = new EmbedFooterBuilder()
+            {
+                IconUrl = $"https://avatars.githubusercontent.com/u/{authorId[0]}?v=4",
+                Text = $"Author: {authorName}\nCommit date: {commitDate}"
+            };
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
