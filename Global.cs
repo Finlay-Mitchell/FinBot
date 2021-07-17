@@ -131,7 +131,7 @@ namespace FinBot
         /// <summary>
         /// Commands hidden from regular users - available to developers.
         /// </summary>
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata", "test" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata", "clearalldata", "test" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
@@ -412,7 +412,6 @@ namespace FinBot
             EmbedBuilder embed = new EmbedBuilder();
             embed.WithTitle(title);
             embed.WithDescription(msg);
-            ConsoleLog(AutoChooseColour.ToString());
             embed.Color = AutoChooseColour ? ColourPicker() : colour;
             return embed;
         }
@@ -485,29 +484,23 @@ namespace FinBot
         /// Saves all prefixes to the dictionary file within the demandPrefixes List.
         /// </summary>
         /// <param name="dict">Dictionary containing the guild id and prefix.</param>
-        public static void savePrefixes(List<Dictionary<ulong, string>> dict)
+        public static void savePrefixes()
         {
-            ulong _id = 0;
-            string prefix = "";
-
-            foreach(Dictionary<ulong, string> value in dict)
+            foreach (Dictionary<ulong, string> dict in demandPrefixes)
             {
-                foreach (KeyValuePair<ulong, string> x in value)
+                foreach (KeyValuePair<ulong, string> kvp in dict)
                 {
-                    _id = x.Key;
-                    prefix = x.Value;
+                    File.AppendAllText(PrefixPath, $"{kvp.Key}, {kvp.Value}\n");
                 }
-
-                File.AppendAllText(PrefixPath, $"{_id}, {prefix}\n");
             }
         }
 
-        /// <summary>
-        /// Appends a prefix to the dictionary list.
-        /// </summary>
-        /// <param name="_id">The guild id.</param>
-        /// <param name="prefix">The guild prefix.</param>
-        public static void AppendPrefixes(ulong _id, string prefix)
+            /// <summary>
+            /// Appends a prefix to the dictionary list.
+            /// </summary>
+            /// <param name="_id">The guild id.</param>
+            /// <param name="prefix">The guild prefix.</param>
+            public static void AppendPrefixes(ulong _id, string prefix)
         {
             if(demandPrefixes.Where(dic => dic.ContainsKey(_id)).Any())
             {
@@ -525,14 +518,13 @@ namespace FinBot
             demandPrefixes.Add(dict);
         }
 
-        public static void UpdatePrefix(ulong _id, string prefix)
+        public static void UpdatePrefix(ulong _id, string prefix) //Think this is where issue is happening - prefix isn't updating.
         {
-            if (demandPrefixes.Where(dic => dic.ContainsKey(_id)).Any())
+            if (demandPrefixes[0].TryGetValue(_id, out string oldpre))
             {
                 demandPrefixes[0].Remove(_id);
+                AppendPrefixes(_id, prefix);
             }
-
-            AppendPrefixes(_id, prefix);
         }
     }
 }

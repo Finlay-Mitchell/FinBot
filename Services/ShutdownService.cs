@@ -14,13 +14,13 @@ namespace FinBot.Services
         {
             if (type == 0)
             {
-                // Global.savePrefixes(Global.demandPrefixes);
+                Global.savePrefixes();
                 Environment.Exit(0);
             }
 
             else
             {
-                // Global.savePrefixes(Global.demandPrefixes);
+                Global.savePrefixes();
                 Process.Start($"{AppDomain.CurrentDomain.FriendlyName}.exe");
                 Environment.Exit(1);
             }

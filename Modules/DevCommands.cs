@@ -263,6 +263,14 @@ namespace FinBot.Modules
                 //    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
                 //    await ReplyAsync(dbg);
                 //}
+
+                foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
+                {
+                    foreach (KeyValuePair<ulong, string> f in t)
+                    {
+                        Global.ConsoleLog($"{f.Key} | {f.Value}");
+                    }
+                }
             }
         }
     }

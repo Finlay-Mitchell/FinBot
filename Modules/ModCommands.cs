@@ -69,7 +69,7 @@ namespace FinBot.Modules
 
                         if (conformation.Content == "yes")
                         {
-                            IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 1).FlattenAsync();
+                            IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 2).FlattenAsync();
                             await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
                             await Context.Channel.TriggerTypingAsync();
                             IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Purge completed!");
@@ -82,6 +82,7 @@ namespace FinBot.Modules
                         else
                         {
                             await Context.Message.DeleteAsync();
+                            await conformation.DeleteAsync();
                             IUserMessage msg = await Context.Message.Channel.SendMessageAsync("Purge canceled.");
                             await Task.Delay(2000);
                             await msg.DeleteAsync();
@@ -93,7 +94,7 @@ namespace FinBot.Modules
                     else
                     {
                         await Context.Message.DeleteAsync();
-                        await conformMessage.DeleteAsync();
+                        await conformation.DeleteAsync();
                         IUserMessage msg = await Context.Message.Channel.SendMessageAsync("Purge canceled.");
                         await Task.Delay(2000);
                         await msg.DeleteAsync();
@@ -102,7 +103,7 @@ namespace FinBot.Modules
                     }
                 }
 
-                else if (amount < 15 && amount > 1)
+                else if (amount < 15 && amount >= 1)
                 {
                     IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 1).FlattenAsync();
                     await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
@@ -117,7 +118,7 @@ namespace FinBot.Modules
                 else
                 {
                     await Context.Message.DeleteAsync();
-                    IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Please enter a number larger than 1.");
+                    IUserMessage msg = await Context.Message.Channel.SendMessageAsync($"Please enter a number equal to 1 or larger.");
                     await Task.Delay(2000);
                     await msg.DeleteAsync();
 

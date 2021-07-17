@@ -469,7 +469,7 @@ namespace FinBot.Modules
                 await Context.Channel.TriggerTypingAsync();
                 EmbedBuilder eb = new EmbedBuilder()
                 {
-                    ImageUrl = user.GetAvatarUrl(size: 1024)
+                    ImageUrl = user.GetAvatarUrl(size: 1024) ?? user.GetDefaultAvatarUrl()
                 };
                 eb.WithAuthor(Context.Message.Author)
                 .WithColor(Color.DarkTeal)

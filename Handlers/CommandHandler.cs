@@ -64,7 +64,7 @@ namespace FinBot.Handlers
             {
                 if (execUser == currUser && message.HasStringPrefix(Global.clientPrefix, ref argPos) && Global.clientCommands == true) //If we've enabled Global.clientCommands, the current user is executing the commands & the prefix matches, run command from bot.
                 {
-                    IResult devres = await _commands.ExecuteAsync(context, argPos, null, MultiMatchHandling.Best);
+                    IResult devres = await _commands.ExecuteAsync(context, argPos, _services, MultiMatchHandling.Best);
                     await LogCommandUsage(context, devres);
 
                     return;
