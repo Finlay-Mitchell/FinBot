@@ -1939,9 +1939,8 @@ namespace FinBot.Modules
             string json = await response.Content.ReadAsStringAsync();
             dynamic commits = JArray.Parse(json);
             string commit = commits[0].commit.message;
-            string[] title = commit.Split(new string[] { "\n\n" }, StringSplitOptions.None);
-            string email = commits[0].commit.author.email;
-            string[] authorId = email.Split('+');
+            string[] title = commit.Split(new string[] { "\n\n" }, 2 , StringSplitOptions.None);
+            string authorId = commits[0].committer.id;
             string authorName = commits[0].commit.author.name;
             string commitDate = commits[0].commit.author.date;
             EmbedBuilder eb = new EmbedBuilder();
@@ -1950,7 +1949,7 @@ namespace FinBot.Modules
             eb.Color = Color.Magenta;
             eb.Footer = new EmbedFooterBuilder()
             {
-                IconUrl = $"https://avatars.githubusercontent.com/u/{authorId[0]}?v=4",
+                IconUrl = $"https://avatars.githubusercontent.com/u/{authorId}?v=4",
                 Text = $"Author: {authorName}\nCommit date: {commitDate}"
             };
             await Context.Message.ReplyAsync("", false, eb.Build());
