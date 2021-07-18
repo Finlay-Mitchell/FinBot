@@ -55,7 +55,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but the [subreddit](https://www.reddit.com/r/{subreddit}) you tried to post from was not found or no images/gifs could be retrieved, please try again.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }
@@ -79,7 +79,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but the post you tried to send has been flagged as NSFW. Please try this in a NSFW channel.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }
@@ -605,7 +605,7 @@ namespace FinBot.Modules
                         Author = new EmbedAuthorBuilder()
                         {
                             Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Url = Context.Message.GetJumpUrl()
                         }
                     }.Build());
@@ -621,7 +621,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
@@ -638,7 +638,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
@@ -735,7 +735,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Please mention a role",
                     Description = $"Please parse in a role parameter!",
@@ -952,7 +952,7 @@ namespace FinBot.Modules
                         Author = new EmbedAuthorBuilder()
                         {
                             Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Url = Context.Message.GetJumpUrl()
                         }
                     }.Build());
@@ -968,7 +968,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
@@ -985,7 +985,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
@@ -1069,7 +1069,7 @@ namespace FinBot.Modules
                         Author = new EmbedAuthorBuilder()
                         {
                             Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         },
                         Title = $"Please enable levelling",
                         Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
@@ -1089,7 +1089,7 @@ namespace FinBot.Modules
                         Author = new EmbedAuthorBuilder()
                         {
                             Name = Context.Message.Author.ToString(),
-                            IconUrl = Context.Message.Author.GetAvatarUrl(),
+                            IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         },
                         Title = $"Please enable levelling",
                         Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
@@ -1112,7 +1112,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Leaderboard for {Context.Guild}",
                     Color = Color.Green,
@@ -1239,7 +1239,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Please enable levelling",
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
@@ -1259,7 +1259,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Please enable levelling",
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
@@ -1315,7 +1315,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Score for {user.Username}",
                     Color = Color.Green,
@@ -1442,7 +1442,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Please enable levelling",
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
@@ -1462,7 +1462,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     },
                     Title = $"Please enable levelling",
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
@@ -1884,7 +1884,7 @@ namespace FinBot.Modules
             eb.Author = new EmbedAuthorBuilder()
             {
                 Name = Context.Message.Author.ToString(),
-                IconUrl = Context.Message.Author.GetAvatarUrl(),
+                IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                 Url = Context.Message.GetJumpUrl()
             };
             eb.Description = "[View status page](https://status.finlaymitchell.ml)";

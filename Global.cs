@@ -562,7 +562,7 @@ namespace FinBot
 
             else
             {
-                Global.ConsoleLog("Not reached");
+                ConsoleLog("Not reached");
             }
         }
     }

@@ -63,7 +63,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
@@ -136,7 +136,7 @@ namespace FinBot.Modules
                     Author = new EmbedAuthorBuilder()
                     {
                         Name = Context.Message.Author.ToString(),
-                        IconUrl = Context.Message.Author.GetAvatarUrl(),
+                        IconUrl = Context.Message.Author.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Url = Context.Message.GetJumpUrl()
                     }
                 }.Build());
@@ -215,7 +215,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.Build());
@@ -279,7 +279,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -350,7 +350,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -421,7 +421,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.Build());

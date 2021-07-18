@@ -50,7 +50,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -168,7 +168,7 @@ namespace FinBot.Modules
                             Description = $"Sorry, {Context.Message.Author.Mention} but the max slowmode you can have is 21600 seconds (6 hours).",
                             Footer = new EmbedFooterBuilder()
                             {
-                                IconUrl = Context.User.GetAvatarUrl(),
+                                IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                                 Text = $"{Context.User}"
                             },
                         }.Build());
@@ -187,7 +187,7 @@ namespace FinBot.Modules
                         Description = $"{Context.Message.Author.Mention} successfully modified the slowmode of <#{Context.Channel.Id}> to {value} seconds!",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = Context.User.GetAvatarUrl(),
+                            IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{Context.User}"
                         },
                     }.Build());
@@ -210,7 +210,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.Build());
@@ -450,7 +450,7 @@ namespace FinBot.Modules
                 {
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                     Title = "You do not have permission to execute this command",
@@ -488,7 +488,7 @@ namespace FinBot.Modules
                     {
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = u.GetAvatarUrl(),
+                            IconUrl = u.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{u}"
                         },
                         Title = $"Successfully cleared log for **{u.Username}**",
@@ -528,7 +528,7 @@ namespace FinBot.Modules
                 {
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                     Title = "You do not have permission to execute this command",
@@ -565,7 +565,7 @@ namespace FinBot.Modules
                     {
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = u.GetAvatarUrl(),
+                            IconUrl = u.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{u}"
                         },
                         Title = $"Successfully cleared all logs for **{u.Username}**",
@@ -608,7 +608,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -626,7 +626,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to ban yourself.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -646,7 +646,7 @@ namespace FinBot.Modules
                     Description = "I do not have permission to ban a moderator.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = user.GetAvatarUrl(),
+                        IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{user.Username}#{user.Discriminator}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -669,7 +669,7 @@ namespace FinBot.Modules
                 Title = $"***{user.Username} has been banned***",
                 Footer = new EmbedFooterBuilder()
                 {
-                    IconUrl = user.GetAvatarUrl(),
+                    IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     Text = $"{user.Username}#{user.Discriminator}",
                 },
                 Description = $"{user} has been banned at {DateTime.Now}\nReason: {reason}",
@@ -695,7 +695,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -713,7 +713,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to kick yourself.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -733,7 +733,7 @@ namespace FinBot.Modules
                     Description = "I do not have permission to kick a moderator.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = user.GetAvatarUrl(),
+                        IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{user.Username}#{user.Discriminator}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -756,7 +756,7 @@ namespace FinBot.Modules
                 Title = $"***{user.Username} has been kicked***",
                 Footer = new EmbedFooterBuilder()
                 {
-                    IconUrl = user.GetAvatarUrl(),
+                    IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     Text = $"{user.Username}#{user.Discriminator}"
                 },
                 Description = $"{user} has been kicked at {DateTime.Now}\nReason: {reason}",
@@ -787,7 +787,7 @@ namespace FinBot.Modules
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to vcmute yourself.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = Context.User.GetAvatarUrl(),
+                            IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{Context.User}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -807,7 +807,7 @@ namespace FinBot.Modules
                         Description = "I do not have permission to vcmute a moderator.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -825,7 +825,7 @@ namespace FinBot.Modules
                         Description = $"User needs to be in a voice channel.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -845,7 +845,7 @@ namespace FinBot.Modules
                             Description = $"This user is already muted.",
                             Footer = new EmbedFooterBuilder()
                             {
-                                IconUrl = user.GetAvatarUrl(),
+                                IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                                 Text = $"{user.Username}#{user.Discriminator}"
                             },
                         }.WithCurrentTimestamp().Build());
@@ -862,7 +862,7 @@ namespace FinBot.Modules
                             Title = $"***{user.Username} has been voice chat muted***",
                             Footer = new EmbedFooterBuilder()
                             {
-                                IconUrl = user.GetAvatarUrl(),
+                                IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                                 Text = $"{user.Username}#{user.Discriminator}"
                             },
                             Description = $"{user} has been muted at {DateTime.Now}\nReason: {reason}",
@@ -887,7 +887,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -918,7 +918,7 @@ namespace FinBot.Modules
                             Description = $"User needs to be in a voice channel.",
                             Footer = new EmbedFooterBuilder()
                             {
-                                IconUrl = user.GetAvatarUrl(),
+                                IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                                 Text = $"{user.Username}#{user.Discriminator}"
                             },
                         }.WithCurrentTimestamp().Build());
@@ -935,7 +935,7 @@ namespace FinBot.Modules
                             Title = $"***{user.Username} has been voice chat unmuted***",
                             Footer = new EmbedFooterBuilder()
                             {
-                                IconUrl = user.GetAvatarUrl(),
+                                IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                                 Text = $"{user.Username}#{user.Discriminator}"
                             },
                             Description = $"{user} has been unmuted at {DateTime.Now}",
@@ -959,7 +959,7 @@ namespace FinBot.Modules
                         Description = $"This user is not currently muted.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -978,7 +978,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1006,7 +1006,7 @@ namespace FinBot.Modules
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to warn yourself.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = Context.User.GetAvatarUrl(),
+                            IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{Context.User}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1025,7 +1025,7 @@ namespace FinBot.Modules
                         Description = "I do not have permission to warn a moderator.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1042,7 +1042,7 @@ namespace FinBot.Modules
                         Title = $"***{user.Username} has been warned***",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                         Description = $"{user} has been warned at {DateTime.Now}\nReason: {reason}",
@@ -1066,7 +1066,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1090,7 +1090,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.Build());
@@ -1108,7 +1108,7 @@ namespace FinBot.Modules
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = Context.User.GetAvatarUrl(),
+                            IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{Context.User}"
                         },
                     }.Build());
@@ -1127,7 +1127,7 @@ namespace FinBot.Modules
                         Description = "I do not have permission to mute a moderator.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1153,7 +1153,7 @@ namespace FinBot.Modules
                         Description = $"Sorry, but the role has a higher hierarchy than me.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1172,7 +1172,7 @@ namespace FinBot.Modules
                         Description = $"{user} is already muted.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1220,7 +1220,7 @@ namespace FinBot.Modules
                     Description = $"{user} has been muted at {DateTime.Now}\nReason: {reason}",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = user.GetAvatarUrl(),
+                        IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{user.Username}#{user.Discriminator}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1242,7 +1242,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.Build());
@@ -1263,7 +1263,7 @@ namespace FinBot.Modules
                         Description = $"The muted role does not exist to unmute a member.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1281,7 +1281,7 @@ namespace FinBot.Modules
                         Description = "This role has a higher hierarchy than me.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1299,7 +1299,7 @@ namespace FinBot.Modules
                         Description = $"{user} has been successfully unmuted.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1320,7 +1320,7 @@ namespace FinBot.Modules
                     Description = $"{user} is not currently muted.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = user.GetAvatarUrl(),
+                        IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{user.Username}#{user.Discriminator}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1398,7 +1398,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1436,7 +1436,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1515,7 +1515,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1570,7 +1570,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1634,7 +1634,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1663,7 +1663,7 @@ namespace FinBot.Modules
                     Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = Context.User.GetAvatarUrl(),
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{Context.User}"
                     },
                 }.WithCurrentTimestamp().Build());
@@ -1681,7 +1681,7 @@ namespace FinBot.Modules
                         Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to mute yourself.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = Context.User.GetAvatarUrl(),
+                            IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{Context.User}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1701,7 +1701,7 @@ namespace FinBot.Modules
                         Description = "I do not have permission to mute a moderator.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1726,7 +1726,7 @@ namespace FinBot.Modules
                         Description = "This role has a higher hierarchy than me.",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = user.GetAvatarUrl(),
+                            IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                             Text = $"{user.Username}#{user.Discriminator}"
                         },
                     }.WithCurrentTimestamp().Build());
@@ -1777,7 +1777,7 @@ namespace FinBot.Modules
                     Description = $"{user} has been successfully muted for {duration}\nreason: {reason}",
                     Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = user.GetAvatarUrl(),
+                        IconUrl = user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                         Text = $"{user.Username}#{user.Discriminator}"
                     },
                 }.WithCurrentTimestamp().Build());
