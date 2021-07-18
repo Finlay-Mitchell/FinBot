@@ -232,44 +232,36 @@ namespace FinBot.Modules
         {
             if (Global.IsDev(Context.User))
             {
-                //var auditlogs = Context.Guild.GetAuditLogsAsync(35, null, null, null, ActionType.ChannelUpdated).FlattenAsync();
-                //string result = "";
+                var auditlogs = Context.Guild.GetAuditLogsAsync(35, null, null, null, ActionType.ChannelUpdated).FlattenAsync();
+                string result = "";
 
-                //foreach (var audit in auditlogs.Result)
-                //{
-                //    if (audit.Data is ChannelUpdateAuditLogData data)
-                //    {
-                //        result += $"{data.Before.Name} -> {data.After.Name} - ({data.ChannelId})\n";
-                //    }
-
-                //}
-
-                //await ReplyAsync(result);
-
-                //await ReplyAsync(await Global.DeterminePrefix(Context));
-
-                //ulong _id = 0;
-                //string prefix = "";
-                //string dbg = "";
-                //foreach (Dictionary<ulong, string> value in Global.demandPrefixes)
-                //{
-                //    dbg += $"{value.TryGetValue(_id, out string val)} - {val}";
-                //    foreach (KeyValuePair<ulong, string> x in value)
-                //    {
-                //        _id = x.Key;
-                //        prefix = x.Value;
-                //    }
-
-                //    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
-                //    await ReplyAsync(dbg);
-                //}
-
-                foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
+                foreach (var audit in auditlogs.Result)
                 {
-                    foreach (KeyValuePair<ulong, string> f in t)
+                    if (audit.Data is ChannelUpdateAuditLogData data)
                     {
-                        Global.ConsoleLog($"{f.Key} | {f.Value}");
+                        result += $"{data.Before.Name} -> {data.After.Name} - ({data.ChannelId})\n";
                     }
+
+                }
+
+                await ReplyAsync(result);
+
+                await ReplyAsync(await Global.DeterminePrefix(Context));
+
+                ulong _id = 0;
+                string prefix = "";
+                string dbg = "";
+                foreach (Dictionary<ulong, string> value in Global.demandPrefixes)
+                {
+                    dbg += $"{value.TryGetValue(_id, out string val)} - {val}";
+                    foreach (KeyValuePair<ulong, string> x in value)
+                    {
+                        _id = x.Key;
+                        prefix = x.Value;
+                    }
+
+                    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
+                    await ReplyAsync(dbg);
                 }
             }
         }

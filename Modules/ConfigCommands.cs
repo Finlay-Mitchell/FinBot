@@ -34,13 +34,13 @@ namespace FinBot.Modules
                 {
                     BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "prefix", new_prefix } };
                     collection.InsertOne(document);
-                    Global.UpdatePrefix(_id, new_prefix);
+                    Global.UpdatePrefix(_id, new_prefix, await Global.DeterminePrefix(Context));
                 }
 
                 else
                 {
                     collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Set("prefix", new_prefix));
-                    Global.UpdatePrefix(_id, new_prefix);
+                    Global.UpdatePrefix(_id, new_prefix, await Global.DeterminePrefix(Context));
                 }
 
                 EmbedBuilder embed = new EmbedBuilder();

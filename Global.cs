@@ -157,10 +157,10 @@ namespace FinBot
         /// Designing this regex was painful and yes, I am undergoing therapy.
         /// </summary>
         public static string URIAndIpRegex = @"(?i)((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))[a-zA-Z._]|(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*)@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])";
-                                                //OLD ONE IN CASE IT GOES ALL WRONG: ((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))
-         /// <summary>
-         /// Loads a list of recent guild ids and prefixes.
-         /// </summary>
+        //OLD ONE IN CASE IT GOES ALL WRONG: ((http|ftp|https|ldap|mailto|dns|dhcp|imap|smtp|tftp|)://)(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?)|(([1-9]?\d|[12]\d\d)\.){3}([1-9]?\d|[12]\d\d)|(([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-]))
+        /// <summary>
+        /// Loads a list of recent guild ids and prefixes.
+        /// </summary>
         public static List<Dictionary<ulong, string>> demandPrefixes = new List<Dictionary<ulong, string>>();
 
         /// <summary>
@@ -307,9 +307,18 @@ namespace FinBot
         {
             try
             {
-                //if (demandPrefixes[0].TryGetValue(context.Guild.Id, out string prefix))
+                /*
+                 * This will be commented out until I fix the prefx command calling an embed whilst using cached prefixes
+                 */
+                //foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
                 //{
-                //    return prefix;
+                //    foreach (KeyValuePair<ulong, string> f in t)
+                //    {
+                //        if (context.Guild.Id == f.Key)
+                //        {
+                //            return f.Value;
+                //        }
+                //    }
                 //}
 
                 MongoClient MongoClient = new MongoClient(Mongoconnstr);
@@ -437,7 +446,7 @@ namespace FinBot
         {
             string t = File.ReadAllText(LeetsPath);
             Dictionary<string, string> list = new Dictionary<string, string>();
-            
+
             if (t == "")
             {
                 return list;
@@ -463,14 +472,14 @@ namespace FinBot
             string data = File.ReadAllText(PrefixPath);
             Dictionary<ulong, string> dict = new Dictionary<ulong, string>();
 
-            if(data == "")
+            if (data == "")
             {
                 ConsoleLog("PREFIX DATA WAS NULL");
             }
 
-            foreach(string str in data.Split("\n"))
+            foreach (string str in data.Split("\n"))
             {
-                if(str != "")
+                if (str != "")
                 {
                     string[] spl = str.Split(",");
                     dict.Add((ulong)Convert.ToUInt64(spl[0]), spl[1].Substring(1));
@@ -478,6 +487,7 @@ namespace FinBot
             }
 
             demandPrefixes.Add(dict);
+            File.WriteAllText(PrefixPath, string.Empty);
         }
 
         /// <summary>
@@ -495,14 +505,14 @@ namespace FinBot
             }
         }
 
-            /// <summary>
-            /// Appends a prefix to the dictionary list.
-            /// </summary>
-            /// <param name="_id">The guild id.</param>
-            /// <param name="prefix">The guild prefix.</param>
-            public static void AppendPrefixes(ulong _id, string prefix)
+        /// <summary>
+        /// Appends a prefix to the dictionary list.
+        /// </summary>
+        /// <param name="_id">The guild id.</param>
+        /// <param name="prefix">The guild prefix.</param>
+        public static void AppendPrefixes(ulong _id, string prefix)
         {
-            if(demandPrefixes.Where(dic => dic.ContainsKey(_id)).Any())
+            if (demandPrefixes.Where(dic => dic.ContainsKey(_id)).Any())
             {
                 return;
             }
@@ -518,12 +528,41 @@ namespace FinBot
             demandPrefixes.Add(dict);
         }
 
-        public static void UpdatePrefix(ulong _id, string prefix) //Think this is where issue is happening - prefix isn't updating.
+        /// <summary>
+        /// Updates the prefix list to allow prefix updating.
+        /// </summary>
+        /// <param name="_id">The guild id.</param>
+        /// <param name="prefix">The new prefix to set.</param>
+        /// <param name="oldPrefix">The old prefix to replace.</param>
+        public static void UpdatePrefix(ulong _id, string prefix, string oldPrefix)
         {
-            if (demandPrefixes[0].TryGetValue(_id, out string oldpre))
+            // It's really not pretty, but it'll work for now until I decide to update it.
+            Dictionary<ulong, string> dict = new Dictionary<ulong, string>();
+            dict.Add(_id, oldPrefix);
+            int loc = 0;
+
+            if (dict.Count != 0)
             {
-                demandPrefixes[0].Remove(_id);
-                AppendPrefixes(_id, prefix);
+                foreach (Dictionary<ulong, string> t in demandPrefixes)
+                {
+                    foreach (KeyValuePair<ulong, string> f in t)
+                    {
+                        if (_id == f.Key)
+                        {
+                            ConsoleLog($"Reached - [{_id} | {prefix} | {oldPrefix}]");
+                            demandPrefixes[loc].Remove(_id);
+                            AppendPrefixes(_id, prefix);
+                            return;
+                        }
+                    }
+
+                    loc++;
+                }
+            }
+
+            else
+            {
+                Global.ConsoleLog("Not reached");
             }
         }
     }
