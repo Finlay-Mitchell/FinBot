@@ -16,6 +16,7 @@ using Discord.Rest;
 using System.IO;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using Optimal = Discord.Optional;
 
 namespace FinBot.Modules
 {
@@ -228,42 +229,139 @@ namespace FinBot.Modules
         }
 
         [Command("test")]
-        public async Task test()
+        public async Task test(string action = null, SocketUser member = null, SocketTextChannel channel = null)
         {
+            //IEnumerable<RestAuditLogEntry> auditlogs = await Context.Guild.GetAuditLogsAsync(3, null, null, id, ActionType.ChannelUpdated).FlattenAsync();
             if (Global.IsDev(Context.User))
             {
-                var auditlogs = Context.Guild.GetAuditLogsAsync(35, null, null, null, ActionType.ChannelUpdated).FlattenAsync();
+                if (action != null)
+                {
+                    switch (action.ToLower())
+                    {
+                        case "roles":
+                            await AuditRoles(Context, member ?? null);
+                            break;
+                        case "overwrites":
+                            await AuditOverwrites(Context, channel ?? null);
+                            break;
+                    }
+                }
+
                 string result = "";
 
-                foreach (var audit in auditlogs.Result)
-                {
-                    if (audit.Data is ChannelUpdateAuditLogData data)
-                    {
-                        result += $"{data.Before.Name} -> {data.After.Name} - ({data.ChannelId})\n";
-                    }
-
-                }
+               
 
                 await ReplyAsync(result);
+            }
+        }
 
-                await ReplyAsync(await Global.DeterminePrefix(Context));
+        public async Task AuditRoles(ShardedCommandContext context, SocketUser user)
+        {
+            if (user == null)
+            {
+                await context.Channel.SendMessageAsync("", false, Global.EmbedMessage("Error", "Please mention a user", false, Color.Red).Build());
+                return;
+            }
 
-                ulong _id = 0;
-                string prefix = "";
-                string dbg = "";
-                foreach (Dictionary<ulong, string> value in Global.demandPrefixes)
+            IUserMessage msg = await context.Message.ReplyAsync("Searching...this may take a few seconds");
+            EmbedBuilder eb = CreateRoleChangesEmbed(context, user);
+            eb.Footer = new EmbedFooterBuilder()
+            {
+                IconUrl = context.User.GetAvatarUrl() ?? context.User.GetDefaultAvatarUrl(),
+                Text = $"{context.User}"
+            };
+            await Global.ModifyMessage(msg, eb);
+            //        await sent_message.add_reaction("⏩")
+        }
+
+        public EmbedBuilder CreateRoleChangesEmbed(ShardedCommandContext context, SocketUser user, int startIndex = 0)
+        {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.WithCurrentTimestamp();
+            embed.Color = Color.Blue;
+            embed.Title = $"Role changes for {user} - {user.Id}";
+
+            return embed;
+        }
+
+        public async Task<string[]> GetRoleUpdates(ShardedCommandContext context, SocketUser user)
+        {
+            SocketGuild guild = context.Guild;
+            ActionType action = ActionType.MemberRoleUpdated;
+            string[] entries = { };
+
+            IEnumerable<RestAuditLogEntry> auditSearch = await guild.GetAuditLogsAsync(int.MaxValue, null, null, user.Id, action).FlattenAsync();
+
+            foreach (RestAuditLogEntry AuditLogEntry in auditSearch)
+            {
+                if (AuditLogEntry.Data is MemberRoleAuditLogData data)
                 {
-                    dbg += $"{value.TryGetValue(_id, out string val)} - {val}";
-                    foreach (KeyValuePair<ulong, string> x in value)
+                    if (data.Target == user)
                     {
-                        _id = x.Key;
-                        prefix = x.Value;
-                    }
+                        // IReadOnlyCollection<MemberRoleEditInfo> beforeRoles = ; //Woork on
+                        DateTime date = AuditLogEntry.CreatedAt.DateTime;
 
-                    // File.AppendAllText(Global.PrefixPath, $"{_id}, {prefix}\n");
-                    await ReplyAsync(dbg);
+                        // after roles
+                        // taken roles
+                        // added roles
+
+                        //checks
+
+                        
+                    }
                 }
             }
+
+            return entries;
+        }
+
+        public async Task AuditOverwrites(ShardedCommandContext context, SocketTextChannel channel)
+        {
+            if(channel == null)
+            {
+                await context.Channel.SendMessageAsync("", false, Global.EmbedMessage("Error", "Plesse mention a channel", false, Color.Red).Build());
+                return;
+            }
+
+            IUserMessage msg = await context.Message.ReplyAsync("Searching...this may take a few seconds");
+            EmbedBuilder eb = CreateChannelUpdatesEmbed(context, channel, Context.User);
+            await Global.ModifyMessage(msg, eb);
+            //        await sent_message.add_reaction("⏩")
+
+        }
+
+        public EmbedBuilder CreateChannelUpdatesEmbed(ShardedCommandContext context, SocketTextChannel channel, SocketUser user)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithCurrentTimestamp();
+            eb.Color = Color.Blue;
+            eb.Title = $"Channel updates for {channel.Name} - {channel.Id}";
+            eb.Footer = new EmbedFooterBuilder()
+            {
+                IconUrl = context.User.GetAvatarUrl() ?? context.User.GetDefaultAvatarUrl(),
+                Text = $"{context.User}"
+            };
+
+            return eb;
+        }
+
+        public async Task<string[]> GetchannelUpdates(ShardedCommandContext context, SocketTextChannel channel)
+        {
+            SocketGuild guild = context.Guild;
+            ActionType action = ActionType.ChannelUpdated;
+            string[] entries = { };
+
+            IEnumerable<RestAuditLogEntry> auditSearch = await guild.GetAuditLogsAsync(int.MaxValue, null, null, null, action).FlattenAsync();
+
+            foreach (RestAuditLogEntry AuditLogEntry in auditSearch)
+            {
+                if (AuditLogEntry.Data is ChannelUpdateAuditLogData data)
+                {
+                   
+                }
+            }
+
+            return entries;
         }
     }
 }
