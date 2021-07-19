@@ -29,6 +29,10 @@ using SearchResult = Google.Apis.YouTube.v3.Data.SearchResult;
 using FinBot.Services;
 using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
+using System.Drawing;
+using System.Security.Cryptography;
+using System.Drawing.Imaging;
+using QRCoder;
 
 namespace FinBot.Modules
 {
@@ -1894,7 +1898,7 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
-        [Command("invite")]
+        [Command("botinvite"), Summary("Gets an invite for the bot"), Remarks("(PREFIX)botinvite"), Alias("bot_invite", "invitebot", "invite_bot")]
         public async Task Invite(params string[] arg)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -1906,7 +1910,7 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
-        [Command("support")]
+        [Command("support"), Summary("Gets an invite to the FinBot support server"), Remarks("(PREFIX)support"), Alias("support_invite", "supportinvite", "invite_support")]
         public async Task Support(params string[] arg)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -1918,7 +1922,7 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
-        [Command("website")]
+        [Command("website"), Summary("Gets the bots custom-built website"), Remarks("(PREFIX)website")]
         public async Task Website(params string[] arg)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -1959,6 +1963,110 @@ namespace FinBot.Modules
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 
          * 
+         */
+
+        [Command("invite"), Summary("Gets an invite to the current guild in both the form of a URL and a QR code"), Remarks("(PREFIX)invite"), Alias("guildinvite", "inviteguild", "getinvite", "guild_invite")]
+        public async Task invite(params string[] args)
+        {
+            IReadOnlyCollection<RestInviteMetadata> invites = await Context.Guild.GetInvitesAsync();
+            string url = "";
+
+            foreach (RestInviteMetadata invite in invites)
+            {
+                if(Context.Guild.VanityURLCode != null)
+                {
+                    RestInviteMetadata vanityURL = await Context.Guild.GetVanityInviteAsync();
+                    url = vanityURL.Url;
+                    break;
+                }
+
+                if (invite.IsTemporary)
+                {
+                    continue;
+                }
+
+                else
+                {
+                    url = invite.Url;
+                    break;
+                }
+            }
+
+            if(url == "")
+            {
+                SocketTextChannel channel = Context.Channel as SocketTextChannel;
+                IInviteMetadata invite = await channel.CreateInviteAsync(null, null, false);
+                url = invite.Url;
+            }
+
+            QRCodeGenerator qrGenerator = new QRCodeGenerator();
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+            QRCode qrCode = new QRCode(qrCodeData);
+            System.Drawing.Color colour = ColorTranslator.FromHtml("#5539cc");
+            Bitmap qrCodeImage = null;
+
+            try
+            {
+                WebClient WC = new WebClient();
+                byte[] iconBytes = WC.DownloadData(Context.Guild.IconUrl);
+                Bitmap bmp;
+                using (MemoryStream iconMS = new MemoryStream(iconBytes))
+                {
+                    bmp = new Bitmap(iconMS);
+                }
+                qrCodeImage = qrCode.GetGraphic(20, colour, System.Drawing.Color.White, bmp);
+            }
+
+            catch
+            {
+                qrCodeImage = qrCode.GetGraphic(20, "#5539cc", "#ffffff");
+            }
+
+            System.Drawing.Image img = qrCodeImage;
+            MemoryStream ms = new MemoryStream(ImageToByteArray(img)); // We do this as a memorystream because this can be parsed straight to Discord without having to save our image to our computer/server.
+            string url_safe = GenerateRandom(); // This means there's a different attachment name every time that we use this command, stopping Discord from caching the message and showing us the wrong one.
+            EmbedBuilder eb = new EmbedBuilder();
+            IUserMessage msg = await Context.Channel.SendFileAsync(ms, $"guild_invite-{url_safe}.png"); // We do this because sending it to Discord and quickly removing it allows us to get a proxy url, which we do in the next line. 
+            eb.ImageUrl = msg.Attachments.First().ProxyUrl;
+            await msg.DeleteAsync(); //Since we've already got the URL, we can just delete the image and put it into a nicer looking embed.
+            eb.Title = "Scan this invite QR code for the guild";
+            eb.Description = $"or simply copy the URL here: {url}";
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
+        /// <summary>
+        /// Converts an image to a byte array.
+        /// </summary>
+        /// <param name="img">The image to get the byte array of.</param>
+        /// <returns>A byte array for the image.</returns>
+        public static byte[] ImageToByteArray(System.Drawing.Image img)
+        {
+            ImageConverter _imageConverter = new ImageConverter();
+            byte[] xByte = (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
+            return xByte;
+        }
+
+        /// <summary>
+        /// Generates a "random" URL-safe string.
+        /// </summary>
+        /// <param name="size">The size of the string to generate.</param>
+        /// <returns>A "random" string with the size of the parsed size with a default size of 16.</returns>
+        public static string GenerateRandom(uint size = 16)
+        {
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            char[] stringChars = new char[size];
+            Random random = new Random();
+
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+
+            return stringChars.ToString();
+        }
+
+        /*
+         * This is just a template for the chatbot command in the Python cogs.
          */
 
         [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
