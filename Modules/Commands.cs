@@ -30,8 +30,6 @@ using FinBot.Services;
 using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
-using System.Security.Cryptography;
-using System.Drawing.Imaging;
 using QRCoder;
 
 namespace FinBot.Modules
