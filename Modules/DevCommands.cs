@@ -341,7 +341,7 @@ namespace FinBot.Modules
             string gitCommand = "git ";
             string gitAddArgument = @"add -A";
             string gitCommitArgument = @"commit -m ""Pushed automatically via C#""";
-            string gitPushArgument = @"push FinBot";
+            string gitPushArgument = @"push";
 
             Process.Start(gitCommand, gitAddArgument);
             Process.Start(gitCommand, gitCommitArgument);
