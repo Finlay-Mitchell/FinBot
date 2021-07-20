@@ -37,6 +37,7 @@ namespace FinBot.Modules
     public class Commands : ModuleBase<ShardedCommandContext>
     {
         [Command("reddit"), Summary("Shows a post from the selected subreddit"), Remarks("(PREFIX)reddit <subreddit>"), Alias("r", "subreddit")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Reddit([Remainder] string subreddit)
         {
             subreddit = subreddit.Replace(" ", "");
@@ -192,6 +193,7 @@ namespace FinBot.Modules
         }
 
         [Command("ping"), Summary("gives you a ping to the Discord API"), Remarks("(PREFIX)ping")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Ping()
         {
             DateTime before = DateTime.Now;
@@ -306,6 +308,7 @@ namespace FinBot.Modules
         }
 
         [Command("userinfo"), Summary("shows information on a user"), Remarks("(PREFIX)userinfo || (PREFIX)userinfo <user>."), Alias("whois", "user", "info", "user-info")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task UserInfo([Remainder] SocketUser user = null)
         {
             try
@@ -362,6 +365,7 @@ namespace FinBot.Modules
         }
 
         [Command("serverinfo"), Summary("Shows information on the server"), Remarks("(PREFIX)serverinfo"), Alias("server", "server-info")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task ServerInfo()
         {
             await Context.Channel.TriggerTypingAsync();
@@ -398,6 +402,7 @@ namespace FinBot.Modules
         }
 
         [Command("botInfo"), Summary("shows some basic bot information"), Remarks("(PREFIX)botinfo")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task BotInfo()
         {
             await Context.Channel.TriggerTypingAsync();
@@ -462,6 +467,7 @@ namespace FinBot.Modules
         }
 
         [Command("av"), Summary("show users avatar"), Remarks("(PREFIX)av <user>"), Alias("Avatar", "profile")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task AV([Remainder] SocketUser user = null)
         {
             try
@@ -513,6 +519,7 @@ namespace FinBot.Modules
         }
 
         [Command("embed"), Summary("Displays your message in an embed message"), Remarks("(PREFIX)embed <title>, <description>"), Alias("embedmessage")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task CmdEmbedMessage([Remainder] string text = "")
         {
             string content = await CheckEmbedContent(text, Context);
@@ -585,6 +592,7 @@ namespace FinBot.Modules
         }
 
         [Command("translate"), Summary("Translates inputted text to English"), Remarks("(PREFIX)translate <text>"), Alias("t", "trans")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Translate([Remainder] string translate)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -652,6 +660,7 @@ namespace FinBot.Modules
         }
 
         [Command("wiki", RunMode = RunMode.Async), Alias("wikipedia"), Summary("Searches Wikipedia"), Remarks("(PREFIX)wiki <phrase>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Wikipedia([Remainder] string search = "")
         {
             if (string.IsNullOrWhiteSpace(search))
@@ -712,6 +721,7 @@ namespace FinBot.Modules
         }
 
         [Command("Roleinfo"), Summary("Gets information on the parsed role"), Remarks("(PREFIX)roleinfo <role name> or <@role>"), Alias("role", "role-info", "ri")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task RoleInfo([Remainder] SocketRole role = null)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -752,6 +762,7 @@ namespace FinBot.Modules
         }
 
         [Command("roles"), Summary("Gets a list of all the roles in the server"), Remarks("(PREFIX)roles"), Alias("getroles", "allroles", "getallroless")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task GetRoles()
         {
             EmbedBuilder eb = new EmbedBuilder();
@@ -860,6 +871,7 @@ namespace FinBot.Modules
         }
 
         [Command("ysearch", RunMode = RunMode.Async), Summary("Search YouTube for a specific keyword"), Remarks("(PREFIX)ysearch <query>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task SearchYouTube([Remainder] string args = "")
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -932,6 +944,7 @@ namespace FinBot.Modules
         }
 
         [Command("TranslateTo"), Summary("Translates the input text to the language you specify"), Remarks("(PREFIX)TranslateTo <language code> <text>"), Alias("trto", "tto")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task TranslateTo(string toLanguage, [Remainder] string translate)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -999,6 +1012,7 @@ namespace FinBot.Modules
         }
 
         [Command("fact"), Summary("Gives you a random fact"), Remarks("(PREFIX)fact")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Fact(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
@@ -1018,6 +1032,7 @@ namespace FinBot.Modules
         }
 
         [Command("catfact"), Summary("Gets a random cat fact"), Remarks("(PREFIX)catfact")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task CatFact(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
@@ -1030,6 +1045,7 @@ namespace FinBot.Modules
         }
 
         [Command("trivia"), Summary("Gives you a random trivia question and censored out answer"), Remarks("(PREFIX)trivia")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Trivia(params string[] args)
         {
             await Context.Channel.TriggerTypingAsync();
@@ -1058,6 +1074,7 @@ namespace FinBot.Modules
         }
 
         [Command("leaderboard"), Summary("Gets the top 10 members in the leaderboard for the guild"), Remarks("(PREFIX)leaderboard")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task GetLeaderboard()
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -1232,6 +1249,7 @@ namespace FinBot.Modules
         }
 
         [Command("Rank"), Summary("Gets the rank for you or another user in a server"), Remarks("(PREFIX)rank (optional)<user>"), Alias("level")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Rank(params string[] arg)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -1361,6 +1379,7 @@ namespace FinBot.Modules
         }
 
         [Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Snipe()
         {
             await Context.Channel.TriggerTypingAsync();
@@ -1619,7 +1638,7 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync(dadJoke);
         }
 
-        private async Task AddToPolls(uint type, MySqlConnection conn, ulong msgId, ulong guildId, ulong authorId, string state, ulong chanId)
+        private void AddToPolls(uint type, MySqlConnection conn, ulong msgId, ulong guildId, ulong authorId, string state, ulong chanId)
         {
             try
             {
@@ -1649,6 +1668,7 @@ namespace FinBot.Modules
         }
 
         [Command("poll")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.AddReactions)]
         public async Task Poll([Remainder] string question)
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -1696,7 +1716,7 @@ namespace FinBot.Modules
                             tp.Dispose();
                             await msg.AddReactionsAsync(Global.reactions.ToArray());
                             queryConn.Open();
-                            await AddToPolls(0, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Active", Context.Channel.Id);
+                            AddToPolls(0, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Active", Context.Channel.Id);
                             queryConn.Close();
                         }
                     }
@@ -1715,7 +1735,7 @@ namespace FinBot.Modules
                         tp.Dispose();
                         await msg.AddReactionsAsync(Global.reactions.ToArray());
                         queryConn.Open();
-                        await AddToPolls(1, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Active", Context.Channel.Id);
+                        AddToPolls(1, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Active", Context.Channel.Id);
                         queryConn.Close();
                     }
                 }
@@ -1751,6 +1771,7 @@ namespace FinBot.Modules
         }
 
         [Command("endpoll")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Endpoll()
         {
             IDisposable tp = Context.Channel.EnterTypingState();
@@ -1791,7 +1812,7 @@ namespace FinBot.Modules
                                 eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
                                 await Global.ModifyMessage(message, eb);
                                 queryConn.Open();
-                                await AddToPolls(2, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                AddToPolls(2, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
                                 queryConn.Close();
                                 tp.Dispose();
                             }
@@ -1800,7 +1821,7 @@ namespace FinBot.Modules
                             {
                                 await Context.Message.ReplyAsync($"Error: {ex}");
                                 queryConn.Open();
-                                await AddToPolls(2, queryConn, Context.Message.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                AddToPolls(2, queryConn, Context.Message.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
                                 queryConn.Close();
                                 tp.Dispose();
                             }
@@ -1868,8 +1889,6 @@ namespace FinBot.Modules
                 }
             }
 
-            catch { }
-
             finally
             {
                 conn.Close();
@@ -1877,6 +1896,7 @@ namespace FinBot.Modules
         }
 
         [Command("uptime"), Summary("Gets the percentage of uptime for each of the bot modules"), Remarks("(PREFIX)uptime"), Alias("status")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Uptime(params string[] arg)
         {
             await Context.Channel.TriggerTypingAsync();
@@ -1900,6 +1920,7 @@ namespace FinBot.Modules
         }
 
         [Command("botinvite"), Summary("Gets an invite for the bot"), Remarks("(PREFIX)botinvite"), Alias("bot_invite", "invitebot", "invite_bot")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Invite(params string[] arg)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -1912,6 +1933,7 @@ namespace FinBot.Modules
         }
 
         [Command("support"), Summary("Gets an invite to the FinBot support server"), Remarks("(PREFIX)support"), Alias("support_invite", "supportinvite", "invite_support")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Support(params string[] arg)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -1924,6 +1946,7 @@ namespace FinBot.Modules
         }
 
         [Command("website"), Summary("Gets the bots custom-built website"), Remarks("(PREFIX)website")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Website(params string[] arg)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -1936,6 +1959,7 @@ namespace FinBot.Modules
         }
 
         [Command("changelog"), Summary("Gets information on the most recent update to the bots code."), Remarks("(PREFIX)changelog"), Alias("changes", "updates", "updatelog")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Changelog()
         {
             HttpClient client = new HttpClient();
@@ -1967,6 +1991,7 @@ namespace FinBot.Modules
          */
 
         [Command("invite"), Summary("Gets an invite to the current guild in both the form of a URL and a QR code"), Remarks("(PREFIX)invite"), Alias("guildinvite", "inviteguild", "getinvite", "guild_invite")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.CreateInstantInvite | ChannelPermission.AttachFiles | ChannelPermission.ManageMessages)]
         public async Task invite(params string[] args)
         {
             IReadOnlyCollection<RestInviteMetadata> invites = await Context.Guild.GetInvitesAsync();

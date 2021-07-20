@@ -11,6 +11,7 @@ namespace FinBot.Modules
     public class ConfigCommands : ModuleBase<ShardedCommandContext>
     {
         [Command("prefix"), Summary("Sets the new bot prefix for the current guild"), Remarks("(PREFIX)prefix <new_prefix>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task prefix([Remainder] string new_prefix)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -70,8 +71,9 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("setwelcomechannel"), Summary("Sets the channel where welcome messages for new members/leaving members are sent"),
-            Remarks("(PREFIX)setwelcomechannel <channel>"), Alias("set_welcome_channel", "welcomechannel", "welcome_channel", "welcomemessages", "welcome_messages")]
+        [Command("setwelcomechannel"), Summary("Sets the channel where welcome messages for new members/leaving members are sent"), Remarks("(PREFIX)setwelcomechannel <channel>"), 
+            Alias("set_welcome_channel", "welcomechannel", "welcome_channel", "welcomemessages", "welcome_messages")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task SetWelcomeChannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -145,6 +147,7 @@ namespace FinBot.Modules
 
         [Command("membercountchannel"), Summary("Sets the membercount channel"), Remarks("(PREFIX)membercountchannel <voice_channel>"),
             Alias("setmembercountchannel", "membercount_channel", "set_membercount_channel", "setmembercount")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks), RequireBotPermission(GuildPermission.ManageChannels)]
         public async Task SetMembercountChannel([Remainder] SocketChannel parsedChannel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -223,6 +226,7 @@ namespace FinBot.Modules
         }
 
         [Command("enablelevelling"), Summary("Enables guild user levelling"), Remarks("(PREFIX)enablelevelling <on/off/true/false>"), Alias("enable_levelling", "levelling")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task EnableLevelling([Remainder] string toggle)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -287,6 +291,7 @@ namespace FinBot.Modules
         }
 
         [Command("levellingchannel"), Summary("Sets the channel where users level up messages are setn"), Remarks("(PREFIX)levellingchannel <channel>"), Alias("levelling_channel", "levelingchannel", "leveling_channel")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task LevellingChannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -358,6 +363,7 @@ namespace FinBot.Modules
         }
 
         [Command("modchannel"), Summary("sets the log channel for all user infractions"), Remarks("(PREFIX)modchannel <text_channel>"), Alias("modlogchannel", "mod_channel", "mod_log_channel", "moderatorlogchannel", "loggingchannel", "logchannel")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Modchannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);

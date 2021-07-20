@@ -396,7 +396,7 @@ namespace FinBot.Services
         /// Logs the message and some basic information about it to the console.
         /// </summary>
         /// <param name="arg">The message to log.</param>
-        private async Task<Task> OnLogMessage(SocketMessage arg)
+        private Task OnLogMessage(SocketMessage arg)
         {
             if (arg.Channel.GetType() == typeof(SocketTextChannel))
             {
@@ -428,6 +428,7 @@ namespace FinBot.Services
         {
             _logger.LogInformation($"Connected as -> {arg.CurrentUser.Username}");
             _logger.LogInformation($"We are on {arg.Guilds.Count} servers");
+            _logger.LogInformation($"Shard {arg.ShardId} ready! - {_discord.Shards.Count()} / {await _discord.GetRecommendedShardCountAsync()} recommended shards.");
             return Task.CompletedTask;
         }
 
@@ -435,7 +436,7 @@ namespace FinBot.Services
         /// Handles the logging severity of the message.
         /// </summary>
         /// <param name="msg">The message to log.</param>
-        public async Task<Task> OnLogAsync(LogMessage msg)
+        public Task OnLogAsync(LogMessage msg)
         {
             string logText = $"{msg.Source}: {msg.Exception?.ToString() ?? msg.Message}";
 

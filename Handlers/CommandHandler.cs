@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using Discord.Net;
 
 namespace FinBot.Handlers
 {
@@ -79,6 +80,26 @@ namespace FinBot.Handlers
 
             if (!result.IsSuccess && !Global.ErorrsToIgnore.Contains(result.Error.Value))
             {
+                if (result.Error.Value == CommandError.UnmetPrecondition)
+                {
+                    try
+                    {
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.Color = Color.Red;
+                        eb.Title = "Error";
+                        eb.Description = result.ErrorReason;
+                        eb.WithCurrentTimestamp();
+                        await context.Message.ReplyAsync("", false, eb.Build());
+                    }
+
+                    catch
+                    {
+                        await context.Message.ReplyAsync(result.ErrorReason);
+                    }
+
+                    return;
+                }
+
                 EmbedBuilder b = new EmbedBuilder
                 {
                     Color = Color.Red,

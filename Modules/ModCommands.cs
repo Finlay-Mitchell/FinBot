@@ -36,6 +36,7 @@ namespace FinBot.Modules
         }
 
         [Command("clear"), Summary("clears a specified amount of messages from the chat"), Remarks("(PREFIX) clear<amount>"), Alias("purge", "clr")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ReadMessageHistory | ChannelPermission.ManageMessages)]
         public async Task Purge(int amount)
         {
             SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
@@ -128,6 +129,7 @@ namespace FinBot.Modules
         }
 
         [Command("slowmode"), Summary("sets the slowmode of the current chat"), Remarks("(PREFIX)slowmode <time in seconds | \"spam\" for 15 seconds | \"simp\" for 7 seconds>"), Alias("slow")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageChannels)]
         public async Task Slowmode([Remainder] string value)
         {
             SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
@@ -439,6 +441,7 @@ namespace FinBot.Modules
         }
 
         [Command("clearlogs"), Summary("Clears users logs"), Remarks("(PREFIX)clearlogs <user> <amount>"), Alias("clearlog", "cl")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Clearwarn(string user1 = null, int number = 999)
         {
             SocketGuildUser user = Context.User as SocketGuildUser;
@@ -517,6 +520,7 @@ namespace FinBot.Modules
         }
 
         [Command("ClearAllModLogs"), Summary("Clears all logs for a user"), Remarks("(PREFIX)ClearAllModLogs <user>"), Alias("clearalllogs", "cal", "caml")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task ClearAllModLogs(string user1 = null)
         {
             SocketGuildUser user = Context.User as SocketGuildUser;
@@ -594,6 +598,7 @@ namespace FinBot.Modules
         }
 
         [Command("ban"), Summary("bans user from the guild"), Remarks("(PREFIX)ban <user> (optional)prune days (optional)reason")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.BanMembers)]
         public async Task BanUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -681,6 +686,7 @@ namespace FinBot.Modules
         }
 
         [Command("kick"), Summary("kicks member from the guild"), Remarks("(PREFIX)kick <user> (optional)<reason>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.KickMembers)]
         public async Task KickUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -768,6 +774,7 @@ namespace FinBot.Modules
         }
 
         [Command("vcmute"), Summary("Mutes a user from voice channels"), Remarks("(PREFIX)vcmute <user> (optional) <user>"), Alias("voicechatmute")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.MuteMembers)]
         public async Task VcMute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -897,6 +904,7 @@ namespace FinBot.Modules
         }
 
         [Command("vcunmute"), Summary("Unmutes a user from voice channels"), Remarks("(PREFIX)vcunmute <user>"), Alias("(PREFIX)vcunmute")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.MuteMembers)]
         public async Task VcUnMute(SocketUser user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -988,6 +996,7 @@ namespace FinBot.Modules
         }
 
         [Command("Warn"), Summary("Warns a user"), Remarks("(PREFIX)warn <user> (optional)<reason>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
         public async Task Warn(SocketUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1076,6 +1085,7 @@ namespace FinBot.Modules
         }
 
         [Command("mute"), Summary("Mutes a user and stops them from talking in text channels"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageRoles)]
         public async Task Mute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1228,6 +1238,7 @@ namespace FinBot.Modules
         }
 
         [Command("unmute"), Summary("Unmutes a muted user"), Remarks("(PREFIX)unmute <user>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
         public async Task unmute([Remainder] SocketGuildUser user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1328,6 +1339,7 @@ namespace FinBot.Modules
         }
 
         [Command("censor"), Summary("Adds a word to the guild blacklist, meaning members can't say it."), Remarks("(PREFIX)blacklist <phrase>"), Alias("bl", "blacklist")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
         public async Task Blacklist([Remainder] string phrase)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1406,6 +1418,7 @@ namespace FinBot.Modules
         }
 
         [Command("clearcensored"), Summary("Clears the guild word blacklist"), Remarks("(PREFIX)clearblacklist"), Alias("blclear", "clearblacklist", "clearcensor")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Blclear()
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1444,6 +1457,7 @@ namespace FinBot.Modules
         }
 
         [Command("uncensor"), Summary("Removes a word from the guild censor list."), Remarks("(PREFIX)blacklist <phrase>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Whitelist([Remainder] string phrase)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1523,6 +1537,7 @@ namespace FinBot.Modules
         }
 
         [Command("getcensors"), Summary("Gets the list of censored terms in a guild."), Remarks("(PREFIX)getcensors"), Alias("censors", "getguildcensors", "censoredlist", "censoredterms", "getcensoredterms", "censored", "censorlist", "censor_list")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task GetCensoredTerms()
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1578,6 +1593,7 @@ namespace FinBot.Modules
         }
 
         [Command("disablelinks"), Summary("enables and disables users being able to send links"), Remarks("(PREFIX)disablelinks <on/true/false/off>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task DisableLinks(string onoroff)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1643,12 +1659,14 @@ namespace FinBot.Modules
 
         //This is boilerplaate code for python module
         [Command("ModLogs"), Summary("Gets the modlogs for the current user"), Remarks("(PREFIX)modlogs <user>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | ChannelPermission.AddReactions)]
         public Task Modlogs(params string[] arg)
         {
             return Task.CompletedTask;
         }
 
         [Command("tempmute", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)tempmute <seconds> <message>"), Alias("tm")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageRoles)]
         public async Task Remind(SocketGuildUser user, string duration, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
