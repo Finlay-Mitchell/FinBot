@@ -20,6 +20,7 @@ using System.Drawing.Drawing2D;
 using Color = Discord.Color;
 using FinBot.Attributes.Preconditions;
 using FinBot.Attributes;
+using System.Collections.ObjectModel;
 
 namespace FinBot.Modules
 {
@@ -41,142 +42,6 @@ namespace FinBot.Modules
                 Global.ConsoleLog(ex.Message);
             }
         }
-
-        //[Command("testing")]
-        //public async Task testing()
-        //{
-        //    if (Global.IsDev(Context.User))
-        //    {
-        //        //string rand = "";
-        //        //using (var rng = new RNGCryptoServiceProvider())
-        //        //{
-        //        //    int bit_count = (16 * 6);
-        //        //    int byte_count = ((bit_count + 7) / 8); // rounded up
-        //        //    byte[] bytes = new byte[byte_count];
-        //        //    rng.GetBytes(bytes);
-        //        //    rand = Convert.ToBase64String(bytes);
-        //        //}
-
-        //        //rand = Regex.Replace(rand, "[\"/]", "");
-        //        //rand = Regex.Replace(rand, @"[\\]", "");
-        //        //await ReplyAsync(rand);
-        //        ////2000, 510
-        //        ////Bitmap bitmap = new Bitmap(2000, 1000, PixelFormat.Format32bppPArgb);
-        //        //Bitmap bitmap = new Bitmap(1050, 550);
-        //        //Graphics graphics = Graphics.FromImage(bitmap);
-        //        ////Pen pen = new Pen(Colour.FromKnownColor(KnownColor.Blue), 2);
-        //        //Pen pen = new Pen(System.Drawing.Color.FromArgb(255, 0, 0, 0), 5);
-        //        ////1000, 500
-        //        //graphics.DrawRectangle(pen, 10, 10, 750, 500);
-
-
-        //        ////Pen pen1 = new Pen(Colour.FromKnownColor(KnownColor.Red), 2);
-        //        ////graphics.DrawEllipse(pen1, 10, 10, 900, 700);
-        //        //string file = $"image_{rand}.png";
-        //        //bitmap.Save(file);
-        //        //await Context.Channel.SendFileAsync(file);
-        //        //File.Delete(file);
-
-
-        //        //var avtr = Context.User.GetAvatarUrl();
-        //        //WebClient wc = new WebClient();
-        //        //byte[] bytes = wc.DownloadData(avtr);
-        //        //MemoryStream ms = new MemoryStream(bytes);
-        //        //System.Drawing.Image pfp = System.Drawing.Image.FromStream(ms);
-        //        //Bitmap baseimg = new Bitmap($"{Environment.CurrentDirectory}/Data/Capture2.PNG"); // DO CHANGE
-        //        //Graphics canv = Graphics.FromImage(baseimg);
-        //        //float radius = 4; // ADJUST
-        //        //var rpfp = ClipToCircle(pfp, new PointF(pfp.Width / 2, pfp.Height / 2), radius, System.Drawing.Color.FromArgb(0, 0, 0, 0));
-        //        //canv.DrawImage(rpfp, 25, baseimg.Height / 2 - rpfp.Height / 2/*, baseimg.Width / 2 - rpfp.Width / 2*/); // very much guessed
-        //        //var g = RoundedRect(new Rectangle(325, baseimg.Height / 2, baseimg.Width, baseimg.Height), (int)radius); //another guess
-        //        //var mxWidth = (int)(baseimg.Width * 0.6) - 30;
-        //        //var prc = (double)10 / (double)100; // REPLACE WITH CURRENT XP AND NEXT XP
-        //        //var fnl = mxWidth * prc;
-        //        //var prg = RoundedRect(new Rectangle(325, (baseimg.Height / 2), (int)fnl, 75), 36);
-        //        //canv.SmoothingMode = SmoothingMode.AntiAlias;
-        //        //canv.FillPath(Brushes.Black, g);
-        //        //canv.FillPath(new SolidBrush(Color.Purple), prg); //CHANGE COLOUR TO BETTER LOOKING IF NEED BE
-        //        //canv.DrawString("username", new Font("Arial", 50), new SolidBrush(Color.Purple), new PointF(325, 32));
-
-        //        //canv.Save();
-
-        //        //Bitmap bmp = new Bitmap(100, 100, canv);
-
-        //        //System.Drawing.Image img = bmp;
-        //        //MemoryStream ms2 = new MemoryStream(ImageToByteArray(img));
-        //        //await Context.Channel.SendFileAsync(ms, $"test-testing.png");
-        //    }
-        //}
-
-        //public static byte[] ImageToByteArray(System.Drawing.Image img)
-        //{
-        //    ImageConverter _imageConverter = new ImageConverter();
-        //    byte[] xByte = (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
-        //    return xByte;
-        //}
-
-        //public static GraphicsPath RoundedRect(Rectangle bounds, int radius)
-        //{
-        //    int diameter = radius * 2;
-        //    Size size = new Size(diameter, diameter);
-        //    Rectangle arc = new Rectangle(bounds.Location, size);
-        //    GraphicsPath path = new GraphicsPath();
-
-        //    if (radius == 0)
-        //    {
-        //        path.AddRectangle(bounds);
-        //        return path;
-        //    }
-
-        //    // top left arc  
-        //    path.AddArc(arc, 180, 90);
-
-        //    // top right arc  
-        //    arc.X = bounds.Right - diameter;
-        //    path.AddArc(arc, 270, 90);
-
-        //    // bottom right arc  
-        //    arc.Y = bounds.Bottom - diameter;
-        //    path.AddArc(arc, 0, 90);
-
-        //    // bottom left arc 
-        //    arc.X = bounds.Left;
-        //    path.AddArc(arc, 90, 90);
-
-        //    path.CloseFigure();
-        //    return path;
-        //}
-
-        //public System.Drawing.Image ClipToCircle(System.Drawing.Image srcImage, PointF center, float radius, System.Drawing.Color backGround)
-        //{
-
-        //    System.Drawing.Image dstImage = new Bitmap(srcImage.Width, srcImage.Height, srcImage.PixelFormat);
-
-        //    using (Graphics g = Graphics.FromImage(dstImage))
-        //    {
-        //        RectangleF r = new RectangleF(center.X - radius, center.Y - radius, radius * 2, radius * 2);
-
-        //        // enables smoothing of the edge of the circle (less pixelated)
-        //        g.SmoothingMode = SmoothingMode.AntiAlias;
-
-        //        // fills background color
-        //        using (Brush br = new SolidBrush(backGround))
-        //        {
-        //            g.FillRectangle(br, 0, 0, dstImage.Width, dstImage.Height);
-        //        }
-
-        //        // adds the new ellipse & draws the image again
-        //        GraphicsPath path = new GraphicsPath();
-        //        path.AddEllipse(r);
-        //        g.SetClip(path);
-        //        g.DrawImage(srcImage, 0, 0);
-
-        //        return dstImage;
-        //    }
-        //}
-
-
-
 
         [Command("restart")]
         public async Task Reset([Remainder] string reason = "No reason provided.")
@@ -467,6 +332,20 @@ namespace FinBot.Modules
             }
 
             return entries;
+        }
+
+        [Command("Update")]
+        [RequireDeveloper]
+        public async Task update()
+        {
+            string gitCommand = "git ";
+            string gitAddArgument = @"add -A";
+            string gitCommitArgument = @"commit -m ""Pushed automatically via C#""";
+            string gitPushArgument = @"push FinBot";
+
+            Process.Start(gitCommand, gitAddArgument);
+            Process.Start(gitCommand, gitCommitArgument);
+            Process.Start(gitCommand, gitPushArgument);
         }
     }
 }
