@@ -598,7 +598,7 @@ namespace FinBot.Modules
         }
 
         [Command("ban"), Summary("bans user from the guild"), Remarks("(PREFIX)ban <user> (optional)prune days (optional)reason")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.BanMembers)]
         public async Task BanUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -686,7 +686,7 @@ namespace FinBot.Modules
         }
 
         [Command("kick"), Summary("kicks member from the guild"), Remarks("(PREFIX)kick <user> (optional)<reason>")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.KickMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.KickMembers)]
         public async Task KickUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -774,7 +774,7 @@ namespace FinBot.Modules
         }
 
         [Command("vcmute"), Summary("Mutes a user from voice channels"), Remarks("(PREFIX)vcmute <user> (optional) <user>"), Alias("voicechatmute")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.MuteMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.MuteMembers)]
         public async Task VcMute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -904,7 +904,7 @@ namespace FinBot.Modules
         }
 
         [Command("vcunmute"), Summary("Unmutes a user from voice channels"), Remarks("(PREFIX)vcunmute <user>"), Alias("(PREFIX)vcunmute")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.MuteMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.MuteMembers)]
         public async Task VcUnMute(SocketUser user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1085,7 +1085,7 @@ namespace FinBot.Modules
         }
 
         [Command("mute"), Summary("Mutes a user and stops them from talking in text channels"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageRoles)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.ManageRoles)]
         public async Task Mute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1666,7 +1666,7 @@ namespace FinBot.Modules
         }
 
         [Command("tempmute", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)tempmute <seconds> <message>"), Alias("tm")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages), RequireBotPermission(GuildPermission.ManageRoles | GuildPermission.ManageRoles)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.ManageRoles)]
         public async Task Remind(SocketGuildUser user, string duration, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);

@@ -7,7 +7,7 @@ namespace FinBot.Modules
     public class TTSCommands : ModuleBase<ShardedCommandContext> //TTS python boilerplate code
     {
         [Command("speak"), Summary("Adds/removes user from the TTS speak list"), Remarks("(PREFIX)speak (optional)<user>")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | (ChannelPermission)GuildPermission.Speak)]
         public Task speak(params string[] args)
         {
             return Task.CompletedTask;

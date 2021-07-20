@@ -2,6 +2,7 @@
 using Discord.Commands;
 using System.Linq;
 using System.Threading.Tasks;
+using FinBot.Attributes;
 
 namespace FinBot.Handlers
 {

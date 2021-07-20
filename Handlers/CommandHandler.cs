@@ -82,17 +82,24 @@ namespace FinBot.Handlers
             {
                 if (result.Error.Value == CommandError.UnmetPrecondition)
                 {
-                    try
+                    SocketGuildUser UserCheck = context.Guild.GetUser(_client.CurrentUser.Id);
+
+                    if (UserCheck.GuildPermissions.EmbedLinks)
                     {
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.Color = Color.Red;
                         eb.Title = "Error";
                         eb.Description = result.ErrorReason;
                         eb.WithCurrentTimestamp();
+                        eb.Footer = new EmbedFooterBuilder()
+                        {
+                            IconUrl = context.User.GetAvatarUrl() ?? context.User.GetDefaultAvatarUrl(),
+                            Text = $"{context.User}"
+                        };
                         await context.Message.ReplyAsync("", false, eb.Build());
                     }
 
-                    catch
+                    else
                     {
                         await context.Message.ReplyAsync(result.ErrorReason);
                     }

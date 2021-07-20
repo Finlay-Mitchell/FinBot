@@ -18,6 +18,8 @@ using System.Drawing;
 using System.Net;
 using System.Drawing.Drawing2D;
 using Color = Discord.Color;
+using FinBot.Attributes.Preconditions;
+using FinBot.Attributes;
 
 namespace FinBot.Modules
 {
