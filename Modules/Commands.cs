@@ -332,7 +332,10 @@ namespace FinBot.Modules
                 }
 
                 await Context.Channel.TriggerTypingAsync();
-                EmbedBuilder eb = new EmbedBuilder();
+                EmbedBuilder eb = new EmbedBuilder()
+                {
+                    ImageUrl = Context.User.GetAvatarUrl() ?? Context.User.GetAvatarUrl()
+                };
                 eb.AddField("Username", user);
                 _ = nickState == "" ? null : eb.AddField("Nickname", nickState);
                 eb.AddField("ID:", $"{user.Id}");
