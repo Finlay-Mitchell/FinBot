@@ -339,12 +339,14 @@ namespace FinBot.Modules
         public async Task update([Remainder]string title)
         {
             string gitCommand = "git ";
-            string gitAddArgument = @"add -A";
+            string gitAddArgument = @"add -A ";
             string gitCommitArgument = $@"commit -m ""{title}""";
             string gitPushArgument = @"push";
 
             Process.Start(gitCommand, gitAddArgument);
+            await Task.Delay(1000);
             Process.Start(gitCommand, gitCommitArgument);
+            await Task.Delay(1000);
             Process.Start(gitCommand, gitPushArgument);
         }
     }
