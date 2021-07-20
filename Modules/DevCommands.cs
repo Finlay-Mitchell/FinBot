@@ -336,11 +336,11 @@ namespace FinBot.Modules
 
         [Command("Update")]
         [RequireDeveloper]
-        public async Task update()
+        public async Task update([Remainder]string title)
         {
             string gitCommand = "git ";
             string gitAddArgument = @"add -A";
-            string gitCommitArgument = @"commit -m ""Pushed automatically via C#""";
+            string gitCommitArgument = $@"commit -m ""{title}""";
             string gitPushArgument = @"push";
 
             Process.Start(gitCommand, gitAddArgument);
