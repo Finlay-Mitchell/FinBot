@@ -10,13 +10,8 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using FinBot.Handlers;
 using System.Collections.Generic;
-using FinBot.Interactivity;
 using FinBot.Services;
 using Discord.Rest;
-using System.IO;
-using System.Net.Http;
-using Newtonsoft.Json.Linq;
-using Optimal = Discord.Optional;
 
 namespace FinBot.Modules
 {
