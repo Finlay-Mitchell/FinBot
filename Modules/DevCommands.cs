@@ -356,17 +356,17 @@ namespace FinBot.Modules
                 UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
 
                 Process pr = new Process();
+                pr.OutputDataReceived += Pr_OutputDataReceived;
+
                 pr = Process.Start(gitCommand, gitAddArgument);
-                pr.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
+                pr.BeginOutputReadLine();
                 pr.WaitForExit();
-                pr=Process.Start(gitCommand, gitPushArgument);
+                pr = Process.Start(gitCommand, gitPushArgument);
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitPull);
                 pr.WaitForExit();
-                await ReplyAsync("done");
-
             }
 
             catch(Exception ex)
@@ -376,12 +376,26 @@ namespace FinBot.Modules
 
         }
 
-        private async void OutputDataReceived(object sender, DataReceivedEventArgs e)
+        private void Pr_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             EmbedBuilder eb = new EmbedBuilder();
             eb.Color = Color.Green;
             eb.Title = "Updating...";
             eb.Description = e.Data;
+            await Global.ModifyMessage(UpdateMessage, eb);
+        }
+
+        private async void OutputDataReceived(string data)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.Color = Color.Green;
+            eb.Title = "Updating...";
+            eb.Description = data;
             await Global.ModifyMessage(UpdateMessage, eb);
         }
 
