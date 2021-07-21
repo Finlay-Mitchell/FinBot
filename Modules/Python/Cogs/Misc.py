@@ -130,6 +130,14 @@ class Misc(commands.Cog):
             config.client_commands = False
             print(f"successfully set client_commands to {config.client_commands}")
 
+    @commands.command(aliases=["restart"])
+    @is_developer()
+    async def update(self, ctx):
+        print(os.path.abspath(__file__))
+        path = os.path.abspath(__file__)[:-13]
+        os.system(f"py -3 {path}/main.py")
+        sys.exit(0)
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

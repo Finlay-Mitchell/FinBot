@@ -21,6 +21,7 @@ using Color = Discord.Color;
 using FinBot.Attributes.Preconditions;
 using FinBot.Attributes;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace FinBot.Modules
 {
@@ -222,7 +223,7 @@ namespace FinBot.Modules
 
                 string result = "";
 
-               
+
 
                 await ReplyAsync(result);
             }
@@ -280,7 +281,7 @@ namespace FinBot.Modules
 
                         //checks
 
-                        
+
                     }
                 }
             }
@@ -290,7 +291,7 @@ namespace FinBot.Modules
 
         public async Task AuditOverwrites(ShardedCommandContext context, SocketTextChannel channel)
         {
-            if(channel == null)
+            if (channel == null)
             {
                 await context.Channel.SendMessageAsync("", false, Global.EmbedMessage("Error", "Plesse mention a channel", false, Color.Red).Build());
                 return;
@@ -330,7 +331,7 @@ namespace FinBot.Modules
             {
                 if (AuditLogEntry.Data is ChannelUpdateAuditLogData data)
                 {
-                   
+
                 }
             }
 
@@ -339,7 +340,7 @@ namespace FinBot.Modules
 
         [Command("Update")]
         [RequireDeveloper]
-        public async Task update([Remainder]string info)
+        public async Task update([Remainder] string info)
         {
             string[] args = info.Split(new string[] { "===" }, 2, StringSplitOptions.None);
             string gitCommand = "git ";
@@ -347,7 +348,7 @@ namespace FinBot.Modules
             string gitCommitArgument = args.Length == 2 ? $@"commit -m ""{args[0]}"" -m ""{args[1]}""" : $@"commit -m ""{args[0]}""";
             string gitPushArgument = "push";
             string gitPull = "pull";
-            
+
             try
             {
                 EmbedBuilder eb = new EmbedBuilder();
@@ -382,14 +383,12 @@ namespace FinBot.Modules
                 pr = new Process { StartInfo = startInfo };
                 pr.Start();
                 await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f");
-                await pr.StandardInput.WriteLineAsync("taskkill /im python.exe /f");
                 await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}");
-                await pr.StandardInput.WriteLineAsync($"{Global.BotDirectory}\\Modules\\Python\\main.py");
                 await pr.StandardInput.WriteLineAsync("FinBot.exe");
                 pr.WaitForExit();
             }
-
-            catch(Exception ex)
+            
+            catch (Exception ex)
             {
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.Color = Color.Red;

@@ -14,6 +14,7 @@ client_Id = data["SpotifyId"]  # Spotify id key.
 genius_id = data["GeniusId"]  # Genius id key.
 HypixelAPIKey = data["HypixelAPIKey"]  # API key for Hypixel.
 mongo_connection_uri = data["mongoconnstr"]  # MongoDB database connection string.
+bot_directory = data["BotDirectory"]  # Gets the directory of the bot.
 
 # Emojis commonly used in the bot.
 fast_forward_emoji = u"\u23E9"
