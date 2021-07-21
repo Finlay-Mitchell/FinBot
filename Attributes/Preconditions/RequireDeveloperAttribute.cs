@@ -12,7 +12,7 @@ namespace FinBot.Attributes.Preconditions
     {
         public override string ErrorMessage { get; set; }
 
-        public override async System.Threading.Tasks.Task<Discord.Commands.PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override async System.Threading.Tasks.Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
             switch (context.Client.TokenType)
             {
