@@ -356,6 +356,7 @@ namespace FinBot.Modules
                 UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
 
                 Process pr = new Process();
+                pr.StartInfo.RedirectStandardOutput = true;
                 pr.OutputDataReceived += Pr_OutputDataReceived;
 
                 pr = Process.Start(gitCommand, gitAddArgument);
