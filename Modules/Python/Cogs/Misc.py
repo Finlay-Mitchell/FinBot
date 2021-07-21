@@ -133,7 +133,6 @@ class Misc(commands.Cog):
     @commands.command(aliases=["restart"])
     @is_developer()
     async def update(self, ctx):
-        print(os.path.abspath(__file__))
         path = os.path.abspath(__file__)[:-13]
         os.system(f"py -3 {path}/main.py")
         sys.exit(0)
