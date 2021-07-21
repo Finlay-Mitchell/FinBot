@@ -28,7 +28,7 @@ namespace FinBot.Modules
     {
         public DiscordShardedClient _client;
         public IServiceProvider _services;
-        Process pr = new Process();
+        public Process pr = new Process();
         IUserMessage UpdateMessage;
 
         public DevCommands(IServiceProvider services)
@@ -44,7 +44,9 @@ namespace FinBot.Modules
                 Global.ConsoleLog(ex.Message);
             }
 
-            pr.OutputDataReceived += OutputDataReceived;
+            pr.StartInfo.RedirectStandardOutput = true;
+            pr.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
+            //pr.OutputDataReceived += OutputDataReceived;
         }
 
         [Command("restart")]
@@ -356,8 +358,9 @@ namespace FinBot.Modules
                 eb.Title = "Updating...";
                 UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
 
-                Process pr = new Process();
+                //Process pr = new Process();
                 pr = Process.Start(gitCommand, gitAddArgument);
+                //await Task.Delay(1000);
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
                 pr.WaitForExit();
@@ -369,9 +372,9 @@ namespace FinBot.Modules
 
             }
 
-            catch
+            catch(Exception ex)
             {
-                await ReplyAsync("failed");
+                await ReplyAsync($"failed\n\n{ex.Message}");
             }
 
         }
