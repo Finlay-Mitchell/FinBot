@@ -354,19 +354,18 @@ namespace FinBot.Modules
                 eb.Color = Color.Orange;
                 eb.Title = "Updating...";
                 UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
-
                 Process pr = new Process();
-                pr.StartInfo.RedirectStandardOutput = true;
-                pr.OutputDataReceived += Pr_OutputDataReceived;
-
                 pr = Process.Start(gitCommand, gitAddArgument);
+                ModifyUpdateEmbed("Began the update...");
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
-                pr.BeginOutputReadLine();
+                ModifyUpdateEmbed($"Began git commit with {args.Length}...");
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitPushArgument);
+                ModifyUpdateEmbed("Pushing to main...");
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitPull);
+                ModifyUpdateEmbed("Pulling from main...");
                 pr.WaitForExit();
             }
 
@@ -374,29 +373,14 @@ namespace FinBot.Modules
             {
                 await ReplyAsync($"failed\n\n{ex.Message}");
             }
-
         }
 
-        private void Pr_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async void process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        public async void ModifyUpdateEmbed(string description)
         {
             EmbedBuilder eb = new EmbedBuilder();
-            eb.Color = Color.Green;
+            eb.Color = Color.Orange;
             eb.Title = "Updating...";
-            eb.Description = e.Data;
-            await Global.ModifyMessage(UpdateMessage, eb);
-        }
-
-        private async void OutputDataReceived(string data)
-        {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.Color = Color.Green;
-            eb.Title = "Updating...";
-            eb.Description = data;
+            eb.Description = description;
             await Global.ModifyMessage(UpdateMessage, eb);
         }
 
