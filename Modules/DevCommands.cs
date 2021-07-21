@@ -336,11 +336,13 @@ namespace FinBot.Modules
 
         [Command("Update")]
         [RequireDeveloper]
-        public async Task update([Remainder]string title)
+        public async Task update([Remainder]string info)
         {
+            string[] args = info.Split(new string[] { "===" }, 2, StringSplitOptions.None);
+
             string gitCommand = "git ";
             string gitAddArgument = @"add -A ";
-            string gitCommitArgument = $@"commit -m ""{title}""";
+            string gitCommitArgument = $@"commit -m ""{args[0]}"" -m ""{args[1]}""";
             string gitPushArgument = @"push";
 
             try
