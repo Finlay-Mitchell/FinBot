@@ -28,7 +28,6 @@ namespace FinBot.Modules
     {
         public DiscordShardedClient _client;
         public IServiceProvider _services;
-        public Process pr = new Process();
         IUserMessage UpdateMessage;
 
         public DevCommands(IServiceProvider services)
@@ -44,8 +43,6 @@ namespace FinBot.Modules
                 Global.ConsoleLog(ex.Message);
             }
 
-            pr.StartInfo.RedirectStandardOutput = true;
-            pr.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
             //pr.OutputDataReceived += OutputDataReceived;
         }
 
@@ -358,9 +355,9 @@ namespace FinBot.Modules
                 eb.Title = "Updating...";
                 UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
 
-                //Process pr = new Process();
+                Process pr = new Process();
                 pr = Process.Start(gitCommand, gitAddArgument);
-                //await Task.Delay(1000);
+                pr.OutputDataReceived += new DataReceivedEventHandler(OutputDataReceived);
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
                 pr.WaitForExit();
