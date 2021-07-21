@@ -339,19 +339,26 @@ namespace FinBot.Modules
         public async Task update([Remainder]string info)
         {
             string[] args = info.Split(new string[] { "===" }, 2, StringSplitOptions.None);
-
             string gitCommand = "git ";
             string gitAddArgument = @"add -A ";
             string gitCommitArgument = $@"commit -m ""{args[0]}"" -m ""{args[1]}""";
             string gitPushArgument = @"push";
-
+            string gitPull = @"pull";
+            
             try
             {
                 Process pr = Process.Start(gitCommand, gitAddArgument);
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
                 pr.WaitForExit();
-                Process.Start(gitCommand, gitPushArgument);
+                pr=Process.Start(gitCommand, gitPushArgument);
+                pr.WaitForExit();
+                pr = Process.Start(gitCommand, gitPull);
+                pr.WaitForExit();
+                await ReplyAsync("done");
+
+
+
             }
 
             catch
@@ -360,5 +367,12 @@ namespace FinBot.Modules
             }
             
         }
+
+        //[Command("womp")]
+        //public async Task womp()
+        //{
+        //    await ReplyAsync("womp");
+        //}
+
     }
 }
