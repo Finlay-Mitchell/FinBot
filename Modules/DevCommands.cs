@@ -353,6 +353,7 @@ namespace FinBot.Modules
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.Color = Color.Orange;
                 eb.Title = "Updating...";
+                eb.WithCurrentTimestamp();
                 UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
                 Process pr = new Process();
                 pr = Process.Start(gitCommand, gitAddArgument);
@@ -371,7 +372,12 @@ namespace FinBot.Modules
 
             catch(Exception ex)
             {
-                await ReplyAsync($"failed\n\n{ex.Message}");
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.Color = Color.Red;
+                eb.WithCurrentTimestamp();
+                eb.Title = "Error";
+                eb.Description = $"Error whilst updating: {ex.Message}";
+                await Global.ModifyMessage(UpdateMessage, eb);
             }
         }
 
@@ -380,6 +386,7 @@ namespace FinBot.Modules
             EmbedBuilder eb = new EmbedBuilder();
             eb.Color = Color.Orange;
             eb.Title = "Updating...";
+            eb.WithCurrentTimestamp();
             eb.Description = description;
             await Global.ModifyMessage(UpdateMessage, eb);
         }
