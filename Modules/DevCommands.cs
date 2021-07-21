@@ -28,6 +28,8 @@ namespace FinBot.Modules
     {
         public DiscordShardedClient _client;
         public IServiceProvider _services;
+        Process pr = new Process();
+        IUserMessage UpdateMessage;
 
         public DevCommands(IServiceProvider services)
         {
@@ -41,6 +43,8 @@ namespace FinBot.Modules
             {
                 Global.ConsoleLog(ex.Message);
             }
+
+            pr.OutputDataReceived += OutputDataReceived;
         }
 
         [Command("restart")]
@@ -340,14 +344,20 @@ namespace FinBot.Modules
         {
             string[] args = info.Split(new string[] { "===" }, 2, StringSplitOptions.None);
             string gitCommand = "git ";
-            string gitAddArgument = @"add -A ";
-            string gitCommitArgument = $@"commit -m ""{args[0]}"" -m ""{args[1]}""";
-            string gitPushArgument = @"push";
-            string gitPull = @"pull";
+            string gitAddArgument = "add -A ";
+            string gitCommitArgument = args.Length == 2 ? $@"commit -m ""{args[0]}"" -m ""{args[1]}""" : $@"commit -m ""{args[0]}""";
+            string gitPushArgument = "push";
+            string gitPull = "pull";
             
             try
             {
-                Process pr = Process.Start(gitCommand, gitAddArgument);
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.Color = Color.Orange;
+                eb.Title = "Updating...";
+                UpdateMessage = await Context.Message.ReplyAsync("", false, eb.Build());
+
+                Process pr = new Process();
+                pr = Process.Start(gitCommand, gitAddArgument);
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
                 pr.WaitForExit();
@@ -357,15 +367,22 @@ namespace FinBot.Modules
                 pr.WaitForExit();
                 await ReplyAsync("done");
 
-
-
             }
 
             catch
             {
                 await ReplyAsync("failed");
             }
-            
+
+        }
+
+        private async void OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.Color = Color.Green;
+            eb.Title = "Updating...";
+            eb.Description = e.Data;
+            await Global.ModifyMessage(UpdateMessage, eb);
         }
 
         //[Command("womp")]
