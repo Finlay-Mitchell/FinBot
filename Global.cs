@@ -88,9 +88,13 @@ namespace FinBot
         /// </summary>
         public static string clientPrefix { get; set; }
         /// <summary>
-        /// Where all failed command results are sent;
+        /// Where all failed command results are sent.
         /// </summary>
         public static ulong ErrorLogChannelId { get; set; }
+        /// <summary>
+        /// The current directory of the bot for the system it's running on.
+        /// </summary>
+        public static string BotDirectory { get; set; }
 
         /*
          * Our global variables that we do not read from the config.
@@ -131,7 +135,7 @@ namespace FinBot
         /// <summary>
         /// Commands hidden from regular users - available to developers.
         /// </summary>
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata", "clearalldata", "test" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata", "clearalldata", "test", "Update" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
@@ -190,6 +194,7 @@ namespace FinBot
             StatusPageAPIKey = data.StatusPageAPIKey;
             clientPrefix = data.clientPrefix;
             ErrorLogChannelId = data.ErrorLogChannelId;
+            BotDirectory = data.BotDirectory;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}"; //The connection string for the MySql server.
         }
@@ -219,6 +224,7 @@ namespace FinBot
             public string StatusPageAPIKey { get; set; }
             public string clientPrefix { get; set; }
             public ulong ErrorLogChannelId { get; set; }
+            public string BotDirectory { get; set; }
         }
 
         /// <summary>

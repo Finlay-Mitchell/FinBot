@@ -374,7 +374,6 @@ namespace FinBot.Modules
                 eb.WithFooter("Bot restarting...");
                 eb.WithCurrentTimestamp();
                 await Global.ModifyMessage(UpdateMessage, eb);
-
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
@@ -383,7 +382,7 @@ namespace FinBot.Modules
                 pr = new Process { StartInfo = startInfo };
                 pr.Start();
                 await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f");
-                await pr.StandardInput.WriteLineAsync("dotnet build D:\\Utils\\C#\\FinBot");
+                await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}");
                 await pr.StandardInput.WriteLineAsync("FinBot.exe");
                 pr.WaitForExit();
             }
