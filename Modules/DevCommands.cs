@@ -360,7 +360,7 @@ namespace FinBot.Modules
                 ModifyUpdateEmbed("Began the update...");
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitCommitArgument);
-                ModifyUpdateEmbed($"Began git commit with {args.Length}...");
+                ModifyUpdateEmbed($"Began git commit with {args.Length} arguments...");
                 pr.WaitForExit();
                 pr = Process.Start(gitCommand, gitPushArgument);
                 ModifyUpdateEmbed("Pushing to main...");
@@ -368,6 +368,11 @@ namespace FinBot.Modules
                 pr = Process.Start(gitCommand, gitPull);
                 ModifyUpdateEmbed("Pulling from main...");
                 pr.WaitForExit();
+                eb.Color = Color.Green;
+                eb.Title = "Success!";
+                eb.Description = "The bot has been updated successfully";
+                eb.WithCurrentTimestamp();
+                await Global.ModifyMessage(UpdateMessage, eb);
             }
 
             catch(Exception ex)
