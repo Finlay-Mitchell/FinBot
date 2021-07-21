@@ -343,12 +343,19 @@ namespace FinBot.Modules
             string gitCommitArgument = $@"commit -m ""{title}""";
             string gitPushArgument = @"push";
 
-            Process pr = Process.Start(gitCommand, gitAddArgument);
-            pr.WaitForExit();
-            pr = Process.Start(gitCommand, gitCommitArgument);
-            pr.WaitForExit();
-            Process.Start(gitCommand, gitPushArgument);
+            try
+            {
+                Process pr = Process.Start(gitCommand, gitAddArgument);
+                pr.WaitForExit();
+                pr = Process.Start(gitCommand, gitCommitArgument);
+                pr.WaitForExit();
+                Process.Start(gitCommand, gitPushArgument);
+            }
 
+            catch
+            {
+                await ReplyAsync("failed");
+            }
             
         }
     }
