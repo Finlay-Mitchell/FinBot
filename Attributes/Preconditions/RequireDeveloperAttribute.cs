@@ -26,11 +26,6 @@ namespace FinBot.Attributes.Preconditions
                             return PreconditionResult.FromSuccess();
                         }
 
-                        if(Global.hiddenCommands.Contains(command.Name))
-                        {
-                            return PreconditionResult.FromError("");
-                        }
-
                         return PreconditionResult.FromError(ErrorMessage ?? "Command can only be run by a listed developer of the bot.");
                     }
 
