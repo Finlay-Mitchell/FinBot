@@ -382,10 +382,10 @@ namespace FinBot.Modules
                 pr = new Process { StartInfo = startInfo };
                 pr.Start();
                 await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f");
-                await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}");
-                await pr.StandardInput.WriteLineAsync("FinBot.exe");
                 await pr.StandardInput.WriteLineAsync("taskkill /im python.exe /f");
+                await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}");
                 await pr.StandardInput.WriteLineAsync($"{Global.BotDirectory}\\Modules\\Python\\main.py");
+                await pr.StandardInput.WriteLineAsync("FinBot.exe");
                 pr.WaitForExit();
             }
 
