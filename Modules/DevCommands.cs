@@ -371,8 +371,21 @@ namespace FinBot.Modules
                 eb.Color = Color.Green;
                 eb.Title = "Success!";
                 eb.Description = "The bot has been updated successfully";
+                eb.WithFooter("Bot restarting...");
                 eb.WithCurrentTimestamp();
                 await Global.ModifyMessage(UpdateMessage, eb);
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    RedirectStandardInput = true,
+                };
+                pr = new Process { StartInfo = startInfo };
+                pr.Start();
+                await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f");
+                await pr.StandardInput.WriteLineAsync("dotnet build D:\\Utils\\C#\\FinBot");
+                await pr.StandardInput.WriteLineAsync("FinBot.exe");
+                pr.WaitForExit();
             }
 
             catch(Exception ex)
@@ -395,12 +408,5 @@ namespace FinBot.Modules
             eb.Description = description;
             await Global.ModifyMessage(UpdateMessage, eb);
         }
-
-        //[Command("womp")]
-        //public async Task womp()
-        //{
-        //    await ReplyAsync("womp");
-        //}
-
     }
 }
