@@ -147,7 +147,8 @@ namespace FinBot.Modules
 
         [Command("membercountchannel"), Summary("Sets the membercount channel"), Remarks("(PREFIX)membercountchannel <voice_channel>"),
             Alias("setmembercountchannel", "membercount_channel", "set_membercount_channel", "setmembercount")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | (ChannelPermission)GuildPermission.ManageChannels)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
         public async Task SetMembercountChannel([Remainder] SocketChannel parsedChannel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);

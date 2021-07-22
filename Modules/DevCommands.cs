@@ -12,16 +12,18 @@ using FinBot.Handlers;
 using System.Collections.Generic;
 using FinBot.Services;
 using Discord.Rest;
-using System.Security.Cryptography;
-using System.IO;
-using System.Drawing;
-using System.Net;
-using System.Drawing.Drawing2D;
 using Color = Discord.Color;
 using FinBot.Attributes.Preconditions;
 using FinBot.Attributes;
-using System.Collections.ObjectModel;
+using System.Reflection;
+using Discord.Webhook;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using System.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.IO;
+using System.Drawing;
 
 namespace FinBot.Modules
 {
@@ -43,29 +45,23 @@ namespace FinBot.Modules
             {
                 Global.ConsoleLog(ex.Message);
             }
-
-            //pr.OutputDataReceived += OutputDataReceived;
         }
 
         [Command("restart")]
+        [RequireDeveloper]
         public async Task Reset([Remainder] string reason = "No reason provided.")
         {
-            if (Global.IsDev(Context.User))
-            {
-                await Context.Channel.TriggerTypingAsync();
-                await Context.Message.Channel.SendMessageAsync($"Restarting bot with reason \"{reason}\"\n");
-                _services.GetRequiredService<ShutdownService>().Shutdown(1);
-            }
+            await Context.Channel.TriggerTypingAsync();
+            await Context.Message.Channel.SendMessageAsync($"Restarting bot with reason \"{reason}\"\n");
+            _services.GetRequiredService<ShutdownService>().Shutdown(1);
         }
 
         [Command("terminate")]
+        [RequireDeveloper]
         public async Task Term()
         {
-            if (Global.IsDev(Context.User))
-            {
-                await Context.Message.ReplyAsync($"Shutting down services...");
-                _services.GetRequiredService<ShutdownService>().Shutdown(0);
-            }
+            await Context.Message.ReplyAsync($"Shutting down services...");
+            _services.GetRequiredService<ShutdownService>().Shutdown(0);         
         }
 
         [Command("updateSupport")]
@@ -407,6 +403,39 @@ namespace FinBot.Modules
             eb.WithCurrentTimestamp();
             eb.Description = description;
             await Global.ModifyMessage(UpdateMessage, eb);
+        }
+
+        [Command("execute")]
+        [RequireDeveloper]
+        public async Task GPe(params string[] args)
+        {
+            var joined = string.Join(" ", Context.Message.Content.Replace("```cs", "").Replace("```", "").Split(' ').Skip(1));
+            var create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq") .WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
+                        Assembly.GetAssembly(typeof(DiscordWebhookClient)), Assembly.GetExecutingAssembly()).WithImports("Discord", "Discord.WebSocket", "Discord.Commands"), typeof(ShardedCommandContext));
+            
+            try
+            {
+                var state = await create.RunAsync(Context);
+
+                if (state.ReturnValue == null)
+                {
+                    await Context.Message.AddReactionAsync(Emote.Parse("<a:tick:859032462410907649>"));
+                }
+            }
+
+            catch (CompilationErrorException cee)
+            {
+                await ReplyAsync("", false, new EmbedBuilder
+                {
+                    Title = "'Twas an error",
+                    Description = cee.Message,
+                    Color = Color.Red
+                }.WithCurrentTimestamp().Build());
+            }
+            catch(Exception ex)
+            {
+                await ReplyAsync(ex.Message);
+            }
         }
     }
 }

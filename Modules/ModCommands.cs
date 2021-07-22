@@ -14,6 +14,8 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Newtonsoft.Json;
 using FinBot.Interactivity;
+using System.IO;
+using System.Net;
 
 namespace FinBot.Modules
 {
@@ -598,7 +600,8 @@ namespace FinBot.Modules
         }
 
         [Command("ban"), Summary("bans user from the guild"), Remarks("(PREFIX)ban <user> (optional)prune days (optional)reason")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.BanMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.BanMembers)]
         public async Task BanUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -686,7 +689,8 @@ namespace FinBot.Modules
         }
 
         [Command("kick"), Summary("kicks member from the guild"), Remarks("(PREFIX)kick <user> (optional)<reason>")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.KickMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.KickMembers)]
         public async Task KickUser(IGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -774,7 +778,8 @@ namespace FinBot.Modules
         }
 
         [Command("vcmute"), Summary("Mutes a user from voice channels"), Remarks("(PREFIX)vcmute <user> (optional) <user>"), Alias("voicechatmute")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.MuteMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.MuteMembers)]
         public async Task VcMute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -904,7 +909,8 @@ namespace FinBot.Modules
         }
 
         [Command("vcunmute"), Summary("Unmutes a user from voice channels"), Remarks("(PREFIX)vcunmute <user>"), Alias("(PREFIX)vcunmute")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.MuteMembers)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.MuteMembers)]
         public async Task VcUnMute(SocketUser user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1085,7 +1091,8 @@ namespace FinBot.Modules
         }
 
         [Command("mute"), Summary("Mutes a user and stops them from talking in text channels"), Remarks("(PREFIX)mute <user> (optional)<reason>")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.ManageRoles)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task Mute(SocketGuildUser user, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1666,7 +1673,8 @@ namespace FinBot.Modules
         }
 
         [Command("tempmute", RunMode = RunMode.Async), Summary("Reminds you with a custom message (In Seconds)"), Remarks("(PREFIX)tempmute <seconds> <message>"), Alias("tm")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | (ChannelPermission)GuildPermission.ManageRoles)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task Remind(SocketGuildUser user, string duration, [Remainder] string reason = "No reason provided.")
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -1799,6 +1807,127 @@ namespace FinBot.Modules
                         Text = $"{user.Username}#{user.Discriminator}"
                     },
                 }.WithCurrentTimestamp().Build());
+            }
+        }
+
+        [Command("copyemote"), Summary("Allows you to copy an emote from elsewhere to the guild"), Remarks("(PREFIX)copyemote <emote_id> <guild_id> <new_name> OR (PREFIX)copyemote <emote_url> <new_name>"), Alias("copyemoji", "stealemote", "stealemoji")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(GuildPermission.ManageEmojis)]
+        public async Task EMDEL(params string[] args)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageEmojis)
+            {
+                string emoji = args[0];
+                string name = "";
+                ulong guildId = 0;
+
+                if (args.Length == 2)
+                {
+                    name = args[1];
+                }
+
+                else if (args.Length == 3)
+                {
+                    guildId = Convert.ToUInt64(args[1]);
+                    name = args[2];
+                }
+
+                else
+                {
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please use the syntax: `copyemote <emote_name> <guildId> <new_emote_name>` or `copyemote <emote_url> <new_emoji_name>`", false, Discord.Color.Red).Build());
+                    return;
+                }
+
+                Regex r = new Regex(@"(?i)(https:\/\/)|cdn.discordapp.com\/emojis\/(.*?)\.");
+
+                if (r.IsMatch(emoji))
+                {
+                    if (!emoji.StartsWith("https://") && !emoji.StartsWith("http"))
+                    {
+                        emoji = $"https://{emoji}";
+                    }
+                    WebClient webClient = new WebClient();
+                    byte[] imageBytes = webClient.DownloadData(new Uri(emoji));
+                    MemoryStream ms = new MemoryStream(imageBytes);
+                    GuildEmote ae = await Context.Guild.CreateEmoteAsync(name, new Discord.Image(ms));
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Successfully copied emoji", $"Successfully added the emote {name} to the guild.", false, Discord.Color.Green).Build());
+
+                    return;
+                }
+
+                else
+                {
+                    if (guildId != 0)
+                    {
+                        SocketGuild guild = _client.GetGuild(guildId);
+                        GuildEmote emote = await GetEmote(emoji, guild);
+
+                        if (emote == null)
+                        {
+                            await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"Please make sure the bot is in the guild where you're trying to copy the emote from and you've selected the right name.", false, Discord.Color.Red).Build());
+                            return;
+                        }
+
+                        WebClient wc = new WebClient();
+                        MemoryStream ms = new MemoryStream(await wc.DownloadDataTaskAsync(emote.Url));
+                        var ae = await Context.Guild.CreateEmoteAsync(emote.Name, new Discord.Image(ms));
+                        await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Successfully copied emote", $"Successfully added the emote {name} to the guild.", false, Discord.Color.Green).Build());
+                        await Task.Delay(200);
+                        await ms.DisposeAsync();
+
+                        return;
+                    }
+                }
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
+            }
+        }
+
+        /// <summary>
+        /// Gets an emote from a guild.
+        /// </summary>
+        /// <param name="name">The name of the emote to find.</param>
+        /// <param name="Guild">The guild to get the emote from.</param>
+        /// <returns>A guild emote.</returns>
+        public async Task<GuildEmote> GetEmote(string name, SocketGuild Guild = null)
+        {
+            name = name.Replace(":", "").Replace("<", "").Replace(">", "").Replace(":", "");
+
+            if (Guild.Emotes.Any(x => string.Equals(name, x.Name, StringComparison.CurrentCultureIgnoreCase)))
+            {
+                return Guild.Emotes.First(x => string.Equals(name, x.Name, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            try
+            {
+                ulong resultString = ulong.Parse(Regex.Match(name, @"\d+").Value);
+
+                if (resultString == 0 || await Guild.GetEmoteAsync(resultString) == null)
+                {
+                    return null;
+                }
+
+                return await Guild.GetEmoteAsync(resultString);
+            }
+            catch
+            {
+                return null;
             }
         }
     }

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using Discord.Commands;
 using MongoDB.Bson;
+using System.Drawing;
+using Color = Discord.Color;
 
 namespace FinBot
 {
@@ -135,7 +137,7 @@ namespace FinBot
         /// <summary>
         /// Commands hidden from regular users - available to developers.
         /// </summary>
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updateSupport", "tld", "exec", "reset_chatbot", "getguilddata", "EnBotClientCommands", "clearalldata", "clearalldata", "test", "update" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updatesupport", "tld", "exec", "reset_chatbot", "getguilddata", "enbotclientcommands", "clearalldata", "update", "execute", "test" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
@@ -570,6 +572,18 @@ namespace FinBot
             {
                 ConsoleLog("Not reached");
             }
+        }
+
+        /// <summary>
+        /// Converts an image to a byte array.
+        /// </summary>
+        /// <param name="img">The image to get the byte array of.</param>
+        /// <returns>A byte array for the image.</returns>
+        public static byte[] ImageToByteArray(System.Drawing.Image img)
+        {
+            ImageConverter _imageConverter = new ImageConverter();
+            byte[] xByte = (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
+            return xByte;
         }
     }
 }

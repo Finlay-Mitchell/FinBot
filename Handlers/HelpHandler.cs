@@ -60,7 +60,7 @@ namespace FinBot.Handlers
                 {
                     PreconditionResult result = await cmd.CheckPreconditionsAsync(Context);
 
-                    if (Global.hiddenCommands.Contains(cmd.Name.ToString()))
+                    if (Global.hiddenCommands.Contains(cmd.Name.ToString().ToLower()))
                     {
                         continue;
                     }

@@ -2049,7 +2049,7 @@ namespace FinBot.Modules
             }
 
             System.Drawing.Image img = qrCodeImage;
-            MemoryStream ms = new MemoryStream(ImageToByteArray(img)); // We do this as a memorystream because this can be parsed straight to Discord without having to save our image to our computer/server.
+            MemoryStream ms = new MemoryStream(Global.ImageToByteArray(img)); // We do this as a memorystream because this can be parsed straight to Discord without having to save our image to our computer/server.
             string url_safe = GenerateRandom(); // This means there's a different attachment name every time that we use this command, stopping Discord from caching the message and showing us the wrong one.
             EmbedBuilder eb = new EmbedBuilder();
             IUserMessage msg = await Context.Channel.SendFileAsync(ms, $"guild_invite-{url_safe}.png"); // We do this because sending it to Discord and quickly removing it allows us to get a proxy url, which we do in the next line. 
@@ -2058,18 +2058,6 @@ namespace FinBot.Modules
             eb.Title = "Scan this invite QR code for the guild";
             eb.Description = $"or simply copy the URL here: {url}";
             await Context.Message.ReplyAsync("", false, eb.Build());
-        }
-
-        /// <summary>
-        /// Converts an image to a byte array.
-        /// </summary>
-        /// <param name="img">The image to get the byte array of.</param>
-        /// <returns>A byte array for the image.</returns>
-        public static byte[] ImageToByteArray(System.Drawing.Image img)
-        {
-            ImageConverter _imageConverter = new ImageConverter();
-            byte[] xByte = (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
-            return xByte;
         }
 
         /// <summary>
