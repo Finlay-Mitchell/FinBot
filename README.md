@@ -1,5 +1,5 @@
 # FinBot
-An advanced Discord utility/commands bot with:
+An advanced Discord utility/general bot with:
 - music features/lyric searching
 - mod logging
 - levelling with ability to turn on and off
@@ -9,9 +9,12 @@ An advanced Discord utility/commands bot with:
   * Cusrom welcome messages
   * ability to turn on and off commands (in the works)
   * custom guild member count
+  * Custom guild censor list
+  * And more!
  - polling
  - text to speech
  - custom API
+ - reminders
  - and a lot more
  
  # APIs
@@ -20,70 +23,12 @@ An advanced Discord utility/commands bot with:
   * [Spotify developer dashboard](https://developer.spotify.com/dashboard)
   * [Discord developer portal](https://discord.com/developers/applications)
   * [Genius API documentation](https://genius.com/api-clients)
- 
- # C#
- ### NuGet packages
- * Discord.net
- * DependancyInjection
- * wiki.net
- * Newtonsoft json
- * quickchart
- * Google.Apis.YouTube.v3
- * MySql
- * ICanHazDadJoke.met
- * Serilog
- * Microsoft.Extensions.Logging
- * MongoDB.Driver
- * System.configuration
- * UptimeSharp
- 
- # Python
- ### Packages
-For this project, you will need to install the following libraries:
- * discord.Py
- * PyNaCl
- * spotipy
- * pytube
- * pydub
- * gtts
- * lyricsgenius
- * youtube-search-python
- * aiml
- * mee6
- * YoutubeDL
- * motor
- * mySql
-
-# Node.js
-### Packages
-* discord.js
-* express
- 
-# If you want to copy and expand this bot
-First, give me credit.
-Secondly, in Data -> config.py, you need to add your cog name to the "extensions" array for it to be loaded as a cog for the bot.
-If you want to contact me, [then contact me via email](https://mail.google.com/mail/?view=cm&fs=1&to=finlayjosephmitchell@gmail.com)
-
-# HELP! IT'S NOT WORKING AND I'M GETTING ERRORS!!!
-If you encounter an error, use this table of contents to try help you:
-
-| Error                 | Fix                                      |
-|-----------------------|------------------------------------------|
-| Pip isn't recognized? | Try: `py -3 -m pip install -U <package>` |
-| Unknown package?      | Do: `pip install -u <package name>`      |
-| Out of date package?  | Do: `pip install <package> -U`           |
-| Rate limited(Error code 429)?         | You're sending too many requests. Wait a few minutes and try again |
-|                       |                                          |
-| Other issue?          | Contact me and I will try help you       |
-| Failing to compile?   | You've copied something wrong, check all of your files |
 
 # License
-Check License.md for license information.
+Check License.md for license details.
 
 # Other notes
-Thomas is a walking talking God.
-
-The YouTube searching algorithm is in development still. It should work completely fine without any/many miss-named videos.
-This also requires ffmpeg to run for python and C#, and opus/libsodum for C#
+Thanks to Thomas for helping with the Python module.
+Thanks to Keilah for the awesome avatar image.
 
 # ToDo:
