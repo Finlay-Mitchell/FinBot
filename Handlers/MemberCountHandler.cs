@@ -24,7 +24,7 @@ namespace FinBot.Handlers
         /// <summary>
         /// Gets the usercount channel id from the database.
         /// </summary>
-        /// <param name="guild"></param>
+        /// <param name="guild">The guild to get the data for.</param>
         /// <returns>Returns the id of the configured usercount channel.</returns>
         public async Task<string> GetUserCountChannel(SocketGuild guild)
         {
@@ -59,7 +59,6 @@ namespace FinBot.Handlers
         /// Updates the membercount channel if present.
         /// </summary>
         /// <param name="arg">The user who left or joined the guild.</param>
-        /// <returns></returns>
         public async Task HandleUserCount(SocketGuildUser arg)
         {
             try

@@ -78,7 +78,6 @@ namespace FinBot.Services
         /// <param name="content">The content to append to the database.</param>
         /// <param name="message">The message that we're appending.</param>
         /// <param name="socketGuildChannel">The channel where the message was deleted.</param>
-        /// <returns></returns>
         private async Task AddToSnipe(uint type, MySqlConnection conn, string content, SocketUserMessage message, SocketGuildChannel socketGuildChannel)
         {
             try
@@ -174,7 +173,6 @@ namespace FinBot.Services
                     long Now = Global.ConvertToTimestamp(arg.Timestamp.UtcDateTime);
                     MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
                     MySqlConnection queryConn = new MySqlConnection(Global.MySQL.ConnStr);
-
                     conn.Open();
                     long TimeStamp = 0;
                     long XP = 0;
@@ -182,7 +180,6 @@ namespace FinBot.Services
                     bool ran = false;
                     long xpToNextLevel = 0;
                     long totalXP = 0;
-
                     MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Levels WHERE userId = {arg.Author.Id} AND guildId = {chan.Guild.Id}", conn);
                     MySqlDataReader reader = cmd1.ExecuteReader();
 
@@ -282,15 +279,6 @@ namespace FinBot.Services
         /// <param name="arg2">The cached channel where the message was sent.</param>
         private async Task OnMessageDelete(Cacheable<IMessage, ulong> msg, Cacheable<IMessageChannel, ulong> arg2)
         {
-            /*
-             * Database consists of:
-             * message TEXT
-             * ts BIGINT(rename)
-             * guildId BIGINT
-             * author BIGINT
-             * author BIGINT
-             */
-
             try
             {
                 SocketUserMessage author = (SocketUserMessage)await msg.GetOrDownloadAsync();
@@ -304,7 +292,7 @@ namespace FinBot.Services
                         string fields = "";
                         List<string> content = new List<string>();
                         IEmbed message = author.Embeds.First();
-                        var embed = message.ToEmbedBuilder();
+                        EmbedBuilder embed = message.ToEmbedBuilder();
 
                         if (embed.Fields.Count > 0)
                         {
@@ -382,7 +370,6 @@ namespace FinBot.Services
 
                 string logMessage = $"[DELETED]User: [{author.Author.Username}]<->[{author.Author.Id}] Discord Server: [{sGC.Guild.Name}/{arg2}] -> [{messagecontent}]";
                 _logger.LogDebug(logMessage);
-
                 return;
             }
 

@@ -310,7 +310,6 @@ namespace FinBot
         /// </summary>
         /// <param name="context">The context of the command.</param>
         /// <returns>A string containing the prefix for the guild.</returns>
-        /// 
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
             try
@@ -318,6 +317,7 @@ namespace FinBot
                 /*
                  * This will be commented out until I fix the prefx command calling an embed whilst using cached prefixes
                  */
+
                 //foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
                 //{
                 //    foreach (KeyValuePair<ulong, string> f in t)

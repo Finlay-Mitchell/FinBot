@@ -1,7 +1,6 @@
 ﻿using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
-using FinBot.Modules;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
 using Discord.Commands;
@@ -12,9 +11,7 @@ using System.Linq;
 namespace FinBot.Services
 {
     /*
-	 *
 	 *I NEED TO DEVELOP THIS LATER ON
-	 * 
 	 */
 
     public class MuteService : ModuleBase<ShardedCommandContext>
@@ -81,13 +78,13 @@ namespace FinBot.Services
                         return;
                     }
                 }
+
                 conn.Close();
             }
 
             catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-                //implement later
             }
 
             finally
@@ -198,8 +195,9 @@ namespace FinBot.Services
         {
             time = "time " + time;
             float result = 0.0f;
-            var len = time.Length;
-            for (var i = len - 1; i > 0; i--)
+            int len = time.Length;
+
+            for (int i = len - 1; i > 0; i--)
             {
                 float _base;
 
@@ -223,7 +221,7 @@ namespace FinBot.Services
 
                 float exponent = 1.0f;
 
-                for (var j = 1; j <= i + 1; j++)
+                for (int j = 1; j <= i + 1; j++)
                 {
                     if (char.IsDigit((time[i - j])))
                     {

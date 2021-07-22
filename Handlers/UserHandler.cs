@@ -5,7 +5,6 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Threading.Tasks;
-
 using Discord.Commands;
 using MySql.Data.MySqlClient;
 using System.Linq;
@@ -14,7 +13,6 @@ namespace FinBot.Handlers
 {
     public class UserHandler : ModuleBase<SocketCommandContext>
     {
-
         private readonly DiscordShardedClient _client;
         readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
 
@@ -46,6 +44,7 @@ namespace FinBot.Handlers
                     IRole role = (arg.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
                     await arg.AddRoleAsync(role);
                 }
+
                 conn.Close();
             }
 
@@ -68,6 +67,7 @@ namespace FinBot.Handlers
         public async Task<string> GetWelcomeChannel(SocketGuild guild)
         {
             //If no data found, defaults to 0.
+
             try
             {
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
@@ -134,7 +134,6 @@ namespace FinBot.Handlers
                         Description = $"{arg} has left the server, goodbye",
                         Color = Color.Green
                     };
-
                     SocketTextChannel Channel = (SocketTextChannel)arg.Guild.GetChannel(GuildWelcomeChannel);
                     await Channel.SendMessageAsync("", false, eb.Build());
                 }
@@ -150,7 +149,6 @@ namespace FinBot.Handlers
         /// Sends a message to the welcome/leave channel, if specified, when the user joins.
         /// </summary>
         /// <param name="arg">The user who joined the guild.</param>
-        /// <returns></returns>
         public async Task HandleWelcomeAsync(SocketGuildUser arg)
         {
             try
@@ -175,10 +173,8 @@ namespace FinBot.Handlers
                         Description = $"Welcome, {arg.Mention} to {arg.Guild.Name}. You are member #{arg.Guild.MemberCount}!",
                         Color = Color.Green
                     };
-
                     SocketTextChannel Channel = (SocketTextChannel)arg.Guild.GetChannel(GuildWelcomeChannel);
                     await Channel.SendMessageAsync("", false, eb.Build());
-
                     await arg.SendMessageAsync("", false, new EmbedBuilder()
                     {
                         Title = $"***Welcome to {arg.Guild.Name}!***",

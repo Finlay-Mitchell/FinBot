@@ -2,7 +2,6 @@
 using Discord.Commands;
 using System.Linq;
 using System.Threading.Tasks;
-using FinBot.Attributes;
 
 namespace FinBot.Handlers
 {
@@ -49,7 +48,6 @@ namespace FinBot.Handlers
                     Url = Context.Message.GetJumpUrl()
                 }
             };
-
             string guildPrefix = await Global.DeterminePrefix(Context);
 
             foreach (ModuleInfo module in _service.Modules)
@@ -60,7 +58,7 @@ namespace FinBot.Handlers
                 {
                     PreconditionResult result = await cmd.CheckPreconditionsAsync(Context);
 
-                    if (Global.hiddenCommands.Contains(cmd.Name.ToString().ToLower()))
+                    if (Global.hiddenCommands.Contains(cmd.Name.ToString().ToLower())) //Took me a long while to noice...but without lowercasing the string, it'll fail, as I found out today.
                     {
                         continue;
                     }
@@ -73,7 +71,7 @@ namespace FinBot.Handlers
 
                 if (!string.IsNullOrWhiteSpace(description))
                 {
-                    switch (module.Name) // we ignore DevCommands since we don't want these being shown to the public
+                    switch (module.Name)
                     {
                         case "ModCommands":
                             builder.AddField(x =>

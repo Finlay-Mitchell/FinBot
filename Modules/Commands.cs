@@ -1712,7 +1712,7 @@ namespace FinBot.Modules
                             };
                             eb.WithAuthor(Context.Message.Author);
                             eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
-                            var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                            RestUserMessage msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                             tp.Dispose();
                             await msg.AddReactionsAsync(Global.reactions.ToArray());
                             queryConn.Open();
@@ -1731,7 +1731,7 @@ namespace FinBot.Modules
                         };
                         eb.WithAuthor(Context.Message.Author);
                         eb.WithFooter($"Poll active at {Context.Message.Timestamp}");
-                        var msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                        RestUserMessage msg = await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
                         tp.Dispose();
                         await msg.AddReactionsAsync(Global.reactions.ToArray());
                         queryConn.Open();
@@ -1902,7 +1902,6 @@ namespace FinBot.Modules
             await Context.Channel.TriggerTypingAsync();
             UptimeClient _client = new UptimeClient(Global.StatusPageAPIKey);
             List<Monitor> monitors = await _client.GetMonitors();
-
             EmbedBuilder eb = new EmbedBuilder();
             monitors.ForEach(item => eb.AddField(item.Name, $"Status: {item.Status}\nUptime: {item.Uptime}%"));
             eb.Title = "Bot status";
@@ -1983,12 +1982,6 @@ namespace FinBot.Modules
             };
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
-
-        /*
-         * 
-         * BOILERPLACE CODE FOR PYTHON MODULE 
-         * 
-         */
 
         [Command("invite"), Summary("Gets an invite to the current guild in both the form of a URL and a QR code"), Remarks("(PREFIX)invite"), Alias("guildinvite", "inviteguild", "getinvite", "guild_invite")]
         [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.CreateInstantInvite | ChannelPermission.AttachFiles | ChannelPermission.ManageMessages)]
@@ -2080,7 +2073,9 @@ namespace FinBot.Modules
         }
 
         /*
-         * This is just a template for the chatbot command in the Python cogs.
+         * 
+         * BOILERPLACE CODE FOR PYTHON MODULE 
+         * 
          */
 
         [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]

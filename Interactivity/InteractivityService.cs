@@ -72,9 +72,6 @@ namespace FinBot.Interactivity
             }
         }
 
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

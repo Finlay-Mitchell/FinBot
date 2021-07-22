@@ -26,6 +26,7 @@ namespace FinBot.Modules
         public ModCommands(IServiceProvider services)
         {
             //Sometimes, when using a bot-initiated command, it throws an exception that there's no service for DiscordShardedClient, this works around that and allows it to work.
+
             try
             {
                 _client = services.GetRequiredService<DiscordShardedClient>();
@@ -1777,11 +1778,12 @@ namespace FinBot.Modules
 
                     return;
                 }
+
                 try
                 {
                     await role.ModifyAsync(x => x.Position = Context.Guild.CurrentUser.Hierarchy);
 
-                    foreach (var channel in Context.Guild.TextChannels)
+                    foreach (SocketTextChannel channel in Context.Guild.TextChannels)
                     {
                         if (!channel.GetPermissionOverwrite(role).HasValue || channel.GetPermissionOverwrite(role).Value.SendMessages == PermValue.Allow)
                         {
@@ -1848,6 +1850,7 @@ namespace FinBot.Modules
                     {
                         emoji = $"https://{emoji}";
                     }
+
                     WebClient webClient = new WebClient();
                     byte[] imageBytes = webClient.DownloadData(new Uri(emoji));
                     MemoryStream ms = new MemoryStream(imageBytes);
@@ -1872,7 +1875,7 @@ namespace FinBot.Modules
 
                         WebClient wc = new WebClient();
                         MemoryStream ms = new MemoryStream(await wc.DownloadDataTaskAsync(emote.Url));
-                        var ae = await Context.Guild.CreateEmoteAsync(emote.Name, new Discord.Image(ms));
+                        GuildEmote ae = await Context.Guild.CreateEmoteAsync(emote.Name, new Discord.Image(ms));
                         await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Successfully copied emote", $"Successfully added the emote {name} to the guild.", false, Discord.Color.Green).Build());
                         await Task.Delay(200);
                         await ms.DisposeAsync();

@@ -168,7 +168,6 @@ namespace FinBot.Modules
                 }
 
                 SocketVoiceChannel channel = (SocketVoiceChannel)parsedChannel;
-
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");

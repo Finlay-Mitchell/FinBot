@@ -27,7 +27,6 @@ namespace FinBot.Handlers
         /// Inserts a guild into the database to allow configuration.
         /// </summary>
         /// <param name="guildId">The id of the guild to add to the database.</param>
-        /// <returns></returns>
         public static BsonDocument InsertGuild(ulong guildId)
         {
             BsonDocument document = new BsonDocument { { "_id", (decimal)guildId } };

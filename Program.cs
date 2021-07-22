@@ -18,7 +18,7 @@ namespace FinBot
         /// <summary>
         /// This starts up the bot and sets the console up.
         /// </summary>
-        /// <param name="args"></param>
+        /// <param name="args">Startup arguments.</param>
         static void Main(string[] args)
         {
             Console.Title = "Finbot"; //Set the console title, because why not?
@@ -27,7 +27,7 @@ namespace FinBot
             {
                 try
                 {
-                    //Start the bot
+                    //Start the bot.
                     new Program().RunBotAsync().GetAwaiter().GetResult();
                 }
 

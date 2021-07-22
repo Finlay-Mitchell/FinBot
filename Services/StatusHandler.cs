@@ -16,6 +16,7 @@ namespace FinBot.Services
         public StatusHandler(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
+           
             Timer t = new Timer() { AutoReset = true, Interval = new TimeSpan(0, 0, 10, 30).TotalMilliseconds, Enabled = true };
             t.Enabled = true;
             t.Elapsed += HandleStatusChange;

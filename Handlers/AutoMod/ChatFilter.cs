@@ -22,7 +22,7 @@ namespace FinBot.Handlers.AutoMod
         public ChatFilter(IServiceProvider service)
         {
             _client = service.GetRequiredService<DiscordShardedClient>();
-            modCommands = new ModCommands(service);
+            modCommands = new ModCommands(service); // New instance of the ModCommands class.
 
             _client.MessageReceived += CheckForCensoredWords;
             _client.MessageReceived += CheckForPingSpam;
@@ -109,7 +109,7 @@ namespace FinBot.Handlers.AutoMod
 
                 else
                 {
-                    //Add some handling later on.
+                    return;
                 }
             }
 

@@ -14,16 +14,11 @@ using FinBot.Services;
 using Discord.Rest;
 using Color = Discord.Color;
 using FinBot.Attributes.Preconditions;
-using FinBot.Attributes;
 using System.Reflection;
 using Discord.Webhook;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Linq;
-using System.Net;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Drawing;
 
 namespace FinBot.Modules
 {
@@ -201,7 +196,6 @@ namespace FinBot.Modules
         [Command("test")]
         public async Task test(string action = null, SocketUser member = null, SocketTextChannel channel = null)
         {
-            //IEnumerable<RestAuditLogEntry> auditlogs = await Context.Guild.GetAuditLogsAsync(3, null, null, id, ActionType.ChannelUpdated).FlattenAsync();
             if (Global.IsDev(Context.User))
             {
                 if (action != null)
@@ -218,9 +212,6 @@ namespace FinBot.Modules
                 }
 
                 string result = "";
-
-
-
                 await ReplyAsync(result);
             }
         }
@@ -259,7 +250,6 @@ namespace FinBot.Modules
             SocketGuild guild = context.Guild;
             ActionType action = ActionType.MemberRoleUpdated;
             string[] entries = { };
-
             IEnumerable<RestAuditLogEntry> auditSearch = await guild.GetAuditLogsAsync(int.MaxValue, null, null, user.Id, action).FlattenAsync();
 
             foreach (RestAuditLogEntry AuditLogEntry in auditSearch)
@@ -320,7 +310,6 @@ namespace FinBot.Modules
             SocketGuild guild = context.Guild;
             ActionType action = ActionType.ChannelUpdated;
             string[] entries = { };
-
             IEnumerable<RestAuditLogEntry> auditSearch = await guild.GetAuditLogsAsync(int.MaxValue, null, null, null, action).FlattenAsync();
 
             foreach (RestAuditLogEntry AuditLogEntry in auditSearch)
@@ -339,14 +328,15 @@ namespace FinBot.Modules
         public async Task update([Remainder] string info)
         {
             string[] args = info.Split(new string[] { "===" }, 2, StringSplitOptions.None);
-            string gitCommand = "git ";
-            string gitAddArgument = "add -A ";
-            string gitCommitArgument = args.Length == 2 ? $@"commit -m ""{args[0]}"" -m ""{args[1]}""" : $@"commit -m ""{args[0]}""";
-            string gitPushArgument = "push";
-            string gitPull = "pull";
+            string gitCommand = "git "; //The beginning string for every command.
+            string gitAddArgument = "add -A "; 
+            string gitCommitArgument = args.Length == 2 ? $@"commit -m ""{args[0]}"" -m ""{args[1]}""" : $@"commit -m ""{args[0]}"""; //Determines whether we commit a title & description or just a title and commits it.
+            string gitPushArgument = "push"; //Pushes the changes to Git.
+            string gitPull = "pull"; //We do this so the server can pull the changes from Github.
 
             try
             {
+                //This is not pretty, but it also works fairly well.
                 EmbedBuilder eb = new EmbedBuilder();
                 eb.Color = Color.Orange;
                 eb.Title = "Updating...";
@@ -355,7 +345,7 @@ namespace FinBot.Modules
                 Process pr = new Process();
                 pr = Process.Start(gitCommand, gitAddArgument);
                 ModifyUpdateEmbed("Began the update...");
-                pr.WaitForExit();
+                pr.WaitForExit(); //We do this in between every process because it means that processes don't overlap and break, this ensures each command will execute and finish before starting a new one.
                 pr = Process.Start(gitCommand, gitCommitArgument);
                 ModifyUpdateEmbed($"Began git commit with {args.Length} arguments...");
                 pr.WaitForExit();
@@ -377,10 +367,10 @@ namespace FinBot.Modules
                     RedirectStandardInput = true,
                 };
                 pr = new Process { StartInfo = startInfo };
-                pr.Start();
-                await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f");
-                await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}");
-                await pr.StandardInput.WriteLineAsync("FinBot.exe");
+                pr.Start(); 
+                await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f"); //This kills the bot process but we've already got the tasks below which will run regardless, so it works fine.
+                await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}"); //Now we've closed the application, we can compile and build the bot.
+                await pr.StandardInput.WriteLineAsync("FinBot.exe"); //Now we're able to just relaunch the bot.
                 pr.WaitForExit();
             }
             
@@ -409,13 +399,14 @@ namespace FinBot.Modules
         [RequireDeveloper]
         public async Task GPe(params string[] args)
         {
-            var joined = string.Join(" ", Context.Message.Content.Replace("```cs", "").Replace("```", "").Split(' ').Skip(1));
-            var create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq") .WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
+            //Doesn't work amazingly, but somewhat does.
+            string joined = string.Join(" ", Context.Message.Content.Replace("```cs", "").Replace("```", "").Split(' ').Skip(1));
+            Script<object> create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq") .WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
                         Assembly.GetAssembly(typeof(DiscordWebhookClient)), Assembly.GetExecutingAssembly()).WithImports("Discord", "Discord.WebSocket", "Discord.Commands"), typeof(ShardedCommandContext));
             
             try
             {
-                var state = await create.RunAsync(Context);
+                ScriptState<object> state = await create.RunAsync(Context);
 
                 if (state.ReturnValue == null)
                 {
@@ -432,6 +423,7 @@ namespace FinBot.Modules
                     Color = Color.Red
                 }.WithCurrentTimestamp().Build());
             }
+
             catch(Exception ex)
             {
                 await ReplyAsync(ex.Message);

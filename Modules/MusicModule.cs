@@ -7,7 +7,8 @@ namespace FinBot.Modules
     public class MusicModule : ModuleBase<ShardedCommandContext> //Music python boilerplate code
     {
         [Command("play"), Summary("plays a song/playlist"), Remarks("(PREFIX)play <song(s)>"), Alias("p")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | (ChannelPermission)GuildPermission.Speak)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(GuildPermission.Speak)]
         public Task play(params string[] args)
         {
             return Task.CompletedTask;
@@ -21,14 +22,16 @@ namespace FinBot.Modules
         }
 
         [Command("resume"), Summary("Resumes the currently paused track"), Remarks("(PREFIX)resume"), Alias("res", "continue")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks), RequireBotPermission(GuildPermission.Speak)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(GuildPermission.Speak)]
         public Task resume(params string[] args)
         {
             return Task.CompletedTask;
         }
 
         [Command("skip"), Summary("skips the currently playing track"), Remarks("(PREFIX)skip"), Alias("next")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks | (ChannelPermission)GuildPermission.Speak)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [RequireBotPermission(GuildPermission.Speak)]
         public Task skip(params string[] args)
         {
             return Task.CompletedTask;

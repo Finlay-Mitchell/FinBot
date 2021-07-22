@@ -52,19 +52,17 @@ namespace FinBot.Services
                     eb.WithFooter($"Reminder set at {Global.UnixTimeStampToDateTime(reader.GetInt64(3))}");
                     eb.WithCurrentTimestamp();
                     await channel.SendMessageAsync("", false, eb.Build());
-
-
                     QueryConn.Open();
                     await InsertToDBAsync(1, QueryConn, user.Id, guild.Id);
                     QueryConn.Close();
                 }
+
                 conn.Close();
             }
 
             catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-                //implement later
             }
 
             finally
@@ -84,7 +82,6 @@ namespace FinBot.Services
         /// <param name="reminderTimestamp">The unix timestamp of when to remind the user.</param>
         /// <param name="message">The message to send alongside the reminder.</param>
         /// <param name="chan">The channel where the reminder was set.</param>
-        /// <returns></returns>
         public async static Task InsertToDBAsync(uint type, MySqlConnection conn, ulong userId, ulong guildId, long nowTimestamp = 0, long reminderTimestamp = 0, string message = null, SocketTextChannel chan = null)
         {
             try
@@ -119,7 +116,6 @@ namespace FinBot.Services
         /// <param name="duration">The duration for the reminder timer.</param>
         /// <param name="message">The reminder message.</param>
         /// <param name="context">The context of the message to set the reminder.</param>
-        /// <returns></returns>
         public async static Task SetReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message, ShardedCommandContext context)
         {
             long currentTime = Global.ConvertToTimestamp(timeSet);
@@ -185,8 +181,9 @@ namespace FinBot.Services
         {
             time = "time " + time;
             float result = 0.0f;
-            var len = time.Length;
-            for (var i = len - 1; i > 0; i--)
+            int len = time.Length;
+
+            for (int i = len - 1; i > 0; i--)
             {
                 float _base;
 
@@ -210,7 +207,7 @@ namespace FinBot.Services
 
                 float exponent = 1.0f;
 
-                for (var j = 1; j <= i + 1; j++)
+                for (int j = 1; j <= i + 1; j++)
                 {
                     if (char.IsDigit((time[i - j])))
                     {
