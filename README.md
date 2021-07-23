@@ -25,7 +25,7 @@ An advanced Discord utility/general bot with:
   * [Genius API documentation](https://genius.com/api-clients)
 
 # License
-Check License.md for license details.
+Check LICENSE.md for license details.
 
 # Other notes
 Thanks to Thomas for helping with the Python module.
