@@ -382,6 +382,7 @@ namespace FinBot.Modules
                 await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}"); //Now we've closed the application, we can compile and build the bot.
                 await pr.StandardInput.WriteLineAsync("FinBot.exe"); //Now we're able to just relaunch the bot.
                 pr.WaitForExit();
+                Environment.Exit(0);
             }
             
             catch (Exception ex)
