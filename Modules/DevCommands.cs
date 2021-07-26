@@ -377,7 +377,7 @@ namespace FinBot.Modules
                 };
                 pr = new Process { StartInfo = startInfo };
                 pr.Start();
-                Environment.Exit(0);
+                await pr.StandardInput.WriteLineAsync($"{Global.BotDirectory}\\bin\\debug\\netcoreapp3.1\\Data\\ShutDownBot.exe");
                 //await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f"); //This kills the bot process but we've already got the tasks below which will run regardless, so it works fine.
                 await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}"); //Now we've closed the application, we can compile and build the bot.
                 await pr.StandardInput.WriteLineAsync("FinBot.exe"); //Now we're able to just relaunch the bot.
