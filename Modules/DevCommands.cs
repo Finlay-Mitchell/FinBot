@@ -123,7 +123,16 @@ namespace FinBot.Modules
                     try
                     {
                         BsonDocument data = await MongoHandler.FindById(collection, _id);
-                        await ReplyAsync(data.ToString());
+
+                        if (data != null)
+                        {
+                            await ReplyAsync(data.ToString());
+                        }
+
+                        else
+                        {
+                            await ReplyAsync("Guild config data is null.");
+                        }
                     }
 
                     catch (KeyNotFoundException)
@@ -367,8 +376,9 @@ namespace FinBot.Modules
                     RedirectStandardInput = true,
                 };
                 pr = new Process { StartInfo = startInfo };
-                pr.Start(); 
-                await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f"); //This kills the bot process but we've already got the tasks below which will run regardless, so it works fine.
+                pr.Start();
+                Environment.Exit(0);
+                //await pr.StandardInput.WriteLineAsync("taskkill /im FinBot.exe /f"); //This kills the bot process but we've already got the tasks below which will run regardless, so it works fine.
                 await pr.StandardInput.WriteLineAsync($"dotnet build {Global.BotDirectory}"); //Now we've closed the application, we can compile and build the bot.
                 await pr.StandardInput.WriteLineAsync("FinBot.exe"); //Now we're able to just relaunch the bot.
                 pr.WaitForExit();
