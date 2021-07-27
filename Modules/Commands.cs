@@ -1480,7 +1480,6 @@ namespace FinBot.Modules
 
                 conn.Close();
                 await Global.ModifyMessage(msg, b);
-                await Context.Message.ReplyAsync("", false, b.Build());
             }
 
             catch (Exception ex)
