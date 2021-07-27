@@ -1665,7 +1665,9 @@ namespace FinBot.Modules
             }
         }
 
-        //This is boilerplaate code for python module
+        /*
+         * This is boilerplaate code for python module
+         */
         [Command("ModLogs"), Summary("Gets the modlogs for the current user"), Remarks("(PREFIX)modlogs <user>")]
         [RequireBotPermission(ChannelPermission.EmbedLinks | ChannelPermission.ManageMessages | ChannelPermission.AddReactions)]
         public Task Modlogs(params string[] arg)
