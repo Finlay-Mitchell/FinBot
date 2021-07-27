@@ -28,7 +28,7 @@ function GetAPIData(query)
   switch(query)
   {
     case "guildcount":
-      fetch('http://localhost:3000/botstats')
+      fetch('https://api.finlaymitchell.ml/botstats')
       .then(function (res) {
         return res.json()
       })
@@ -38,7 +38,7 @@ function GetAPIData(query)
       break;
 
     case "usercount":
-      fetch('http://localhost:3000/botstats')
+      fetch('https://api.finlaymitchell.ml/botstats')
       .then(function (res) {
         return res.json()
       })
@@ -48,7 +48,7 @@ function GetAPIData(query)
       break;
 
     case "channelcount":
-      fetch('http://localhost:3000/botstats')
+      fetch('https://api.finlaymitchell.ml/botstats')
       .then(function (res) {
         return res.json()
       })
@@ -58,7 +58,7 @@ function GetAPIData(query)
       break;
 
       case "messagecount":
-      fetch('http://localhost:3000/botstats')
+      fetch('https://api.finlaymitchell.ml/botstats')
       .then(function (res) {
         return res.json()
       })
