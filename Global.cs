@@ -97,6 +97,10 @@ namespace FinBot
         /// The current directory of the bot for the system it's running on.
         /// </summary>
         public static string BotDirectory { get; set; }
+        /// <summary>
+        /// The API key for the weather API.
+        /// </summary>
+        public static string WeatherAPIKey { get; set; }
 
         /*
          * Our global variables that we do not read from the config.
@@ -197,6 +201,7 @@ namespace FinBot
             clientPrefix = data.clientPrefix;
             ErrorLogChannelId = data.ErrorLogChannelId;
             BotDirectory = data.BotDirectory;
+            WeatherAPIKey = data.WeatherAPIKey;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}"; //The connection string for the MySql server.
         }
@@ -227,6 +232,7 @@ namespace FinBot
             public string clientPrefix { get; set; }
             public ulong ErrorLogChannelId { get; set; }
             public string BotDirectory { get; set; }
+            public string WeatherAPIKey { get; set; }
         }
 
         /// <summary>

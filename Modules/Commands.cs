@@ -2072,6 +2072,38 @@ namespace FinBot.Modules
             return stringChars.ToString();
         }
 
+        [Command("weather"), Summary("Gets the weather for a given location"), Remarks("(PREFIX)weather <location>")]
+        public async Task Weather([Remainder] string city)
+        {
+            if(city == null)
+            {
+                await Context.Message.ReplyAsync("Please enter a valid city name.");
+            }
+
+            WeatherData Weather = new WeatherData(city);
+            Weather.CheckWeather();
+
+            if (Weather.XmlIsNull)
+            {
+                await ReplyAsync("", false, Global.EmbedMessage("Error", $"Sorry, but weather data on the location \"{city.First().ToString().ToUpper() + city.Substring(1)}\" couldn't be found. Please try a valid location", false, Color.Red).Build());
+                return;
+            }
+
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithTitle($"Weather for {city.First().ToString().ToUpper() + city.Substring(1)}");
+            eb.WithDescription($"Weather: {Weather.WeatherValue}\nTemperature: {Weather.Temp}°C ({Weather.CelciusToFarenheit(Weather.Temp)}°F)\nFeels like: {Weather.FeelsLike}°C ({Weather.CelciusToFarenheit(Weather.FeelsLike)}°F)" +
+                $"\nMax temperature: {Weather.TempMax} ({Weather.CelciusToFarenheit(Weather.TempMax)}°F)\nMin temperature: {Weather.TempMin}°C ({Weather.CelciusToFarenheit(Weather.TempMin)}°F)\nWind speed: {Weather.Windspeed} " +
+                $"#({Weather.WindspeedValue}m/s)\n------------------------\nPressure: {Weather.Pressure} hPa\nHumidity: {Weather.Humidity}%");
+            eb.Author = new EmbedAuthorBuilder()
+            {
+                IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                Name = $"{Context.User}"
+            };
+            eb.Color = Weather.DetermineWeatherColour(Weather.WeatherId);
+            eb.WithFooter($"Last updated: {Weather.LastUpdated}");
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
         /*
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 
