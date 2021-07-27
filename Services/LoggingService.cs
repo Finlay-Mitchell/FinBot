@@ -78,7 +78,7 @@ namespace FinBot.Services
         /// <param name="content">The content to append to the database.</param>
         /// <param name="message">The message that we're appending.</param>
         /// <param name="socketGuildChannel">The channel where the message was deleted.</param>
-        private async Task AddToSnipe(uint type, MySqlConnection conn, string content, SocketUserMessage message, SocketGuildChannel socketGuildChannel)
+        private async Task AddToSnipe(MySqlConnection conn, string content, SocketUserMessage message, SocketGuildChannel socketGuildChannel)
         {
             try
             {
@@ -89,17 +89,8 @@ namespace FinBot.Services
                     return;
                 }
 
-                if (type == 0)
-                {
-                    MySqlCommand cmd = new MySqlCommand($"UPDATE SnipeLogs SET MessageTimestamp = {Now}, message = '{content}', author = {message.Author.Id} WHERE guildId = {socketGuildChannel.Guild.Id}", conn);
-                    cmd.ExecuteNonQuery();
-                }
-
-                else
-                {
-                    MySqlCommand cmd = new MySqlCommand($"INSERT INTO SnipeLogs(message, MessageTimestamp, guildId, author) VALUES('{content}', {Now}, {socketGuildChannel.Guild.Id}, {message.Author.Id})", conn);
-                    cmd.ExecuteNonQuery();
-                }
+                MySqlCommand cmd = new MySqlCommand($"INSERT INTO SnipeLogs(message, MessageTimestamp, guildId, author) VALUES('{content}', {Now}, {socketGuildChannel.Guild.Id}, {message.Author.Id})", conn);
+                cmd.ExecuteNonQuery();
             }
 
             catch (Exception ex)
@@ -312,36 +303,18 @@ namespace FinBot.Services
                 }
 
                 MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
-                MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
 
                 try
                 {
-                    conn.Open();
                     long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
-                    bool IsEmpty = true;
-                    MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM SnipeLogs WHERE guildId = '{sGC.Guild.Id}'", conn);
-                    MySqlDataReader reader = (MySqlDataReader)await cmd1.ExecuteReaderAsync();
 
                     if (messagecontent.Contains("'"))
                     {
                         messagecontent = Regex.Replace(messagecontent, "'", "\"");
                     }
 
-                    while (reader.Read())
-                    {
-                        IsEmpty = false;
-                        QueryConn.Open();
-                        await AddToSnipe(0, QueryConn, messagecontent, author, sGC);
-                        QueryConn.Close();
-                    }
-
-                    if (IsEmpty)
-                    {
-                        QueryConn.Open();
-                        await AddToSnipe(1, QueryConn, messagecontent, author, sGC);
-                        QueryConn.Close();
-                    }
-
+                    conn.Open();
+                    await AddToSnipe(conn, messagecontent, author, sGC);
                     conn.Close();
                 }
 
@@ -361,6 +334,11 @@ namespace FinBot.Services
                     }
 
                     Global.ConsoleLog(ex.Message);
+                }
+
+                finally
+                {
+                    conn.Close();
                 }
 
                 if (author == null)

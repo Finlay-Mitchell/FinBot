@@ -1378,17 +1378,60 @@ namespace FinBot.Modules
             return null;
         }
 
-        [Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe")]
-        [RequireBotPermission(ChannelPermission.EmbedLinks)]
-        public async Task Snipe()
+        /// <summary>
+        /// Gets the number of elements in a query result.
+        /// </summary>
+        /// <param name="guildId">The Id of the guild to get the channel of.</param>
+        /// <returns>A string of a number for how many results there are.</returns>
+        private string GetQueryCount(ulong guildId)
         {
-            await Context.Channel.TriggerTypingAsync();
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id}", conn);
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipeLogs WHERE guildId = {guildId}", conn);
+                MySqlDataReader reader = cmd.ExecuteReader();
+                int count = 0;
+
+                while(reader.Read())
+                {
+                    count++;
+                }
+
+                conn.Close();
+
+                return count.ToString();
+            }
+
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+                return "err";
+            }
+
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        [Command("snipe"), Summary("Gets the most recent deleted message from your guild"), Remarks("(PREFIX)snipe || (PREFIX)snipe (optional)<index>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        public async Task Snipe(int num = 0)
+        {
+            await Context.Channel.TriggerTypingAsync();
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+
+            if(num != 0)
+            {
+                num = num - 1;
+            }
+
+            try
+            {
+                conn.Open();
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
                 MySqlDataReader reader = cmd.ExecuteReader();
                 EmbedBuilder b = new EmbedBuilder();
 
@@ -1399,19 +1442,16 @@ namespace FinBot.Modules
                     b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetDouble(1))}");
                     SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
                     string username = "";
-                    string avurl = "";
                     ulong uId = Convert.ToUInt64(reader[3]);
 
                     if (Context.Guild.GetUser(uId) == null || Context.Guild.GetUser(uId).GetType() == typeof(SocketUnknownUser))
                     {
                         username = $"<@{reader[3]}>";
-                        avurl = "";
                     }
 
                     else
                     {
                         user = Context.Guild.GetUser(uId);
-                        avurl = user.GetAvatarUrl();
 
                         if (user.Nickname != null)
                         {
@@ -1427,7 +1467,7 @@ namespace FinBot.Modules
                     EmbedAuthorBuilder Author = new EmbedAuthorBuilder()
                     {
                         Name = username,
-                        IconUrl = avurl,
+                        IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
                     };
                     b.WithAuthor(Author);
                     b.Color = Color.Red;
@@ -1439,6 +1479,20 @@ namespace FinBot.Modules
 
             catch (Exception ex)
             {
+                if(ex.Message.Contains("50035"))
+                {
+                    string ElemCount = GetQueryCount(Context.Guild.Id);
+                
+                    if (ElemCount == "err")
+                    {
+                        await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"There are not that many deleted messages in the database.", false, Color.Red).Build());
+                        return;
+                    }
+
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"There are only {ElemCount} deleted messages in the database.", false, Color.Red).Build());
+                    return;
+                }
+
                 if (ex.Message.GetType() != typeof(NullReferenceException))
                 {
                     EmbedBuilder eb = new EmbedBuilder();
