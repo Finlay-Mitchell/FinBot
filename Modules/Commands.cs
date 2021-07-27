@@ -1421,6 +1421,11 @@ namespace FinBot.Modules
         public async Task Snipe(int num = 0)
         {
             await Context.Channel.TriggerTypingAsync();
+
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.Title = "Sniped message";
+            eb.Description = "Gathering message...";
+            IUserMessage msg = await Context.Message.ReplyAsync("", false, eb.Build());
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
             if(num != 0)
@@ -1474,6 +1479,7 @@ namespace FinBot.Modules
                 }
 
                 conn.Close();
+                await Global.ModifyMessage(msg, b);
                 await Context.Message.ReplyAsync("", false, b.Build());
             }
 
@@ -1485,24 +1491,24 @@ namespace FinBot.Modules
                 
                     if (ElemCount == "err")
                     {
-                        await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"There are not that many deleted messages in the database.", false, Color.Red).Build());
+                        await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are not that many deleted messages in the database.", false, Color.Red));
                         return;
                     }
 
-                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"There are only {ElemCount} deleted messages in the database.", false, Color.Red).Build());
+                    await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are only {ElemCount} deleted messages in the database.", false, Color.Red));
                     return;
                 }
 
                 if (ex.Message.GetType() != typeof(NullReferenceException))
                 {
-                    EmbedBuilder eb = new EmbedBuilder();
-                    eb.WithAuthor(Context.User);
-                    eb.WithTitle("Error getting info from database:");
-                    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
-                    eb.WithCurrentTimestamp();
-                    eb.WithColor(Color.Red);
-                    eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
-                    await Context.Message.Channel.SendMessageAsync("", false, eb.Build());
+                    EmbedBuilder eeb = new EmbedBuilder();
+                    eeb.WithAuthor(Context.User);
+                    eeb.WithTitle("Error getting info from database:");
+                    eeb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                    eeb.WithCurrentTimestamp();
+                    eeb.WithColor(Color.Red);
+                    eeb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
+                    await Global.ModifyMessage(msg, eeb);
                 }
             }
         }
