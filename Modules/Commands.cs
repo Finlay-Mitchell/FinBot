@@ -2152,7 +2152,7 @@ namespace FinBot.Modules
             eb.WithTitle($"Weather for {city.First().ToString().ToUpper() + city.Substring(1)}");
             eb.WithDescription($"Weather: {Weather.WeatherValue}\nTemperature: {Weather.Temp}°C ({Weather.CelciusToFarenheit(Weather.Temp)}°F)\nFeels like: {Weather.FeelsLike}°C ({Weather.CelciusToFarenheit(Weather.FeelsLike)}°F)" +
                 $"\nMax temperature: {Weather.TempMax} ({Weather.CelciusToFarenheit(Weather.TempMax)}°F)\nMin temperature: {Weather.TempMin}°C ({Weather.CelciusToFarenheit(Weather.TempMin)}°F)\nWind speed: {Weather.Windspeed} " +
-                $"#({Weather.WindspeedValue}m/s)\n------------------------\nPressure: {Weather.Pressure} hPa\nHumidity: {Weather.Humidity}%");
+                $"({Weather.WindspeedValue}m/s)\n------------------------\nPressure: {Weather.Pressure} hPa\nHumidity: {Weather.Humidity}%");
             eb.Author = new EmbedAuthorBuilder()
             {
                 IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
