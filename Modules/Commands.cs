@@ -1383,14 +1383,14 @@ namespace FinBot.Modules
         /// </summary>
         /// <param name="guildId">The Id of the guild to get the channel of.</param>
         /// <returns>A string of a number for how many results there are.</returns>
-        private string GetQueryCount(ulong guildId)
+        private string GetQueryCount(ulong guildId, ulong chanId)
         {
             MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
 
             try
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipeLogs WHERE guildId = {guildId}", conn);
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipeLogs WHERE guildId = {guildId} AND chanId = {chanId}", conn);
                 MySqlDataReader reader = cmd.ExecuteReader();
                 int count = 0;
 
@@ -1436,7 +1436,7 @@ namespace FinBot.Modules
             try
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} AND chanId = {Context.Guild.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
                 MySqlDataReader reader = cmd.ExecuteReader();
                 EmbedBuilder b = new EmbedBuilder();
 
@@ -1490,11 +1490,11 @@ namespace FinBot.Modules
                 
                     if (ElemCount == "err")
                     {
-                        await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are not that many deleted messages in the database.", false, Color.Red));
+                        await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are not that many deleted messages in the database for this channel.", false, Color.Red));
                         return;
                     }
 
-                    await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are only {ElemCount} deleted messages in the database.", false, Color.Red));
+                    await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are only {ElemCount} deleted messages in the database for this channel.", false, Color.Red));
                     return;
                 }
 

@@ -89,7 +89,7 @@ namespace FinBot.Services
                     return;
                 }
 
-                MySqlCommand cmd = new MySqlCommand($"INSERT INTO SnipeLogs(message, MessageTimestamp, guildId, author) VALUES('{content}', {Now}, {socketGuildChannel.Guild.Id}, {message.Author.Id})", conn);
+                MySqlCommand cmd = new MySqlCommand($"INSERT INTO SnipeLogs(message, MessageTimestamp, guildId, chanId, author) VALUES('{content}', {Now}, {socketGuildChannel.Guild.Id}, {socketGuildChannel.Id}, {message.Author.Id})", conn);
                 cmd.ExecuteNonQuery();
             }
 
