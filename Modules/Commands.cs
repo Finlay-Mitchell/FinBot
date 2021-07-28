@@ -346,7 +346,7 @@ namespace FinBot.Modules
                 eb.AddField("Joined at UTC?", SGU.JoinedAt.HasValue ? SGU.JoinedAt.Value.UtcDateTime.ToString("r") : "No value :/");
                 _ = eb.AddField($"Roles: [{SGU.Roles.Count}]", $"<@&{string.Join(separator: ">, <@&", values: SGU.Roles.Select(r => r.Id))}>");
                 _ = eb.AddField($"Permissions: [{SGU.GuildPermissions.ToList().Count}]", $"{string.Join(separator: ", ", values: SGU.GuildPermissions.ToList().Select(r => r.ToString()))}");
-                eb.WithAuthor(SGU);
+                eb.WithAuthor(Context.Message.Author);
                 eb.WithColor(Color.DarkPurple);
                 eb.WithCurrentTimestamp();
                 await Context.Message.ReplyAsync("", false, eb.Build());
