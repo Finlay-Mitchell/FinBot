@@ -1436,7 +1436,7 @@ namespace FinBot.Modules
             try
             {
                 conn.Open();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} AND chanId = {Context.Guild.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
+                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} AND chanId = {Context.Channel.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
                 MySqlDataReader reader = cmd.ExecuteReader();
                 EmbedBuilder b = new EmbedBuilder();
 
