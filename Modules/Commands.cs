@@ -1486,7 +1486,7 @@ namespace FinBot.Modules
             {
                 if(ex.Message.Contains("50035"))
                 {
-                    string ElemCount = GetQueryCount(Context.Guild.Id);
+                    string ElemCount = GetQueryCount(Context.Guild.Id, Context.Channel.Id);
                 
                     if (ElemCount == "err")
                     {
