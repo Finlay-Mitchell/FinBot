@@ -1447,11 +1447,11 @@ namespace FinBot.Modules
                     b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetDouble(1))}");
                     SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
                     string username = "";
-                    ulong uId = Convert.ToUInt64(reader[3]);
+                    ulong uId = Convert.ToUInt64(reader[4]);
 
                     if (Context.Guild.GetUser(uId) == null || Context.Guild.GetUser(uId).GetType() == typeof(SocketUnknownUser))
                     {
-                        username = $"<@{reader[3]}>";
+                        username = $"<@{uId}>";
                     }
 
                     else
