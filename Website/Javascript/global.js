@@ -8,3 +8,7 @@ function GetYear()
 {
     document.write(new Date().getFullYear());
 }
+
+function GetImage()
+{
+}

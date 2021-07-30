@@ -10,7 +10,6 @@
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-        <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
         <link href="../CSS/index.css" rel="stylesheet">
         <link href="../CSS/theme.css" rel="stylesheet">
@@ -39,7 +38,8 @@
               <h1 class="card-title">FinBot</h1>
               <img class="card-img" src="../Media/BotLogo.png">
               <a href="https://bot.finlaymitchell.ml" class="btn btn-primary" target="_blank">Add to Discord</a>
-              <a href="https://finbot.finlaymitchell.ml/about" class="btn btn-primary" target="_blank">About</a>
+              <a href="https://finbot.finlaymitchell.ml/documentation" class ="btn btn-primary" target="_blank">Read the docs</a>
+              <!-- <a href="https://finbot.finlaymitchell.ml/about" class="btn btn-primary" target="_blank">About</a> -->
             </div>
           </div>
 
@@ -113,7 +113,8 @@
               <div class="col-md-6">
                 <div class="card-block">
                     <h5 class="card-title">Welcome messages</h5>
-                    <p class="card-text">Greet your new members with a warm welcome as they join the server, and a farewell as they leave!</p>
+                    <p class="card-text">Greet your new members with a warm welcome as they join the server, and a farewell departing members as they leave in a fully
+                      Configurable channel!</p>
                 </div>
               </div>
             </div>
@@ -134,7 +135,7 @@
                     <h5 class="card-title">Levels and XP</h5>
                     <p class="card-text">Allow users to gain XP and advance in levels as they chat and become more active within the guild, and display the top 10 most
                         active members within your community on a leaderboard! <br><br> Also optionally select a channel where announcements for users levelling up are sent.
-                        This can be changed at any time!
+                        This can be changed at any time! You can also show your leaderboard in a fancy chart, ranging from standard pie charts to interesting polararea charts.
                     </p>
                 </div>
               </div>
@@ -157,7 +158,7 @@
               <div class="col-md-6">
                 <div class="card-block">
                     <h5 class="card-title">Track your members</h5>
-                    <p class="card-text">Track when members leave and join your guild with a membercount channel which shows an up-to-date real time count!</p>
+                    <p class="card-text">Track when members leave and join your guild with a real time customisable membercount channel which shows an up-to-date real time count!</p>
                 </div>
               </div>
             </div>
@@ -193,7 +194,8 @@
               <div class="col-md-6">
                 <div class="card-block">
                     <h5 class="card-title">Enjoy Minecraft from Discord</h5>
-                    <p class="card-text">You can get statistics and information from both Minecraft and Hypixel!</p>
+                    <p class="card-text">You can get statistics and information from both Minecraft and Hypixel such as getting user skins, 
+                      statistics and even compare your stats to your rivals!</p>
                 </div>
               </div>
             </div>
@@ -207,22 +209,43 @@
             <div class="row">
               <div class="col-md-6">
                 <div class="card-block">
+                    <h5 class="card-title">Log infractions with ease!</h5>
+                    <p class="card-text">
+                        When it comes to communities, moderators are always trying to keep track of user infractions, but this bot allows you to view a 
+                        full history of user infractions in an easy to use paginated embed, and even log all the infractions to a dedicated logging channel.
+                    </p>
+                </div>
+              </div>
+              <img class="img-fluid" src="../Media/changeprefix.png" alt="Image of changing guild prefix">
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="container">
+          <div class="card">
+            <div class="row">
+              <img class="img-fluid scaledown" src="../Media/utils.png" alt="utility logo">
+              <div class="col-md-6">
+                <div class="card-block">
                     <h5 class="card-title">Utilities</h5>
                     <p class="card-text">This bot offers a wide variety of utilities, such as:</p>
                         <ul>
                             <li>Purging a select amount of messages</li>
-                            <li>Suggestions that moderators can accept/deny</li>
+                            <!-- <li>Suggestions that moderators can accept/deny</li> -->
                             <li>Dynamic channels for member counts</li>
                             <li>Configurable channels for levels/welcomes</li>
-                            <li>Polls</li>
+                            <li>Polling</li>
                             <li>Customisable behaviour</li>
+                            <li>See your deleted messages with a fun snipe command</li>
                             <li>And much more!</li>
                         </ul>
                         <p class="card-text">Which all in all, make for a perfect utility selection to manage your server with ease!</p>
                     </p>
                 </div>
               </div>
-                <img class="img-fluid scaledown" src="../Media/utils.png" alt="utility logo">
             </div>
           </div>
         </div>
@@ -247,6 +270,7 @@
             </h1> 
             <p>Servers</p>
           </div> 
+
           <div>
             <h1>
               <span>
@@ -259,27 +283,24 @@
           <div>
             <h1>
               <span>
-                <span id="messagecount"><script>statsTimer("messagecount");</script></span>
-              </span>
-            </h1> 
-            <p>Messages</p>
-          </div>
-
-          <div>
-            <h1>
-              <span>
                 <span id="channelcount"><script>statsTimer("channelcount");</script></span>
               </span>
             </h1> 
             <p>Channels</p>
           </div>
-
-
-
+          
+          <div>
+            <h1>
+              <span>
+                <span id="messagecount"><script>statsTimer("messagecount");</script></span>
+              </span>
+            </h1> 
+            <p>Messages</p>
+          </div>
         </div>
       </div>
     </div>
-    
+
     <footer>
         <hr>
         <p>2020-<script>GetYear()</script> Copyright&copy;. All Rights Reserved</p>

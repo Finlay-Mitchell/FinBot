@@ -60,7 +60,7 @@ namespace FinBot.Handlers.AutoMod
                 if (itemVal != null)
                 {
                     List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
-                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled); //Generates the regular expression to search the message for guild blacklisted terms.
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace); //Generates the regular expression to search the message for guild blacklisted terms.
                     string message = msg.Content;
 
                     foreach (KeyValuePair<string, string> x in Global.leetRules) //Assigns leet rules to the message to avoid people avoiding word filtration.
@@ -159,9 +159,7 @@ namespace FinBot.Handlers.AutoMod
 
                 catch { return; }
 
-                Regex r = new Regex(Global.URIAndIpRegex);
-
-                if (r.IsMatch(arg.ToString()))
+                if (Global.URIAndIpRegex.IsMatch(arg.ToString()))
                 {
                     await arg.DeleteAsync();
                     modCommands.AddModlogs(arg.Author.Id, ModCommands.Action.Warned, _client.CurrentUser.Id, "Sent a link", chan.Guild.Id);

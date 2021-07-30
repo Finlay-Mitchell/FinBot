@@ -42,3 +42,23 @@
 {
     color: darkblue;
 }
+
+.light-theme .col-sm-9 h2
+{
+    color: black !important;
+}
+
+.light-theme .container .col-sm-9 h1
+{
+    color: black !important;
+}
+
+.light-theme .col-sm-9 ip 
+{
+    color: orchid !important;
+}
+
+.light-theme .search2
+{
+    background-color: white !important;
+}
