@@ -32,5 +32,4 @@ Thanks to Thomas for helping with the Python module.
 Thanks to Keilah for the awesome avatar image.
 
 # ToDo:
- - channel specific snipe
  - check perms to hide moderation auto-deleted messages for snipes.
