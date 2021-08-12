@@ -6,7 +6,7 @@ namespace FinBot.Modules
 {
     public class MinecraftCommands : ModuleBase<ShardedCommandContext> //Minecraft python boilerplate code
     {
-        [Command("bw_stats"), Summary("Gets the statistics of a players bedwars information"), Remarks("(PREFIX)bw_stats <Minecraft username"), Alias("bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats", "bw_info", "bwinfo", "bw-info", "hinfo")]
+        [Command("bw_stats"), Summary("Gets the statistics of a players bedwars information"), Remarks("(PREFIX)bw_stats <Minecraft username>"), Alias("bedwars_stats", "bedwars-stats", "bedwarsstats", "bwstats", "bw-stats", "bw_info", "bwinfo", "bw-info", "hinfo")]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public Task bw_stats(params string[] arg)
         {

@@ -19,6 +19,10 @@ using Discord.Webhook;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Linq;
+using System.Net;
+using System.IO;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace FinBot.Modules
 {
@@ -56,7 +60,7 @@ namespace FinBot.Modules
         public async Task Term()
         {
             await Context.Message.ReplyAsync($"Shutting down services...");
-            _services.GetRequiredService<ShutdownService>().Shutdown(0);         
+            _services.GetRequiredService<ShutdownService>().Shutdown(0);
         }
 
         [Command("updateSupport")]
@@ -338,7 +342,7 @@ namespace FinBot.Modules
         {
             string[] args = info.Split(new string[] { "===" }, 2, StringSplitOptions.None);
             string gitCommand = "git "; //The beginning string for every command.
-            string gitAddArgument = "add -A "; 
+            string gitAddArgument = "add -A ";
             string gitCommitArgument = args.Length == 2 ? $@"commit -m ""{args[0]}"" -m ""{args[1]}""" : $@"commit -m ""{args[0]}"""; //Determines whether we commit a title & description or just a title and commits it.
             string gitPushArgument = "push"; //Pushes the changes to Git.
             string gitPull = "pull"; //We do this so the server can pull the changes from Github.
@@ -381,7 +385,7 @@ namespace FinBot.Modules
                 await pr.StandardInput.WriteLineAsync("FinBot.exe"); //Now we're able to just relaunch the bot.
                 pr.WaitForExit();
             }
-            
+
             catch (Exception ex)
             {
                 EmbedBuilder eb = new EmbedBuilder();
@@ -409,9 +413,9 @@ namespace FinBot.Modules
         {
             //Doesn't work amazingly, but somewhat does.
             string joined = string.Join(" ", Context.Message.Content.Replace("```cs", "").Replace("```", "").Split(' ').Skip(1));
-            Script<object> create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq") .WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
+            Script<object> create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq").WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
                         Assembly.GetAssembly(typeof(DiscordWebhookClient)), Assembly.GetExecutingAssembly()).WithImports("Discord", "Discord.WebSocket", "Discord.Commands"), typeof(ShardedCommandContext));
-            
+
             try
             {
                 ScriptState<object> state = await create.RunAsync(Context);
@@ -432,10 +436,74 @@ namespace FinBot.Modules
                 }.WithCurrentTimestamp().Build());
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await ReplyAsync(ex.Message);
             }
+        }
+
+
+        public class TwitchData
+        {
+            public string id { get; set; }
+            public string login { get; set; }
+            public string display_name { get; set; }
+            public string type { get; set; }
+            public string broadcaster_type { get; set; }
+            public string description { get; set; }
+            public string profile_image_url { get; set; }
+            public string offline_image_url { get; set; }
+            public long view_count { get; set; }
+            public DateTime created_at { get; set; }
+        }
+
+        public class Root
+        {
+            public List<TwitchData> data { get; set; }
+        }
+
+
+        public async Task<TwitchData> GetTwitchInfo(string username)
+        {
+            HttpClient HTTPClient = new HttpClient();
+            HTTPClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Global.TwitchOauthKey}");
+            HTTPClient.DefaultRequestHeaders.Add("Client-Id", $"{Global.TwitchClientId}");
+            HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync($"https://api.twitch.tv/helix/users?login={username}");
+            string resp = await HTTPResponse.Content.ReadAsStringAsync();
+            Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(resp);
+            return myDeserializedClass.data[0];
+        }
+
+        [Command("ttest")]
+        [RequireDeveloper]
+        public async Task test(params string[] args)
+        {
+            TwitchData userInfo = await GetTwitchInfo(args[1]);
+            Color TwitchColour = new Color(100, 65, 165);
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.Title = userInfo.display_name;
+            eb.Color = TwitchColour;
+
+            switch (args[0].ToLower())
+            {
+
+                case "channel":
+                    eb.Description = userInfo.description;
+                    eb.Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = userInfo.profile_image_url,
+                        Text = $"created at: {userInfo.created_at}"
+                    };
+                    eb.AddField("Twitch account information", $"Link to profile: https://www.twitch.tv/{args[1]} \nView count: {userInfo.view_count}\nUser id: {userInfo.id}");
+                    break;
+
+                case "av": case "avatar": case "pfp":
+                    eb.Description = $"Here's the profile picture for {userInfo.display_name}:";
+                    eb.ImageUrl = userInfo.profile_image_url;
+                    break;
+            }
+
+            await ReplyAsync("", false, eb.Build());
         }
     }
 }

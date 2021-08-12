@@ -102,6 +102,18 @@ namespace FinBot
         /// The API key for the weather API.
         /// </summary>
         public static string WeatherAPIKey { get; set; }
+        /// <summary>
+        /// This is our Twitch client Id key.
+        /// </summary>
+        public static string TwitchClientId { get; set; }
+        /// <summary>
+        /// This is the twitch client secret.
+        /// </summary>
+        public static string TwitchClientSecret { get; set; }
+        /// <summary>
+        /// This is the Twitch oauth key.
+        /// </summary>
+        public static string TwitchOauthKey { get; set; }
 
         /*
          * Our global variables that we do not read from the config.
@@ -202,6 +214,9 @@ namespace FinBot
             ErrorLogChannelId = data.ErrorLogChannelId;
             BotDirectory = data.BotDirectory;
             WeatherAPIKey = data.WeatherAPIKey;
+            TwitchClientId = data.TwitchClientId;
+            TwitchClientSecret = data.TwitchClientSecret;
+            TwitchOauthKey = data.TwitchOauthKey;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}"; //The connection string for the MySql server.
         }
@@ -233,6 +248,9 @@ namespace FinBot
             public ulong ErrorLogChannelId { get; set; }
             public string BotDirectory { get; set; }
             public string WeatherAPIKey { get; set; }
+            public string TwitchClientId { get; set; }
+            public string TwitchClientSecret { get; set; }
+            public string TwitchOauthKey { get; set; }
         }
 
         /// <summary>

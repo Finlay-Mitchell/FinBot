@@ -2163,6 +2163,57 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
+        //[Command("ftest")]
+        public async Task testcmd(params string[] args)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithCurrentTimestamp();
+            eb.Color = Color.DarkOrange;
+            eb.Footer = new EmbedFooterBuilder()
+            {
+                IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                Text = $"{Context.User}"
+            };
+
+            switch (args[0].ToLower())
+            {
+                case "circuit":
+                    Regex imageSearcher = new Regex("https://www.formula1.com/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/(.*?).png.transform/9col/image.png");
+                    string url = "";
+                    HttpClient HTTPClient = new HttpClient();
+                    Regex TrackStats = new Regex("class=\"f1-bold--stat\">(.*?)</p>", RegexOptions.IgnorePatternWhitespace);
+                    Regex MultiTrackStats = new Regex("class=\"f1-bold--stat\">(.*?)<span class=\"misc--label d-block d-md-inline\">(.*?)</span>");
+                    Regex MultiTrackStatsFirst = new Regex("class=\"f1-bold--stat\">(.*?)<span class=\"misc--label\">");
+
+                    switch (args[1].ToLower())
+                    {
+                        case "silverstone": case "gb": case "england": case "great britain": case "united kingdom": case "uk":
+                            url = $"https://www.formula1.com/en/racing/2021/Great_Britain/Circuit.html";
+                            HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync(url);
+                            string result = await HTTPResponse.Content.ReadAsStringAsync();
+
+                            eb.Description = "**[Silverstone Circuit](https://en.wikipedia.org/wiki/Silverstone_Circuit)**";
+                            eb.ImageUrl = imageSearcher.Match(result).Groups[0].Value;
+                            eb.AddField("Track statistics:", $"Fastest lap time: {MultiTrackStats.Matches(result)[0].Groups[1]} - {MultiTrackStats.Matches(result)[0].Groups[2]}\n" +
+                                $"Number of laps: {TrackStats.Matches(result)[1].Groups[1].Value}\nCircuit length: {MultiTrackStatsFirst.Matches(result)[0].Groups[1].Value}km ({Math.Round(Convert.ToDouble(MultiTrackStatsFirst.Matches(result)[0].Groups[1].Value) / 1.6, 3)}mi)\n" +
+                                $"Race distance length: {MultiTrackStatsFirst.Matches(result)[1].Groups[1].Value}km ({Math.Round(Convert.ToDouble(MultiTrackStatsFirst.Matches(result)[1].Groups[1].Value) / 1.6, 3)}mi)\nFirst Grand Prix held: {TrackStats.Matches(result)[0].Groups[1].Value}");
+                            eb.AddField("Country:", "England");
+                            await ReplyAsync("", false, eb.Build());
+                            break;
+
+                        default:
+                            await ReplyAsync("error");
+                            break;
+                    }
+
+                    break;
+
+                case "driver":
+
+                    break;
+            }
+        }
+
         /*
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 
