@@ -92,6 +92,8 @@ namespace FinBot
                 .AddSingleton<MuteService>()
                 .AddSingleton<InteractiveService>()
                 .AddSingleton<ShutdownService>()
+                .AddSingleton<TwitchHandler>()
+                .AddSingleton<TwitchService>()
                 .AddSingleton<LoggingService>();
             ConfigureServices(services);
             ServiceProvider serviceProvider = services.BuildServiceProvider();

@@ -1371,7 +1371,7 @@ namespace FinBot.Modules
                 {
                     string itemVal = guild?.GetValue("blacklistedterms").ToJson();
                     List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
-                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
                     if (re.IsMatch(phrase))
                     {

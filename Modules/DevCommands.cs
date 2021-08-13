@@ -19,10 +19,6 @@ using Discord.Webhook;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Linq;
-using System.Net;
-using System.IO;
-using System.Net.Http;
-using Newtonsoft.Json;
 
 namespace FinBot.Modules
 {
@@ -442,64 +438,54 @@ namespace FinBot.Modules
             }
         }
 
-
-        public class TwitchData
-        {
-            public string id { get; set; }
-            public string login { get; set; }
-            public string display_name { get; set; }
-            public string type { get; set; }
-            public string broadcaster_type { get; set; }
-            public string description { get; set; }
-            public string profile_image_url { get; set; }
-            public string offline_image_url { get; set; }
-            public long view_count { get; set; }
-            public DateTime created_at { get; set; }
-        }
-
-        public class Root
-        {
-            public List<TwitchData> data { get; set; }
-        }
-
-
-        public async Task<TwitchData> GetTwitchInfo(string username)
-        {
-            HttpClient HTTPClient = new HttpClient();
-            HTTPClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Global.TwitchOauthKey}");
-            HTTPClient.DefaultRequestHeaders.Add("Client-Id", $"{Global.TwitchClientId}");
-            HttpResponseMessage HTTPResponse = await HTTPClient.GetAsync($"https://api.twitch.tv/helix/users?login={username}");
-            string resp = await HTTPResponse.Content.ReadAsStringAsync();
-            Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(resp);
-            return myDeserializedClass.data[0];
-        }
-
-        [Command("ttest")]
+        [Command("Twitch")]
         [RequireDeveloper]
         public async Task test(params string[] args)
         {
-            TwitchData userInfo = await GetTwitchInfo(args[1]);
+            List<TwitchHandler.TwitchData> userInfo = await TwitchHandler.GetTwitchInfo(args[1]);
             Color TwitchColour = new Color(100, 65, 165);
             EmbedBuilder eb = new EmbedBuilder();
-            eb.Title = userInfo.display_name;
+            eb.Title = userInfo[0].display_name;
             eb.Color = TwitchColour;
+            eb.WithCurrentTimestamp();
 
             switch (args[0].ToLower())
             {
 
                 case "channel":
-                    eb.Description = userInfo.description;
+                    eb.Description = userInfo[0].description;
                     eb.Footer = new EmbedFooterBuilder()
                     {
-                        IconUrl = userInfo.profile_image_url,
-                        Text = $"created at: {userInfo.created_at}"
+                        IconUrl = userInfo[0].profile_image_url,
+                        Text = $"created at: {userInfo[0].created_at}"
                     };
-                    eb.AddField("Twitch account information", $"Link to profile: https://www.twitch.tv/{args[1]} \nView count: {userInfo.view_count}\nUser id: {userInfo.id}");
+                    eb.AddField("Twitch account information", $"Link to profile: https://www.twitch.tv/{args[1]} \nView count: {userInfo[0].view_count}\nUser id: {userInfo[0].id}");
                     break;
 
                 case "av": case "avatar": case "pfp":
-                    eb.Description = $"Here's the profile picture for {userInfo.display_name}:";
-                    eb.ImageUrl = userInfo.profile_image_url;
+                    eb.Description = $"Here's the profile picture for {userInfo[0].display_name}:";
+                    eb.ImageUrl = userInfo[0].profile_image_url;
+                    break;
+
+                case "livetest":
+                    List<TwitchHandler.UserStreams> userStreams = await TwitchHandler.GetStreams(args[1]);
+
+                    if(userStreams.Count == 0)
+                    {
+                        await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"The user {args[1]} is not currently live on Twitch.", false, Color.Red).Build());
+                        return;
+                    }
+
+                    eb.Title = $"{args[1]} is live on Twitch!";
+                    eb.ImageUrl = $"https://static-cdn.jtvnw.net/previews-ttv/live_user_{args[1]}.jpg";
+                    eb.Description = $"[Watch {args[1]} live on Twitch!](https://twitch.tv/{args[1]})";
+                    eb.AddField("Stream information", $"title: {userStreams[0].title}\ngame name: {userStreams[0].game_name}\nviewer count: {userStreams[0].viewer_count}");
+                    eb.Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = userInfo[0].profile_image_url,
+                        Text = $"Live started at: {userStreams[0].started_at}"
+                    };
+
                     break;
             }
 

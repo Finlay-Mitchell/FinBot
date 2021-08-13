@@ -4,6 +4,10 @@ using Discord.WebSocket;
 using FinBot.Handlers;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FinBot.Modules
@@ -373,7 +377,7 @@ namespace FinBot.Modules
                 if (channel.GetType() == typeof(SocketVoiceChannel))
                 {
                     EmbedBuilder eb = new EmbedBuilder();
-                    eb.WithTitle("Error setting moderation log channel channel");
+                    eb.WithTitle("Error setting moderation log channel");
                     eb.WithDescription($"The moderation log channel type must be a text channel!");
                     eb.WithColor(Color.Red);
                     eb.WithAuthor(Context.Message.Author);
@@ -411,6 +415,162 @@ namespace FinBot.Modules
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithTitle("Success");
                 embed.WithDescription($"Successfully set the mod log channel to <#{_chanId}>!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.Build());
+            }
+        }
+
+        [Command("NotifyTwitch")]
+        public async Task NotifyTwitch(string user)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageMessages)
+            {
+                List<TwitchHandler.TwitchData> ValidateUser = await TwitchHandler.GetTwitchInfo(user);
+
+                if(ValidateUser.Count == 0)
+                {
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"The user {user} could not be found on Twitch.", false, Color.Red).Build());
+                    return;
+                }
+
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+
+                try
+                {
+                    string itemVal = guild?.GetValue("TwitchUsers").ToJson();
+                    List<string> stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
+                    Regex re = new Regex(@"\b(" + string.Join("|", stringArray.Select(word => string.Join(@"\s*", word.ToCharArray()))) + @")\b", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+
+                    if (re.IsMatch(user))
+                    {
+                        EmbedBuilder errembed = new EmbedBuilder();
+                        errembed.WithTitle("Error");
+                        errembed.WithDescription("This user is already included in the notification list!");
+                        errembed.WithColor(Color.Red);
+                        errembed.WithAuthor(Context.Message.Author);
+                        await Context.Message.ReplyAsync("", false, errembed.Build());
+                        return;
+                    }
+                }
+
+                catch { }
+
+                if (guild == null)
+                {
+                    BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "TwitchUsers", user } };
+                    collection.InsertOne(document);
+                }
+
+                else
+                {
+                    collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Push("TwitchUsers", user));
+                }
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Twitch notification user list updated!");
+                embed.WithDescription($"Successfully added notifications for when {user} goes live on Twitch!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
+            }
+        }
+
+        [Command("Twitchchannel")]
+        public async Task TwitchChannel([Remainder] SocketChannel channel)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageChannels)
+            {
+                if (channel.GetType() == typeof(SocketVoiceChannel))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithTitle("Error setting Twitch notification channel");
+                    eb.WithDescription($"The moderation log channel type must be a text channel!");
+                    eb.WithColor(Color.Red);
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+
+                    return;
+                }
+
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                ulong _chanId = channel.Id;
+
+                if (guild == null)
+                {
+                    BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "TwitchChannel", (decimal)_chanId } };
+                    collection.InsertOne(document);
+                }
+
+                else
+                {
+                    collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Set("TwitchChannel", _chanId));
+                }
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Success");
+                embed.WithDescription($"Successfully set the Twitch notification channel to <#{_chanId}>!");
                 embed.WithColor(Color.Green);
                 embed.WithAuthor(Context.Message.Author);
                 embed.WithCurrentTimestamp();
