@@ -313,7 +313,7 @@ class Music(commands.Cog):
             await asyncio.sleep(2)
             titles = await asyncio.gather(*futures)
             await self.bulk_enqueue(ctx.guild, titles)
-            await self.send_queue(ctx.channel, ctx)
+            # await self.send_queue(ctx.channel, ctx)
 
     @commands.command(aliases=["shuff", "mix"])
     async def shuffle(self, ctx):
@@ -340,53 +340,84 @@ class Music(commands.Cog):
             return
         await asyncio.sleep(0.5)
         guild_document = await self.guild_document_from_guild(voice_client.guild)
-        guild_queued = guild_document.get("queue", [])
-        if len(guild_queued) == 0:
-            # await voice_client.disconnect()
-            return
-        next_song_url = guild_queued.pop(0)
-        await self.music_db.songs.update_one({"_id": voice_client.guild.id}, {'$set': {"queue": guild_queued}},
-                                             upsert=True)
-        local_ffmpeg_options = ffmpeg_options.copy()
-        resume_from = 0
-        if type(next_song_url) == tuple or type(next_song_url) == list:
-            next_song_url, resume_from = next_song_url
-            local_ffmpeg_options['options'] = "-vn -ss {}".format(resume_from)
-        volume_document = await self.bot.mongo.find_by_id(self.music_db.volumes, voice_client.guild.id)
-        volume = volume_document.get("volume", 0.5)
-        if next_song_url is None:
-            self.bot.loop.create_task(self.play_next_queued(voice_client))
-            return
-        next_song_url = await self.transform_single_song(next_song_url)
-        if next_song_url is None:
-            self.bot.loop.create_task(self.play_next_queued(voice_client))
-            return
-        data = await YTDLSource.get_video_data(next_song_url, self.bot.loop)
-        source = YTDLSource(discord.FFmpegPCMAudio(data["url"], **local_ffmpeg_options),
-                            data=data, volume=volume, resume_from=resume_from)
-        if voice_client.guild.id in self.tts_cog.guild_queues:
-            while len(self.tts_cog.guild_queues[voice_client.guild.id]) > 0:
+        repeat = guild_document.get("loop")
+
+        if repeat is None or "false" in repeat:
+            guild_queued = guild_document.get("queue", [])
+            if len(guild_queued) == 0:
+                # await voice_client.disconnect()
+                return
+            next_song_url = guild_queued.pop(0)
+            await self.music_db.songs.update_one({"_id": voice_client.guild.id}, {'$set': {"queue": guild_queued}},
+                                                 upsert=True)
+            local_ffmpeg_options = ffmpeg_options.copy()
+            resume_from = 0
+            if type(next_song_url) == tuple or type(next_song_url) == list:
+                next_song_url, resume_from = next_song_url
+                local_ffmpeg_options['options'] = "-vn -ss {}".format(resume_from)
+            volume_document = await self.bot.mongo.find_by_id(self.music_db.volumes, voice_client.guild.id)
+            volume = volume_document.get("volume", 0.5)
+            if next_song_url is None:
+                self.bot.loop.create_task(self.play_next_queued(voice_client))
+                return
+            next_song_url = await self.transform_single_song(next_song_url)
+            if next_song_url is None:
+                self.bot.loop.create_task(self.play_next_queued(voice_client))
+                return
+            data = await YTDLSource.get_video_data(next_song_url, self.bot.loop)
+            source = YTDLSource(discord.FFmpegPCMAudio(data["url"], **local_ffmpeg_options),
+                                data=data, volume=volume, resume_from=resume_from)
+            if voice_client.guild.id in self.tts_cog.guild_queues:
+                while len(self.tts_cog.guild_queues[voice_client.guild.id]) > 0:
+                    await asyncio.sleep(0.1)
+            while voice_client.is_playing():
                 await asyncio.sleep(0.1)
-        while voice_client.is_playing():
-            await asyncio.sleep(0.1)
-        voice_client.play(source, after=lambda e: self.bot.loop.create_task(self.play_next_queued(voice_client)))
-        title = await self.title_from_url(next_song_url)
-        embed = self.bot.create_completed_embed("Playing next song!", "Playing **[{}]({})**".format(title,
-                                                                                                    next_song_url))
-        embed.set_thumbnail(url=self.thumbnail_from_url(next_song_url))
-        text_channel_id = guild_document.get("text_channel_id", None)
-        if text_channel_id is None:
-            return
-        # noinspection PyTypeChecker
-        called_channel = self.bot.get_channel(text_channel_id)
-        history = await called_channel.history(limit=1).flatten()
-        if len(history) > 0 and history[0].author.id == self.bot.user.id:
-            old_message = history[0]
-            if len(old_message.embeds) > 0:
-                if old_message.embeds[0].title == "Playing next song!":
-                    await old_message.edit(embed=embed)
-                    return
-        await called_channel.send(embed=embed)
+            voice_client.play(source, after=lambda e: self.bot.loop.create_task(self.play_next_queued(voice_client)))
+            title = await self.title_from_url(next_song_url)
+            embed = self.bot.create_completed_embed("Playing next song!", "Playing **[{}]({})**".format(title,
+                                                                                                        next_song_url))
+            embed.set_thumbnail(url=self.thumbnail_from_url(next_song_url))
+            text_channel_id = guild_document.get("text_channel_id", None)
+            if text_channel_id is None:
+                return
+            # noinspection PyTypeChecker
+            called_channel = self.bot.get_channel(text_channel_id)
+            history = await called_channel.history(limit=1).flatten()
+            if len(history) > 0 and history[0].author.id == self.bot.user.id:
+                old_message = history[0]
+                if len(old_message.embeds) > 0:
+                    if old_message.embeds[0].title == "Playing next song!":
+                        await old_message.edit(embed=embed)
+                        return
+            await called_channel.send(embed=embed)
+        else:
+            guild_queued = guild_document.get("queue", [])
+            if len(guild_queued) == 0:
+                return
+            next_song_url = guild_queued.pop[0]
+            local_ffmpeg_options = ffmpeg_options.copy()
+            resume_from = 0
+            if type(next_song_url) == tuple or type(next_song_url) == list:
+                next_song_url, resume_from = next_song_url
+                local_ffmpeg_options['options'] = "-vn -ss {}".format(resume_from)
+            volume_document = await self.bot.mongo.find_by_id(self.music_db.volumes, voice_client.guild.id)
+            volume = volume_document.get("volume", 0.5)
+            if next_song_url is None:
+                self.bot.loop.create_task(self.play_next_queued(voice_client))
+                return
+            next_song_url = await self.transform_single_song(next_song_url)
+            if next_song_url is None:
+                self.bot.loop.create_task(self.play_next_queued(voice_client))
+                return
+            data = await YTDLSource.get_video_data(next_song_url, self.bot.loop)
+            source = YTDLSource(discord.FFmpegPCMAudio(data["url"], **local_ffmpeg_options),
+                                data=data, volume=volume, resume_from=resume_from)
+            if voice_client.guild.id in self.tts_cog.guild_queues:
+                while len(self.tts_cog.guild_queues[voice_client.guild.id]) > 0:
+                    await asyncio.sleep(0.1)
+            while voice_client.is_playing():
+                await asyncio.sleep(0.1)
+            voice_client.play(source, after=lambda e: self.bot.loop.create_task(self.play_next_queued(voice_client)))
 
     @commands.command(aliases=["res", "continue"])
     async def resume(self, ctx):
@@ -457,9 +488,47 @@ class Music(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
                                                                                  f"{volume * 100}% for this guild!"))
 
+    async def loop_guild(self, guild):
+        if guild.voice_client.is_playing():
+            try:
+                song = f" \"{guild.voice_client.source.title}\""
+            except AttributeError:
+                song = ""
+            guild.voice_client.stop()
+        guild_document = await self.guild_document_from_guild(guild)
+        repeat = guild_document.get("loop")
+        to_repeat = ""
+        if repeat is None or "false" in repeat:
+            to_repeat = "true"
+        else:
+            to_repeat = "false"
+        await self.music_db.songs.update_one({"_id": guild.id}, {'$set': {"loop": to_repeat}}, upsert=True)
+        return song
+
+    async def get_loop_state(self, guild):
+        guild_document = await self.guild_document_from_guild(guild)
+        repeat = guild_document.get("loop")
+        to_repeat = ""
+        if repeat is None or "false" in repeat:
+            to_repeat = "unlooped"
+        else:
+            to_repeat = "looped"
+        return to_repeat
+
+    @commands.command(aliases=["repeat"])
+    async def loop(self, ctx):
+        song = await self.loop_guild(ctx.guild)
+        if song is None:
+            await ctx.reply(embed=self.bot.create_error_embed("There is no song playing or queued!"))
+            return
+        repeat_state = await self.get_loop_state(ctx.guild)
+        await ctx.reply(embed=self.bot.create_completed_embed("Song looped", f"Song{song} has been {repeat_state} "
+                                                                             f"successfully"))
+
+    @loop.before_invoke
     @dequeue.before_invoke
     @shuffle.before_invoke
-    @queue.before_invoke
+    # @queue.before_invoke
     @volume.before_invoke
     @pause.before_invoke
     @play.before_invoke
@@ -479,6 +548,7 @@ class Music(commands.Cog):
                                                               "execute these commands!"))
             raise commands.CommandError("Author not connected to the correct voice channel.")
 
+    @loop.error
     @queue.error
     @dequeue.error
     @shuffle.error
