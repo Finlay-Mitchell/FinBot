@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using FinBot.Attributes.Preconditions;
 using FinBot.Handlers;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -439,6 +440,7 @@ namespace FinBot.Modules
         }
 
         [Command("NotifyTwitch")]
+        [RequireDeveloper]
         public async Task NotifyTwitch(string user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -524,6 +526,7 @@ namespace FinBot.Modules
         }
 
         [Command("Twitchchannel")]
+        [RequireDeveloper]
         public async Task TwitchChannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);

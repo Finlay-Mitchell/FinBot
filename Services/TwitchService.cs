@@ -18,12 +18,17 @@ namespace FinBot.Services
     public class TwitchService : ModuleBase<ShardedCommandContext>
     {
         public static DiscordShardedClient _client;
+        public static int callTotal = 0;
 
         public TwitchService(IServiceProvider services)
         {
+            callTotal += 1;
             _client = services.GetRequiredService<DiscordShardedClient>();
-            CheckLiveUsers();
 
+            if (callTotal == 1)
+            {
+                CheckLiveUsers();
+            }
         }
 
         public async void CheckLiveUsers()
@@ -43,6 +48,7 @@ namespace FinBot.Services
             string modlogchannel = "";
             SocketTextChannel logchannel;
             List<string> AlreadySent = new List<string>();
+            string listUser = "";
 
             while (true)
             {
@@ -63,20 +69,21 @@ namespace FinBot.Services
                         stringArray = JsonConvert.DeserializeObject<string[]>(itemVal).ToList();
 
                         foreach (string user in stringArray)
-                        { 
+                        {
                             userStreams = await TwitchHandler.GetStreams(user);
+                            listUser = $"{_id}_{user}";
 
                             if (userStreams.Count == 0)
                             {
-                                if (AlreadySent.Contains(user))
+                                if (AlreadySent.Contains(listUser))
                                 {
-                                    AlreadySent.Remove(user);
+                                    AlreadySent.Remove(listUser);
                                 }
 
                                 continue;
                             }
 
-                            if(AlreadySent.Contains(user))
+                            if (AlreadySent.Contains(listUser))
                             {
                                 continue;
                             }
@@ -99,7 +106,7 @@ namespace FinBot.Services
                                 IconUrl = userInfo[0].profile_image_url,
                                 Text = $"Live started at: {userStreams[0].started_at}"
                             };
-                            AlreadySent.Append(user);
+                            AlreadySent.Add(listUser);
                             await logchannel.SendMessageAsync("", false, eb.Build());
                         }
                     }

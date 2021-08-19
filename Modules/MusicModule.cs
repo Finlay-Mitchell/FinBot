@@ -58,7 +58,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("clear_queue"), Summary("clears the current queue for the current guild"), Remarks("(PREFIX)clear_queue"), Alias("clearqueue")]
+        [Command("clear_queue"), Summary("clears the current queue for the current guild"), Remarks("(PREFIX)clear_queue"), Alias("clearqueue", "cq")]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public Task clear_queue(params string[] args)
         {
