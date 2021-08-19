@@ -394,7 +394,7 @@ class Music(commands.Cog):
             guild_queued = guild_document.get("queue", [])
             if len(guild_queued) == 0:
                 return
-            next_song_url = guild_queued.pop[0]
+            next_song_url = guild_queued[0]
             local_ffmpeg_options = ffmpeg_options.copy()
             resume_from = 0
             if type(next_song_url) == tuple or type(next_song_url) == list:
@@ -494,7 +494,7 @@ class Music(commands.Cog):
                 song = f" \"{guild.voice_client.source.title}\""
             except AttributeError:
                 song = ""
-            guild.voice_client.stop()
+            # guild.voice_client.stop()
         guild_document = await self.guild_document_from_guild(guild)
         repeat = guild_document.get("loop")
         to_repeat = ""
@@ -517,7 +517,11 @@ class Music(commands.Cog):
 
     @commands.command(aliases=["repeat"])
     async def loop(self, ctx):
-        song = await self.loop_guild(ctx.guild)
+        song = ""
+        try:
+            song = await self.loop_guild(ctx.guild)
+        except:
+            song = " that is currently playing/queued"
         if song is None:
             await ctx.reply(embed=self.bot.create_error_embed("There is no song playing or queued!"))
             return
@@ -525,6 +529,27 @@ class Music(commands.Cog):
         await ctx.reply(embed=self.bot.create_completed_embed("Song looped", f"Song{song} has been {repeat_state} "
                                                                              f"successfully"))
 
+    async def get_url_from_title(self, song):
+        video_info = await YTDLSource.get_video_data(song, self.bot.loop)
+        playlist_info = [video_info["webpage_url"]]
+        first_song = playlist_info.pop(0)
+        first_song = await self.transform_single_song(first_song)
+        return first_song
+
+    @commands.command(aliases=["cs"])
+    async def currentsong(self, ctx):
+        if ctx.guild.voice_client.is_playing():
+            try:
+                embed = self.bot.create_completed_embed("Current playing song!", f"The current playing song is: "
+                                                                                 f"\"{ctx.guild.voice_client.source.title}\"")
+                song_url = await self.get_url_from_title(f"{ctx.guild.voice_client.source.title}")
+                embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
+                await ctx.reply(embed=embed)
+
+            except AttributeError:
+                await ctx.reply(embed=self.bot.create_error_embed("There is no queued or playing song!"))
+
+    @currentsong.before_invoke
     @loop.before_invoke
     @dequeue.before_invoke
     @shuffle.before_invoke
@@ -548,6 +573,7 @@ class Music(commands.Cog):
                                                               "execute these commands!"))
             raise commands.CommandError("Author not connected to the correct voice channel.")
 
+    @currentsong.error
     @loop.error
     @queue.error
     @dequeue.error
