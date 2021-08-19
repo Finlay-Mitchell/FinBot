@@ -526,8 +526,11 @@ class Music(commands.Cog):
             await ctx.reply(embed=self.bot.create_error_embed("There is no song playing or queued!"))
             return
         repeat_state = await self.get_loop_state(ctx.guild)
-        await ctx.reply(embed=self.bot.create_completed_embed("Song looped", f"Song{song} has been {repeat_state} "
-                                                                             f"successfully"))
+        song_url = await self.get_url_from_title(song)
+        embed = self.bot.create_completed_embed("Song looped", f"Song[{song}]({song_url}) has been {repeat_state}"
+                                                               f" successfully")
+        embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
+        await ctx.reply(embed=embed)
 
     async def get_url_from_title(self, song):
         video_info = await YTDLSource.get_video_data(song, self.bot.loop)
@@ -540,9 +543,9 @@ class Music(commands.Cog):
     async def currentsong(self, ctx):
         if ctx.guild.voice_client.is_playing():
             try:
-                embed = self.bot.create_completed_embed("Current playing song!", f"The current playing song is: "
-                                                                                 f"\"{ctx.guild.voice_client.source.title}\"")
-                song_url = await self.get_url_from_title(f"{ctx.guild.voice_client.source.title}")
+                song_url = await self.get_url_from_title(ctx.guild.voice_client.source.title)
+                embed = self.bot.create_completed_embed("Current playing song!", f"The current playing song is: \""
+                                                            f"[{ctx.guild.voice_client.source.title}]({song_url})\"")
                 embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
                 await ctx.reply(embed=embed)
 
