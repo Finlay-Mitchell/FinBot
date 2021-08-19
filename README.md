@@ -6,8 +6,7 @@ An advanced Discord utility/general bot with:
 - chatbot/image guessing
 - customizable behavior 
   * Custom guild prefix
-  * Cusrom welcome messages
-  * ability to turn on and off commands (in the works)
+  * Custom welcome messages
   * custom guild member count
   * Custom guild censor list
   * And more!
@@ -16,20 +15,15 @@ An advanced Discord utility/general bot with:
  - custom API
  - reminders
  - and a lot more
- 
- # APIs
- This bot uses a few APIs, Discord, Spotify and Genius.
-  If you don't know how to get any of these, here are some links(this is not documentation, just where you can get your tokens):
-  * [Spotify developer dashboard](https://developer.spotify.com/dashboard)
-  * [Discord developer portal](https://discord.com/developers/applications)
-  * [Genius API documentation](https://genius.com/api-clients)
 
 # License
 Check LICENSE.md for license details.
 
 # Other notes
+Thanks to Keilah for designing the awesome avatar image.
 Thanks to Thomas for helping with the Python module.
-Thanks to Keilah for the awesome avatar image.
 
 # ToDo:
  - check perms to hide moderation auto-deleted messages for snipes.
+ - Ability to turn commands for a guild on and off.
+ - Work on new loop functionality.
