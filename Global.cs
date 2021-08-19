@@ -154,7 +154,8 @@ namespace FinBot
         /// <summary>
         /// Commands hidden from regular users - available to developers.
         /// </summary>
-        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updatesupport", "tld", "exec", "reset_chatbot", "getguilddata", "enbotclientcommands", "clearalldata", "update", "execute", "test" };
+        public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updatesupport", "tld", "exec", "reset_chatbot", "getguilddata", "enbotclientcommands", "clearalldata", "update", 
+            "execute", "test", "twitch", "twitchchannel", "notifytwitch" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
