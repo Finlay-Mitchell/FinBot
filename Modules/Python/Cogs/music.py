@@ -4,6 +4,7 @@ import re
 import time
 import random
 from concurrent.futures import ProcessPoolExecutor
+import datetime
 
 import audioop
 import discord
@@ -15,11 +16,10 @@ from pytube import Playlist
 from Checks.permission_check import is_staff
 from Handlers.spotify_handler import *
 from Handlers.pagination_handler import Paginator
-from Data import config
 
 # TODO:
 """
-1. <FUTURE> Start on web help page and change help handler to fully custom help handler.
+1. <FUTURE> Start on web help page.
 """
 
 utils.bug_reports_message = lambda: ''
@@ -54,6 +54,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.webpage_url = data.get("webpage_url")
         self.start_time = None
         self.resume_from = resume_from
+        self.duration = data.get("duration")
 
     def read(self):
         if not self.start_time:
@@ -240,13 +241,13 @@ class Music(commands.Cog):
         await paginator.start()
         return True
 
-    @commands.command(aliases=["que", "cue", "q"])
+    @commands.command(aliases=["que", "cue", "q"])  # For those who aren't very literate.
     async def queue(self, ctx):
         if not await self.send_queue(ctx.channel, ctx):
             await ctx.reply(embed=self.bot.create_error_embed("No songs queued!"))
             return
 
-    @commands.command(aliases=["clearqueue"])
+    @commands.command(aliases=["clearqueue", "cq"])
     @is_staff()
     async def clear_queue(self, ctx):
         guild_document = await self.guild_document_from_guild(ctx.guild)
@@ -300,11 +301,9 @@ class Music(commands.Cog):
                 self.bot.loop.create_task(self.play_next_queued(ctx.voice_client))
             first_song_name = await self.title_from_url(first_song)
             embed = self.bot.create_completed_embed("Added song to queue!", f"Added [{first_song_name}]"
-                                                                            f"({first_song}) "
-                                                                            f"to queue!\n"
-                                                                            f"Please note other songs in "
-                                                                            f"a playlist may still be "
-                                                                            f"processing.")
+                                                    f"({first_song}) to queue!\nPlease note other songs in a playlist "
+                                                    f"may still be processing.\nDuration: "
+                                                    f"{datetime.timedelta(seconds=ctx.voice_client.source.duration)}")
             embed.set_thumbnail(url=self.thumbnail_from_url(first_song))
             await ctx.reply(embed=embed)
             futures = []
@@ -341,12 +340,11 @@ class Music(commands.Cog):
         await asyncio.sleep(0.5)
         guild_document = await self.guild_document_from_guild(voice_client.guild)
         repeat = guild_document.get("loop")
+        guild_queued = guild_document.get("queue", [])
+        if len(guild_queued) == 0:
+            return
 
         if repeat is None or "false" in repeat:
-            guild_queued = guild_document.get("queue", [])
-            if len(guild_queued) == 0:
-                # await voice_client.disconnect()
-                return
             next_song_url = guild_queued.pop(0)
             await self.music_db.songs.update_one({"_id": voice_client.guild.id}, {'$set': {"queue": guild_queued}},
                                                  upsert=True)
@@ -374,8 +372,8 @@ class Music(commands.Cog):
                 await asyncio.sleep(0.1)
             voice_client.play(source, after=lambda e: self.bot.loop.create_task(self.play_next_queued(voice_client)))
             title = await self.title_from_url(next_song_url)
-            embed = self.bot.create_completed_embed("Playing next song!", "Playing **[{}]({})**".format(title,
-                                                                                                        next_song_url))
+            embed = self.bot.create_completed_embed("Playing next song!", f"Playing **[{title}]({next_song_url})**\n"
+                                    f"Duration: {datetime.timedelta(seconds=voice_client.source.duration)}")
             embed.set_thumbnail(url=self.thumbnail_from_url(next_song_url))
             text_channel_id = guild_document.get("text_channel_id", None)
             if text_channel_id is None:
@@ -391,9 +389,6 @@ class Music(commands.Cog):
                         return
             await called_channel.send(embed=embed)
         else:
-            guild_queued = guild_document.get("queue", [])
-            if len(guild_queued) == 0:
-                return
             next_song_url = guild_queued[0]
             local_ffmpeg_options = ffmpeg_options.copy()
             resume_from = 0
@@ -525,12 +520,20 @@ class Music(commands.Cog):
         if song is None:
             await ctx.reply(embed=self.bot.create_error_embed("There is no song playing or queued!"))
             return
+
         repeat_state = await self.get_loop_state(ctx.guild)
-        song_url = await self.get_url_from_title(song)
-        embed = self.bot.create_completed_embed("Song looped", f"Song[{song}]({song_url}) has been {repeat_state}"
-                                                               f" successfully")
-        embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
-        await ctx.reply(embed=embed)
+
+        if song == " that is currently playing/queued":
+            embed = self.bot.create_completed_embed("Song looped", f"Song{song} has been {repeat_state}"
+                                                                   f" successfully")
+            await ctx.reply(embed=embed)
+        else:
+            repeat_state = await self.get_loop_state(ctx.guild)
+            song_url = await self.get_url_from_title(song)
+            embed = self.bot.create_completed_embed("Song looped", f"Song[{song}]({song_url}) has been {repeat_state}"
+                                                                   f" successfully")
+            embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
+            await ctx.reply(embed=embed)
 
     async def get_url_from_title(self, song):
         video_info = await YTDLSource.get_video_data(song, self.bot.loop)
@@ -544,8 +547,11 @@ class Music(commands.Cog):
         if ctx.guild.voice_client.is_playing():
             try:
                 song_url = await self.get_url_from_title(ctx.guild.voice_client.source.title)
+                elapsed_time = int(time.time() - ctx.guild.voice_client.source.start_time)
                 embed = self.bot.create_completed_embed("Current playing song!", f"The current playing song is: \""
-                                                            f"[{ctx.guild.voice_client.source.title}]({song_url})\"")
+                                            f"[{ctx.guild.voice_client.source.title}]({song_url})\"\n"
+                                            f"{datetime.timedelta(seconds=int(elapsed_time))}s/"
+                                            f"{datetime.timedelta(seconds=ctx.guild.voice_client.source.duration)}s")
                 embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
                 await ctx.reply(embed=embed)
 

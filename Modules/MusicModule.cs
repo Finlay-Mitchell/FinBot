@@ -85,5 +85,19 @@ namespace FinBot.Modules
         {
             return Task.CompletedTask;
         }
+
+        [Command("loop"), Summary("Puts the current playing track on repeat until you run the command again to unloop it"), Remarks("(PREFIX)loop"), Alias("repeat")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        public Task Loop(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
+
+        [Command("currentsong"), Summary("Gets information on the current playing track"), Remarks("(PREFIX)currentsong"), Alias("cs")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        public Task CurrentSong(params string[] args)
+        {
+            return Task.CompletedTask;
+        }
     }
 }
