@@ -469,19 +469,20 @@ class Music(commands.Cog):
             return
         await ctx.reply(embed=self.bot.create_completed_embed("Song skipped.", f"Song{song} skipped successfully."))
 
+    def clamp(self, n, minn, maxn):
+        return max(min(maxn, n), minn)
+
     @commands.command(aliases=["vol"])
     async def volume(self, ctx, volume: float):
-        volume = volume / 100
-        if volume < 0:
-            volume = 0
+        volume = self.clamp(volume, 0, 100)
         document = {"_id": ctx.guild.id, "volume": volume}
         await self.bot.mongo.force_insert(self.music_db.volumes, document)
         try:
-            ctx.voice_client.source.volume = volume
+            ctx.voice_client.source.volume = volume / 100
         except AttributeError:
             pass
         await ctx.reply(embed=self.bot.create_completed_embed("Changed volume!", f"Set volume to "
-                                                                                 f"{volume * 100}% for this guild!"))
+                                                                                 f"{volume}% for this guild!"))
 
     async def loop_guild(self, guild):
         if guild.voice_client.is_playing():
