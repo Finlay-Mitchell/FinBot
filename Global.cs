@@ -111,9 +111,9 @@ namespace FinBot
         /// </summary>
         public static string TwitchClientSecret { get; set; }
         /// <summary>
-        /// This is the Twitch oauth key.
+        /// This is the Twitch.tv redirect URL for generating our new access token.
         /// </summary>
-        public static string TwitchOauthKey { get; set; }
+        public static string TwitchRedirectURL { get; set; }
 
         /*
          * Our global variables that we do not read from the config.
@@ -185,6 +185,10 @@ namespace FinBot
         /// Loads a list of recent guild ids and prefixes.
         /// </summary>
         public static List<Dictionary<ulong, string>> demandPrefixes = new List<Dictionary<ulong, string>>();
+        /// <summary>
+        /// This is the Twitch oauth key.
+        /// </summary>
+        public static string TwitchOauthKey { get; set; }
 
         /// <summary>
         /// This reads data from json.config and assigns the values to the variables labeled above.
@@ -217,7 +221,7 @@ namespace FinBot
             WeatherAPIKey = data.WeatherAPIKey;
             TwitchClientId = data.TwitchClientId;
             TwitchClientSecret = data.TwitchClientSecret;
-            TwitchOauthKey = data.TwitchOauthKey;
+            TwitchRedirectURL = data.TwitchRedirectURL;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}"; //The connection string for the MySql server.
         }
@@ -251,7 +255,7 @@ namespace FinBot
             public string WeatherAPIKey { get; set; }
             public string TwitchClientId { get; set; }
             public string TwitchClientSecret { get; set; }
-            public string TwitchOauthKey { get; set; }
+            public string TwitchRedirectURL { get; set; }
         }
 
         /// <summary>
@@ -337,8 +341,8 @@ namespace FinBot
         /// <returns>A string containing the prefix for the guild.</returns>
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            try
-            {
+            //try
+            //{
                 /*
                  * This will be commented out until I fix the prefx command calling an embed whilst using cached prefixes
                  */
@@ -354,28 +358,30 @@ namespace FinBot
                 //    }
                 //}
 
-                MongoClient MongoClient = new MongoClient(Mongoconnstr);
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("prefix").ToString();
+                //    MongoClient MongoClient = new MongoClient(Mongoconnstr);
+                //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                //    ulong _id = context.Guild.Id;
+                //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                //    string itemVal = item?.GetValue("prefix").ToString();
 
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
+                //    if (itemVal != null)
+                //    {
+                //        return itemVal;
+                //    }
 
-                else
-                {
-                    return Prefix;
-                }
-            }
+                //    else
+                //    {
+                //        return Prefix;
+                //    }
+                //}
 
-            catch
-            {
-                return Prefix;
-            }
+                //catch
+                //{
+                //    return Prefix;
+                //}
+
+                return "dev.";
         }
         /// <summary>
         /// Determines whether guild user levelling is enabled or not - if a value is not found or an error occurs, we return "False" to be handled to the user.

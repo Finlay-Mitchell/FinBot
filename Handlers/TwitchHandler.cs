@@ -4,8 +4,12 @@ using MongoDB.Driver;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace FinBot.Handlers
 {
@@ -121,6 +125,24 @@ namespace FinBot.Handlers
             string resp = await HTTPResponse.Content.ReadAsStringAsync();
             TwitchStreamInfo myDeserializedClass = JsonConvert.DeserializeObject<TwitchStreamInfo>(resp);
             return myDeserializedClass.data;
+        }
+
+        public static async Task GetAccessToken()
+        {
+
+            HttpClient HTTPClient = new HttpClient();
+            HttpResponseMessage HTTPResponse = await HTTPClient.PostAsync(new Uri($"https://id.twitch.tv/oauth2/token?client_id={Global.TwitchClientId}&client_secret={Global.TwitchClientSecret}&grant_type=client_credentials"), new StringContent(""));
+            HTTPResponse.EnsureSuccessStatusCode();
+            string body = await HTTPResponse.Content.ReadAsStringAsync();
+            TwitchAPIData APIData = JsonConvert.DeserializeObject<TwitchAPIData>(body);
+            Global.TwitchOauthKey = APIData.access_token;
+        }
+
+        public class TwitchAPIData
+        {
+            public string access_token { get; set; }
+            public string expires_in { get; set; }
+            public string token_type { get; set; }
         }
 
         public static async Task<string> GetTwitchChannel(SocketGuild guild)

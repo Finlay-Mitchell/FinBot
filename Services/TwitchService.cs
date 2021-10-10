@@ -22,8 +22,8 @@ namespace FinBot.Services
         public TwitchService(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordShardedClient>();
-            CheckLiveUsers();
-
+            //CheckLiveUsers();
+            TwitchHandler.GetAccessToken().Wait();
         }
 
         public async void CheckLiveUsers()

@@ -32,8 +32,18 @@ namespace FinBot.Services
             }
 
             Global.clientCommands = false; // By default, this is set to false for extra security - meaning that calling a command via the bot is not possible.
-            Global.LoadPrefixes(); // Loads prefixes from the guildprefixes.load file to the Global.demandPrefixes variable.
-            await _discord.LoginAsync(TokenType.Bot, Global.Token);
+            //Global.LoadPrefixes(); // Loads prefixes from the guildprefixes.load file to the Global.demandPrefixes variable.
+
+            try
+            {
+                await _discord.LoginAsync(TokenType.Bot, Global.Token);
+            }
+
+            catch
+            {
+                throw new Exception("Invalid token");
+            }
+
             await _discord.StartAsync();
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
