@@ -37,7 +37,7 @@ namespace FinBot.Handlers.AutoMod
         {
             try
             {
-                if (msg.Author.IsBot || msg.Channel.GetType() == typeof(SocketDMChannel))
+                if (msg.Author.IsBot || msg.Channel.GetType() == typeof(SocketDMChannel) || Global.DevUIDs.Contains(msg.Author.Id))
                 {
                     return;
                 }
@@ -128,7 +128,7 @@ namespace FinBot.Handlers.AutoMod
         {
             try
             {
-                if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
+                if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel) || Global.DevUIDs.Contains(msg.Author.Id))
                 {
                     return;
                 }
@@ -211,7 +211,7 @@ namespace FinBot.Handlers.AutoMod
         private async Task CheckForPingSpam(SocketMessage arg)
         {
 
-            if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
+            if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel) || Global.DevUIDs.Contains(msg.Author.Id))
             {
                 return;
             }

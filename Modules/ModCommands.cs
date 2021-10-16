@@ -44,7 +44,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
 
-            if (!UserCheck.GuildPermissions.ManageMessages)
+            if (!UserCheck.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -137,7 +137,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
 
-            if (UserCheck.GuildPermissions.ManageChannels)
+            if (UserCheck.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 try
                 {
@@ -450,7 +450,7 @@ namespace FinBot.Modules
             SocketGuildUser user = Context.User as SocketGuildUser;
             IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
 
-            if (!user.GuildPermissions.Administrator)
+            if (!user.GuildPermissions.Administrator || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
@@ -529,7 +529,7 @@ namespace FinBot.Modules
             SocketGuildUser user = Context.User as SocketGuildUser;
             IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
 
-            if (!user.GuildPermissions.Administrator)
+            if (!user.GuildPermissions.Administrator || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
@@ -607,7 +607,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.BanMembers)
+            if (!GuildUser.GuildPermissions.BanMembers || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
@@ -696,7 +696,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.KickMembers)
+            if (!GuildUser.GuildPermissions.KickMembers || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -785,7 +785,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.DeafenMembers)
+            if (GuildUser.GuildPermissions.DeafenMembers || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 SocketVoiceChannel vc = Context.Guild.GetUser(user.Id).VoiceChannel;
                 SocketGuildUser User = Context.Guild.GetUser(user.Id);
@@ -916,7 +916,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.MuteMembers)
+            if (GuildUser.GuildPermissions.MuteMembers || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 SocketVoiceChannel vc = Context.Guild.GetUser(user.Id).VoiceChannel;
 
@@ -1008,7 +1008,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageMessages)
+            if (GuildUser.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 SocketGuildUser User = Context.Guild.GetUser(user.Id);
 
@@ -1098,7 +1098,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.ManageRoles)
+            if (!GuildUser.GuildPermissions.ManageRoles || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -1251,7 +1251,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.ManageRoles)
+            if (!GuildUser.GuildPermissions.ManageRoles || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -1352,7 +1352,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageMessages)
+            if (GuildUser.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
@@ -1431,7 +1431,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageMessages)
+            if (GuildUser.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
@@ -1470,7 +1470,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageMessages)
+            if (GuildUser.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
@@ -1550,7 +1550,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
@@ -1606,7 +1606,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 bool enabled = false;
 
@@ -1682,7 +1682,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.ManageRoles)
+            if (!GuildUser.GuildPermissions.ManageRoles || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -1821,7 +1821,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageEmojis)
+            if (GuildUser.GuildPermissions.ManageEmojis || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 string emoji = args[0];
                 string name = "";

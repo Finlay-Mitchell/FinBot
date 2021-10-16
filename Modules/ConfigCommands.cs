@@ -20,7 +20,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.Administrator)
+            if (GuildUser.GuildPermissions.Administrator || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = mongoClient.GetDatabase("finlay");
@@ -82,7 +82,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 if(channel.GetType() == typeof(SocketVoiceChannel))
                 {
@@ -157,7 +157,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 if (parsedChannel.GetType() != typeof(SocketVoiceChannel))
                 {
@@ -235,7 +235,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.Administrator)
+            if (GuildUser.GuildPermissions.Administrator || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 bool enabled = false;
 
@@ -300,7 +300,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 if (channel.GetType() == typeof(SocketVoiceChannel))
                 {
@@ -372,7 +372,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 if (channel.GetType() == typeof(SocketVoiceChannel))
                 {
@@ -443,7 +443,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageMessages)
+            if (GuildUser.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 List<TwitchHandler.TwitchData> ValidateUser = await TwitchHandler.GetTwitchInfo(user);
 
@@ -528,7 +528,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageChannels)
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 if (channel.GetType() == typeof(SocketVoiceChannel))
                 {

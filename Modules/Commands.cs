@@ -1421,7 +1421,6 @@ namespace FinBot.Modules
         public async Task Snipe(int num = 0)
         {
             await Context.Channel.TriggerTypingAsync();
-
             EmbedBuilder eb = new EmbedBuilder();
             eb.Title = "Sniped message";
             eb.Description = "Gathering message...";
