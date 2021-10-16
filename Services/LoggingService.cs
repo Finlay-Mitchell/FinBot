@@ -148,12 +148,7 @@ namespace FinBot.Services
                 SocketGuildChannel chan = arg.Channel as SocketGuildChannel;
                 string toLevel = await Global.DetermineLevel(chan.Guild);
 
-                if (toLevel.ToLower() == "false")
-                {
-                    return;
-                }
-
-                else if(toLevel.ToLower() == "off")
+                if (toLevel.ToLower() == "false" || toLevel.ToLower() == "off")
                 {
                     return;
                 }
@@ -287,7 +282,7 @@ namespace FinBot.Services
 
                         if (embed.Fields.Count > 0)
                         {
-                            foreach (var field in embed.Fields)
+                            foreach (EmbedFieldBuilder field in embed.Fields)
                             {
                                 fields += $"**{field.Name}**\n{field.Value}\n";
                             }

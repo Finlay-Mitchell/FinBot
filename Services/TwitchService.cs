@@ -42,7 +42,7 @@ namespace FinBot.Services
             List<TwitchHandler.UserStreams> userStreams = new List<TwitchHandler.UserStreams>();
             string modlogchannel = "";
             SocketTextChannel logchannel;
-            List<string> AlreadySent = new List<string>();
+            Dictionary<string, ulong> AlreadySent = new Dictionary<string, ulong>();
 
             while (true)
             {
@@ -68,15 +68,18 @@ namespace FinBot.Services
 
                             if (userStreams.Count == 0)
                             {
-                                if (AlreadySent.Contains(user))
+                                if(AlreadySent.ContainsKey(user))
                                 {
-                                    AlreadySent.Remove(user);
-                                }
+                                    List<string> IdenticalKeys = AlreadySent.Where(x => x.Key == user).Select(x => x.Key).ToList();
 
-                                continue;
+                                    foreach(string key in IdenticalKeys)
+                                    {
+                                        AlreadySent.Remove(key);
+                                    }
+                                }
                             }
 
-                            if(AlreadySent.Contains(user))
+                            if(AlreadySent.ContainsKey(user))
                             {
                                 continue;
                             }
@@ -99,7 +102,8 @@ namespace FinBot.Services
                                 IconUrl = userInfo[0].profile_image_url,
                                 Text = $"Live started at: {userStreams[0].started_at}"
                             };
-                            AlreadySent.Append(user);
+                            AlreadySent.Add(user, guild.Id);
+                            //AlreadySent.Append(user);
                             await logchannel.SendMessageAsync("", false, eb.Build());
                         }
                     }

@@ -1,5 +1,5 @@
 from discord.ext import commands
-
+import discord
 from main import FinBot
 from Checks.permission_check import is_developer
 

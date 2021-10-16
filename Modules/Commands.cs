@@ -2163,6 +2163,21 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
+        [Command("search"), Summary("Searches for an image with a title matching the inputted title"), Remarks("(PREFIX)search <image name>")]
+        public async Task search([Remainder] string args)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.WithCurrentTimestamp();
+            eb.ImageUrl = $"https://source.unsplash.com/1600x900/?{args}&content_filter=high";
+            eb.Author = new EmbedAuthorBuilder()
+            {
+                IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                Name = $"{Context.User}"
+            };
+            eb.WithTitle(args);
+            await Context.Message.ReplyAsync("", false, eb.Build());
+        }
+
         /*
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 

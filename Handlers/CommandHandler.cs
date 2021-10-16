@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace FinBot.Handlers
 {
@@ -62,6 +63,12 @@ namespace FinBot.Handlers
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
+                if(message.Content.Contains("@someone"))
+                {
+                    await message.ReplyAsync(context.Guild.Users.ToList()[new Random().Next(0, context.Guild.Users.Count())].Mention);
+                    return;
+                }
+
                 if (execUser == currUser && message.HasStringPrefix(Global.clientPrefix, ref argPos) && Global.clientCommands == true) //If we've enabled Global.clientCommands, the current user is executing the commands & the prefix matches, run command from bot.
                 {
                     IResult devres = await _commands.ExecuteAsync(context, argPos, _services, MultiMatchHandling.Best);
