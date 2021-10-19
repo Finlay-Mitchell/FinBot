@@ -44,7 +44,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
 
-            if (!UserCheck.GuildPermissions.ManageMessages || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!UserCheck.GuildPermissions.ManageMessages && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -450,7 +450,7 @@ namespace FinBot.Modules
             SocketGuildUser user = Context.User as SocketGuildUser;
             IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
 
-            if (!user.GuildPermissions.Administrator || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!user.GuildPermissions.Administrator && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
@@ -529,7 +529,7 @@ namespace FinBot.Modules
             SocketGuildUser user = Context.User as SocketGuildUser;
             IReadOnlyCollection<SocketUser> mentions = Context.Message.MentionedUsers;
 
-            if (!user.GuildPermissions.Administrator || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!user.GuildPermissions.Administrator && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Message.ReplyAsync("", false, new Discord.EmbedBuilder()
                 {
@@ -607,7 +607,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.BanMembers || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!GuildUser.GuildPermissions.BanMembers && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.ReplyAsync("", false, new EmbedBuilder()
@@ -696,7 +696,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.KickMembers || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!GuildUser.GuildPermissions.KickMembers && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -1098,7 +1098,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.ManageRoles || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!GuildUser.GuildPermissions.ManageRoles && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -1251,7 +1251,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.ManageRoles || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!GuildUser.GuildPermissions.ManageRoles && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
@@ -1682,7 +1682,7 @@ namespace FinBot.Modules
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (!GuildUser.GuildPermissions.ManageRoles || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (!GuildUser.GuildPermissions.ManageRoles && !Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 await Context.Channel.TriggerTypingAsync();
                 await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()

@@ -301,8 +301,7 @@ class Music(commands.Cog):
             first_song_name = await self.title_from_url(first_song)
             embed = self.bot.create_completed_embed("Added song to queue!", f"Added [{first_song_name}]"
                                                     f"({first_song}) to queue!\nPlease note other songs in a playlist "
-                                                    f"may still be processing.")  # \nDuration: "
-                                                    # f"{datetime.timedelta(seconds=ctx.voice_client.source.duration)}")
+                                                    f"may still be processing.")
             embed.set_thumbnail(url=self.thumbnail_from_url(first_song))
             await ctx.reply(embed=embed)
             futures = []
@@ -372,7 +371,6 @@ class Music(commands.Cog):
             voice_client.play(source, after=lambda e: self.bot.loop.create_task(self.play_next_queued(voice_client)))
             title = await self.title_from_url(next_song_url)
             embed = self.bot.create_completed_embed("Playing next song!", f"Playing **[{title}]({next_song_url})**\n")
-                                                # f"Duration: {datetime.timedelta(seconds=voice_client.source.duration)}")
             embed.set_thumbnail(url=self.thumbnail_from_url(next_song_url))
             text_channel_id = guild_document.get("text_channel_id", None)
             if text_channel_id is None:
@@ -547,17 +545,11 @@ class Music(commands.Cog):
         if ctx.guild.voice_client.is_playing():
             # try:
             song_url = await self.get_url_from_title(ctx.guild.voice_client.source.title)
-            # elapsed_time = int(time.time() - ctx.guild.voice_client.source.start_time)
             embed = self.bot.create_completed_embed("Current playing song!", f"The current playing song is: \""
                                         f"[{ctx.guild.voice_client.source.title}]({song_url})\"\n")
-                                        # f"{datetime.timedelta(seconds=int(elapsed_time))}s/"
-                                        # f"{datetime.timedelta(seconds=ctx.guild.voice_client)}")
-
             embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
             await ctx.reply(embed=embed)
 
-            # except AttributeError:
-            #     await ctx.reply(embed=self.bot.create_error_embed("There is no queued or playing song!"))
         else:
             await ctx.reply(embed=self.bot.create_error_embed("There is no queued or playing song!"))
 
