@@ -547,11 +547,11 @@ class Music(commands.Cog):
         if ctx.guild.voice_client.is_playing():
             # try:
             song_url = await self.get_url_from_title(ctx.guild.voice_client.source.title)
-            elapsed_time = int(time.time() - ctx.guild.voice_client.source.start_time)
+            # elapsed_time = int(time.time() - ctx.guild.voice_client.source.start_time)
             embed = self.bot.create_completed_embed("Current playing song!", f"The current playing song is: \""
-                                        f"[{ctx.guild.voice_client.source.title}]({song_url})\"\n"
-                                        f"{datetime.timedelta(seconds=int(elapsed_time))}s/"
-                                        f"{datetime.timedelta(seconds=ctx.guild.voice_client)}")
+                                        f"[{ctx.guild.voice_client.source.title}]({song_url})\"\n")
+                                        # f"{datetime.timedelta(seconds=int(elapsed_time))}s/"
+                                        # f"{datetime.timedelta(seconds=ctx.guild.voice_client)}")
 
             embed.set_thumbnail(url=self.thumbnail_from_url(song_url))
             await ctx.reply(embed=embed)
@@ -560,6 +560,7 @@ class Music(commands.Cog):
             #     await ctx.reply(embed=self.bot.create_error_embed("There is no queued or playing song!"))
         else:
             await ctx.reply(embed=self.bot.create_error_embed("There is no queued or playing song!"))
+
 
     @currentsong.before_invoke
     @loop.before_invoke
