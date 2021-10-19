@@ -341,47 +341,45 @@ namespace FinBot
         /// <returns>A string containing the prefix for the guild.</returns>
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            //try
-            //{
+            try
+            {
                 /*
                  * This will be commented out until I fix the prefx command calling an embed whilst using cached prefixes
                  */
 
-                //foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
-                //{
-                //    foreach (KeyValuePair<ulong, string> f in t)
-                //    {
-                //        if (context.Guild.Id == f.Key)
-                //        {
-                //            return f.Value;
-                //        }
-                //    }
-                //}
+                foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
+                {
+                   foreach (KeyValuePair<ulong, string> f in t)
+                   {
+                       if (context.Guild.Id == f.Key)
+                       {
+                           return f.Value;
+                       }
+                   }
+                }
 
-                //    MongoClient MongoClient = new MongoClient(Mongoconnstr);
-                //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                //    ulong _id = context.Guild.Id;
-                //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                //    string itemVal = item?.GetValue("prefix").ToString();
+                   MongoClient MongoClient = new MongoClient(Mongoconnstr);
+                   IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                   IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                   ulong _id = context.Guild.Id;
+                   BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                   string itemVal = item?.GetValue("prefix").ToString();
 
-                //    if (itemVal != null)
-                //    {
-                //        return itemVal;
-                //    }
+                   if (itemVal != null)
+                   {
+                       return itemVal;
+                   }
 
-                //    else
-                //    {
-                //        return Prefix;
-                //    }
-                //}
+                   else
+                   {
+                       return Prefix;
+                   }
+                }
 
-                //catch
-                //{
-                //    return Prefix;
-                //}
-
-                return "dev.";
+                catch
+                {
+                   return Prefix;
+                }
         }
         /// <summary>
         /// Determines whether guild user levelling is enabled or not - if a value is not found or an error occurs, we return "False" to be handled to the user.
