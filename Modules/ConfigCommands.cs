@@ -438,7 +438,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("NotifyTwitch")]
+        [Command("addtwitch"), Summary("Adds a user to the Twitch notifications list"), Remarks("(PREFIX)addtwitch <twitch user>"), Alias("add_twitch")]
         public async Task NotifyTwitch(string user)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -523,7 +523,7 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("Twitchchannel")]
+        [Command("Twitchchannel"), Summary("Sets the Twitch live notification channeL"), Remarks("(PREFIX)twitchchannel <channel>"), Alias("Twitch_channel")]
         public async Task TwitchChannel([Remainder] SocketChannel channel)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
@@ -534,7 +534,7 @@ namespace FinBot.Modules
                 {
                     EmbedBuilder eb = new EmbedBuilder();
                     eb.WithTitle("Error setting Twitch notification channel");
-                    eb.WithDescription($"The moderation log channel type must be a text channel!");
+                    eb.WithDescription($"The Twitch notifications channel type must be a text channel!");
                     eb.WithColor(Color.Red);
                     eb.WithAuthor(Context.Message.Author);
                     eb.WithCurrentTimestamp();
@@ -571,6 +571,77 @@ namespace FinBot.Modules
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithTitle("Success");
                 embed.WithDescription($"Successfully set the Twitch notification channel to <#{_chanId}>!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.Build());
+            }
+        }
+
+        [Command("suggestionchannel"), Summary("Sets the guild suggestion channel"), Remarks("(PREFIX)suggestionchannel <channel>"), Alias("suggestionschannel", "suggestion_channel", "suggestions_channel", "suggestchannel", "suggest_channel")]
+        public async Task SetSuggestionChannel([Remainder] SocketChannel channel)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            {
+                if (channel.GetType() == typeof(SocketVoiceChannel))
+                {
+                    EmbedBuilder eb = new EmbedBuilder();
+                    eb.WithTitle("Error setting suggestions channel");
+                    eb.WithDescription($"The suggestions channel type must be a text channel!");
+                    eb.WithColor(Color.Red);
+                    eb.WithAuthor(Context.Message.Author);
+                    eb.WithCurrentTimestamp();
+                    await Context.Message.ReplyAsync("", false, eb.Build());
+
+                    return;
+                }
+
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                ulong _chanId = channel.Id;
+
+                if (guild == null)
+                {
+                    BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "suggestionschannel", (decimal)_chanId } };
+                    collection.InsertOne(document);
+                }
+
+                else
+                {
+                    collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Set("suggestionschannel", _chanId));
+                }
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Success");
+                embed.WithDescription($"Successfully set the suggestions channel to <#{_chanId}>!");
                 embed.WithColor(Color.Green);
                 embed.WithAuthor(Context.Message.Author);
                 embed.WithCurrentTimestamp();

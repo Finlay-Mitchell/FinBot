@@ -155,7 +155,7 @@ namespace FinBot
         /// Commands hidden from regular users - available to developers.
         /// </summary>
         public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updatesupport", "tld", "exec", "reset_chatbot", "getguilddata", "enbotclientcommands", "clearalldata", "update", 
-            "execute", "test", "twitch", "twitchchannel", "notifytwitch" };
+            "execute", "test", "twitch", "twitchchannel", "addtwitch", "ftest" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
@@ -613,6 +613,41 @@ namespace FinBot
             ImageConverter _imageConverter = new ImageConverter();
             byte[] xByte = (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
             return xByte;
+        }
+
+        /// <summary>
+        /// Gets the suggestion channel for a guild.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns>a channel Id || 0</returns>
+        public static async Task<string> DetermineSuggestionChannel(SocketCommandContext context)
+        {
+            //If no data found, defaults to 0.
+
+            try
+            {
+                MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("suggestionschannel").ToString();
+
+                if (itemVal != null)
+                {
+                    return itemVal;
+                }
+
+                else
+                {
+                    return "0";
+                }
+            }
+
+            catch
+            {
+                return "0";
+            }
         }
     }
 }

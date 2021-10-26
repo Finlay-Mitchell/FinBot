@@ -2177,6 +2177,39 @@ namespace FinBot.Modules
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
+        [Command("suggest"), Summary("Makes a suggestion to the server"), Remarks("(PREFIX)suggest <suggestion>"), Alias("suggestion")]
+        public async Task Suggest([Remainder] string suggestion)
+        {
+            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context);
+
+            if (suggestionschannelid == "0")
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "There is no configured suggestions channel.", false, Color.Red).Build());
+                return;
+            }
+
+            SocketTextChannel suggestionschannel = Context.Guild.GetTextChannel(Convert.ToUInt64(suggestionschannelid));
+            RestUserMessage msg = await suggestionschannel.SendMessageAsync("Creating suggestion...");
+            EmbedBuilder eb = new EmbedBuilder()
+            {
+                Color = Color.DarkerGrey,
+                Author = new EmbedAuthorBuilder
+                {
+                    Name = "Not reviewed",
+                    IconUrl = "https://cdn.discordapp.com/emojis/787036714337566730.png?v=1"
+                }
+            };
+            eb.AddField("New user suggestion", suggestion);
+            eb.AddField("Author", Context.Message.Author);
+            await msg.ModifyAsync(x =>
+            {
+                x.Content = "";
+                x.Embed = eb.AddField("Suggestion ID", msg.Id).Build();
+            });
+            IUserMessage delmsg = await Context.Channel.SendMessageAsync($"Created your suggestion in {suggestionschannel.Mention}");
+            await msg.AddReactionsAsync(Global.reactions.ToArray());
+        }
+
         /*
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 

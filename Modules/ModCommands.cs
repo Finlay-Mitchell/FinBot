@@ -1840,7 +1840,7 @@ namespace FinBot.Modules
 
                 else
                 {
-                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please use the syntax: `copyemote <emote_name> <guildId> <new_emote_name>` or `copyemote <emote_url> <new_emoji_name>`", false, Discord.Color.Red).Build());
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please use the syntax: `copyemote <emote_name> <guildId> <new_emote_name>` or `copyemote <emote_url> <new_emoji_name>`", false, Color.Red).Build());
                     return;
                 }
 
@@ -1857,7 +1857,7 @@ namespace FinBot.Modules
                     byte[] imageBytes = webClient.DownloadData(new Uri(emoji));
                     MemoryStream ms = new MemoryStream(imageBytes);
                     GuildEmote ae = await Context.Guild.CreateEmoteAsync(name, new Discord.Image(ms));
-                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Successfully copied emoji", $"Successfully added the emote {name} to the guild.", false, Discord.Color.Green).Build());
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Successfully copied emoji", $"Successfully added the emote {name} to the guild.", false, Color.Green).Build());
 
                     return;
                 }
@@ -1934,6 +1934,164 @@ namespace FinBot.Modules
             {
                 return null;
             }
+        }
+
+        [Command("accept"), Summary("Accepts a suggestion"), Remarks("(PREFIX)accept <suggestion ID> <reason>"), Alias("approve")]
+        public async Task Approve(/*ulong suggestionId = 0, [Remainder] string reason = "no reason provided"*/params string[] args)
+        {
+            SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
+
+            if (!UserCheck.GuildPermissions.ManageMessages && !Global.DevUIDs.Contains(Context.User.Id))
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "You do not have access to execute this command!", false, Color.Red).Build());
+                return;
+            }
+
+            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context);
+
+            if (suggestionschannelid == "0")
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "There is no configured suggestions channel.", false, Color.Red).Build());
+                return;
+            }
+
+            ulong suggestion;
+            bool canConvert = ulong.TryParse(args[0], out suggestion);
+
+            if (canConvert == false)
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please provide a Suggestion Id!", false, Color.Red).Build());
+                return;
+            }
+
+            if (suggestion.ToString().Length != 18)
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please provide a valid message Id!", false, Color.Red).Build());
+                return;
+            }
+
+            string reason = "No reason provided.";
+
+            if (args.Length >= 1)
+            {
+                uint count = 0;
+                reason = "";
+
+                foreach (string s in args)
+                {
+                    if (count == 0)
+                    {
+                        count++;
+                        continue;
+                    }
+
+                    reason += " " + s;
+                }
+
+                reason = reason.Remove(0, 1);
+            }
+
+            SocketTextChannel suggestionschannel = Context.Guild.GetTextChannel(Convert.ToUInt64(suggestionschannelid));
+            IMessage msg = await suggestionschannel.GetMessageAsync(suggestion);
+            IUserMessage getMessage = (IUserMessage)msg;
+            IEmbed getEmbed = getMessage.Embeds.First();
+
+            if (getEmbed.ToEmbedBuilder().Author.Name.ToString() == "Denied")
+            {
+                await Context.Message.Channel.SendMessageAsync("Sorry, but someone has already denied this suggestion.");
+                return;
+            }
+
+            if (getEmbed.ToEmbedBuilder().Author.Name.ToString() == "Accepted")
+            {
+                await Context.Message.Channel.SendMessageAsync("Sorry, but someone has already accepted this suggestion.");
+                return;
+            }
+
+            await Context.Message.Channel.SendMessageAsync($"Accepted suggestion {suggestion} with reason \"{reason}\"");
+            Embed modifyEmbed = getEmbed.ToEmbedBuilder().WithAuthor("Accepted", "https://cdn.discordapp.com/emojis/787034785583333426.png?v=1").AddField("Reason", reason).WithColor(Color.Green).Build();
+            await getMessage.ModifyAsync(x => x.Embed = modifyEmbed);
+            EmbedBuilder embed = modifyEmbed.ToEmbedBuilder();
+            await getMessage.RemoveAllReactionsAsync();
+        }
+
+        [Command("deny"), Summary("Denies a suggestion"), Remarks("(PREFIX)deny <suggestion ID> <reason>")]
+        public async Task Deny(/*ulong suggestionId = 0, [Remainder] string reason = "No reason provided"*/ params string[] args)
+        {
+            SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
+
+            if (!UserCheck.GuildPermissions.ManageMessages && !Global.DevUIDs.Contains(Context.User.Id))
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "You do not have access to execute this command!", false, Color.Red).Build());
+                return;
+            }
+
+            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context);
+
+            if (suggestionschannelid == "0")
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "There is no configured suggestions channel.", false, Color.Red).Build());
+                return;
+            }
+
+            ulong suggestion;
+            bool canConvert = ulong.TryParse(args[0], out suggestion);
+
+            if (canConvert == false)
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please provide a Suggestion Id!", false, Color.Red).Build());
+                return;
+            }
+
+            if (suggestion.ToString().Length != 18)
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please provide a valid message Id!", false, Color.Red).Build());
+                return;
+            }
+
+            string reason = "No reason provided.";
+
+            if (args.Length >= 1)
+            {
+                uint count = 0;
+                reason = "";
+
+                foreach (string s in args)
+                {
+                    if (count == 0)
+                    {
+                        count++;
+                        continue;
+                    }
+
+                    reason += " " + s;
+                }
+
+                reason = reason.Remove(0, 1);
+            }
+
+            SocketTextChannel suggestionschannel = Context.Guild.GetTextChannel(Convert.ToUInt64(suggestionschannelid));
+            IMessage msg = await suggestionschannel.GetMessageAsync(suggestion);
+            IUserMessage getMessage = (IUserMessage)msg;
+            IEmbed getEmbed = getMessage.Embeds.First();
+
+            if (getEmbed.ToEmbedBuilder().Author.Name.ToString() == "Denied")
+            {
+                await Context.Message.Channel.SendMessageAsync("Sorry, but someone has already denied this suggestion.");
+                return;
+            }
+
+            if (getEmbed.ToEmbedBuilder().Author.Name.ToString() == "Accepted")
+            {
+                await Context.Message.Channel.SendMessageAsync("Sorry, but someone has already accepted this suggestion.");
+                return;
+            }
+
+            await Context.Message.Channel.SendMessageAsync($"Denied suggestion {suggestion} with reason \"{reason}\"");
+            Embed modifyEmbed = getEmbed.ToEmbedBuilder().WithAuthor("Denied", "https://cdn.discordapp.com/emojis/787035973287542854.png?v=1").AddField("Reason", reason).WithColor(Color.Red).Build();
+            await getMessage.ModifyAsync(x => x.Embed = modifyEmbed);
+            EmbedBuilder embed = modifyEmbed.ToEmbedBuilder();
+            await getMessage.RemoveAllReactionsAsync();
         }
     }
 }   
