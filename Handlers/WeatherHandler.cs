@@ -144,6 +144,7 @@ namespace FinBot.Handlers
         {
             city = City;
         }
+
         private bool XMLIsNull;
         private string city;
         private float temp;

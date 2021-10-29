@@ -76,7 +76,6 @@ namespace FinBot.Handlers
                     SocketGuild guild = (channel as SocketGuildChannel)?.Guild;
                     string msg = $"Total Users: {guild.MemberCount}";
 
-
                     if (channel.Name != msg)
                     {
                         await channel.ModifyAsync(x => x.Name = msg);

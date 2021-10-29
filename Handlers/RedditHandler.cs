@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 /// <summary>
 /// Data that we need from a Reddit json.

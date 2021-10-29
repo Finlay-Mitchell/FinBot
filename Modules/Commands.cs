@@ -1268,7 +1268,6 @@ namespace FinBot.Modules
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
                     Color = Color.Orange,
                 };
-
                 await Context.Message.ReplyAsync("", false, b.Build());
                 tp.Dispose();
 
@@ -1288,7 +1287,6 @@ namespace FinBot.Modules
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
                     Color = Color.Orange,
                 };
-
                 await Context.Message.ReplyAsync("", false, b.Build());
                 tp.Dispose();
 
@@ -1530,7 +1528,6 @@ namespace FinBot.Modules
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
                     Color = Color.Orange,
                 };
-
                 await Context.Message.ReplyAsync("", false, b.Build());
                 tp.Dispose();
 
@@ -1550,7 +1547,6 @@ namespace FinBot.Modules
                     Description = $"Please enable levelling by using the {await Global.DeterminePrefix(Context)}enablelevelling <true/on> command!",
                     Color = Color.Orange,
                 };
-
                 await Context.Message.ReplyAsync("", false, b.Build());
                 tp.Dispose();
 
@@ -2138,7 +2134,8 @@ namespace FinBot.Modules
                 await Context.Message.ReplyAsync("Please enter a valid city name.");
             }
 
-            WeatherData Weather = new WeatherData(city);
+            string cityModified = Regex.Replace(city, " ", "+");
+            WeatherData Weather = new WeatherData(cityModified);
             Weather.CheckWeather();
 
             if (Weather.XmlIsNull)
@@ -2151,7 +2148,7 @@ namespace FinBot.Modules
             eb.WithTitle($"Weather for {city.First().ToString().ToUpper() + city.Substring(1)}");
             eb.WithDescription($"Weather: {Weather.WeatherValue}\nTemperature: {Weather.Temp}°C ({Weather.CelciusToFarenheit(Weather.Temp)}°F)\nFeels like: {Weather.FeelsLike}°C ({Weather.CelciusToFarenheit(Weather.FeelsLike)}°F)" +
                 $"\nMax temperature: {Weather.TempMax} ({Weather.CelciusToFarenheit(Weather.TempMax)}°F)\nMin temperature: {Weather.TempMin}°C ({Weather.CelciusToFarenheit(Weather.TempMin)}°F)\nWind speed: {Weather.Windspeed} " +
-                $"({Weather.WindspeedValue}m/s)\n------------------------\nPressure: {Weather.Pressure} hPa\nHumidity: {Weather.Humidity}%");
+                $"({Weather.WindspeedValue}m/s)({Weather.WindspeedValue * (60 * 60) / 1000}km/h)({(float)(Math.Round(Weather.WindspeedValue * (60 * 60) / 1000) * 0.6214 * 100f) / 100f}mp/h)\n------------------------\nPressure: {Weather.Pressure} hPa\nHumidity: {Weather.Humidity}%");
             eb.Author = new EmbedAuthorBuilder()
             {
                 IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
@@ -2159,6 +2156,7 @@ namespace FinBot.Modules
             };
             eb.Color = Weather.DetermineWeatherColour(Weather.WeatherId);
             eb.WithFooter($"Last updated: {Weather.LastUpdated}");
+            eb.WithThumbnailUrl("https://purepng.com/public/uploads/large/weather-forecast-symbol-v7o.png");
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
@@ -2208,6 +2206,12 @@ namespace FinBot.Modules
             });
             IUserMessage delmsg = await Context.Channel.SendMessageAsync($"Created your suggestion in {suggestionschannel.Mention}");
             await msg.AddReactionsAsync(Global.reactions.ToArray());
+
+            if(Context.Channel == suggestionschannel)
+            {
+                await Task.Delay(5000);
+                await delmsg.DeleteAsync();
+            }
         }
 
         /*

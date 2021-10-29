@@ -202,7 +202,6 @@ namespace FinBot.Modules
                 {
                     Console.WriteLine(ex);
                 }
-
             }
 
             else

@@ -104,7 +104,6 @@ namespace FinBot.Handlers.AutoMod
                         eb.WithCurrentTimestamp();
                         await logchannel.SendMessageAsync("", false, eb.Build());
                     }
-
                 }
 
                 else
@@ -210,7 +209,6 @@ namespace FinBot.Handlers.AutoMod
         /// <param name="arg">The message.</param>
         private async Task CheckForPingSpam(SocketMessage arg)
         {
-
             if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel) || Global.DevUIDs.Contains(arg.Author.Id))
             {
                 return;
