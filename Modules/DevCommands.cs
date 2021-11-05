@@ -453,7 +453,6 @@ namespace FinBot.Modules
 
             switch (args[0].ToLower())
             {
-
                 case "channel":
                     eb.Description = userInfo[0].description;
                     eb.Footer = new EmbedFooterBuilder()
@@ -464,7 +463,9 @@ namespace FinBot.Modules
                     eb.AddField("Twitch account information", $"Link to profile: https://www.twitch.tv/{args[1]} \nView count: {userInfo[0].view_count}\nUser id: {userInfo[0].id}");
                     break;
 
-                case "av": case "avatar": case "pfp":
+                case "av":
+                case "avatar":
+                case "pfp":
                     eb.Description = $"Here's the profile picture for {userInfo[0].display_name}:";
                     eb.ImageUrl = userInfo[0].profile_image_url;
                     break;
@@ -472,7 +473,7 @@ namespace FinBot.Modules
                 case "livetest":
                     List<TwitchHandler.UserStreams> userStreams = await TwitchHandler.GetStreams(args[1]);
 
-                    if(userStreams.Count == 0)
+                    if (userStreams.Count == 0)
                     {
                         await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", $"The user {args[1]} is not currently live on Twitch.", false, Color.Red).Build());
                         return;
@@ -550,6 +551,83 @@ namespace FinBot.Modules
 
                     break;
             }
+        }
+
+        [Command("vertest")]
+        [RequireDeveloper]
+        public async Task vertest([Remainder] SocketGuildUser user)
+        {
+            string activities = "";
+
+            foreach (var activity in user.Activities)
+            {
+                activities += activity;
+            }
+
+            await ReplyAsync(activities);
+        }
+
+        [Command("AFK")]
+        [RequireDeveloper]
+        public async Task SetAFK([Remainder] string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "Please enter a valid AFK status.", false, Color.Red).Build());
+                return;
+            }
+
+            MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+            IMongoDatabase database = mongoClient.GetDatabase("finlay");
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+            ulong _id = Context.Guild.Id;
+            BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+            if (guildDocument == null)
+            {
+                MongoHandler.InsertGuild(_id);
+            }
+
+            BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+
+            if (guild == null)
+            {
+                //BsonDocument statusDocument = new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", new BsonArray { new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } } };
+                BsonDocument statusDocument = new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", /*new BsonArray {*/ new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } /*} */};
+                collection.InsertOne(statusDocument);
+            }
+
+            else
+            {
+                BsonDocument test = new BsonDocument { { "$push", new BsonDocument { { "AFKUsers", new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } } } };
+                BsonDocument testing = new BsonDocument { { "_id", (decimal)_id } };
+                collection.UpdateOne(testing, test);
+            }
+
+            await Context.Message.ReplyAsync($"Successfully set AFK status to: {status}");
+
+            try
+            {
+                SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+
+                if (user.Nickname != null)
+                {
+                    await user.ModifyAsync(x =>
+                    {
+                        x.Nickname = $"[AFK] {user.Nickname}";
+                    });
+                }
+
+                else
+                {
+                    await user.ModifyAsync(x =>
+                    {
+                        x.Nickname = $"[AFK] {user.Username}";
+                    });
+                }
+            }
+
+            catch { }
         }
     }
 }

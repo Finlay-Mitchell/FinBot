@@ -71,7 +71,7 @@ namespace FinBot.Modules
                     {
                         await conformMessage.DeleteAsync();
 
-                        if (conformation.Content == "yes")
+                        if (conformation.Content.ToLower() == "yes")
                         {
                             IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync((int)amount + 2).FlattenAsync();
                             await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
@@ -2091,6 +2091,65 @@ namespace FinBot.Modules
             await getMessage.ModifyAsync(x => x.Embed = modifyEmbed);
             EmbedBuilder embed = modifyEmbed.ToEmbedBuilder();
             await getMessage.RemoveAllReactionsAsync();
+        }
+
+        [Command("Nick")]
+        [RequireBotPermission(GuildPermission.ManageNicknames | GuildPermission.ChangeNickname)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        public async Task Nickname(SocketGuildUser user, [Remainder] string nick)
+        {
+            SocketGuildUser UserCheck = Context.Guild.GetUser(Context.User.Id);
+
+            if (!UserCheck.GuildPermissions.ManageMessages && !Global.DevUIDs.Contains(Context.User.Id))
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "You do not have access to execute this command!", false, Color.Red).Build());
+                return;
+            }
+
+            if(nick.Length > 32)
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "You can only set a nickname with a max length of 32 characters.", false, Color.Orange).Build());
+                return;
+            }
+
+            if (user.Hierarchy >= Context.Guild.CurrentUser.Hierarchy && user != Context.Guild.CurrentUser)
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "This user sits at a higher or congruent hierarchy than me.", false, Color.Orange).Build());
+                return;
+            }
+
+            try
+            {
+                string oldNick = user.Nickname == null ? user.Username : user.Nickname;
+                await user.ModifyAsync(u =>
+                {
+                    if (nick.ToLower() == "reset")
+                    {
+                        u.Nickname = null;
+                    }
+                    
+                    else
+                    {
+                        u.Nickname = nick;
+                    }
+                });
+
+                if (user.Nickname != null)
+                {
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Success!", $"Successfully changed the users nickname from '{oldNick}' to '{user.Nickname}'.", false, Color.Green).Build());
+                }
+
+                else
+                {
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Success!", $"Successfully reset {user.Username}'s nickname.", false, Color.Green).Build());
+                }
+            }
+
+            catch 
+            {
+                await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error", "The bot encountered an issue trying to change the users nickname. Please check the bots hierarchy/permissions.", false, Color.Red).Build());
+                return;
+            }
         }
     }
 }   
