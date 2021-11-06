@@ -21,6 +21,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Net.Http;
+using System.Web;
 
 namespace FinBot.Modules
 {

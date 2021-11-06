@@ -73,7 +73,6 @@ namespace FinBot.Handlers
                 {
                     IResult devres = await _commands.ExecuteAsync(context, argPos, _services, MultiMatchHandling.Best);
                     await LogCommandUsage(context, devres);
-
                     return;
                 }
 
@@ -165,12 +164,10 @@ namespace FinBot.Handlers
                         eb.WithDescription($"```{msg}```");
                         eb.WithColor(Color.DarkPurple);
                         await _client.GetGuild(Global.SupportGuildId).GetTextChannel(Global.SupportChannelId).SendMessageAsync("", false, eb.Build());
-
                         return;
                     }
 
                     await message.ReplyAsync("Sorry, but commands are not enabled in DM's. Please try using bot commands in a server.");
-
                     return;
                 }
             }

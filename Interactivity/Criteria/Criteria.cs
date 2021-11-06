@@ -16,9 +16,11 @@ namespace FinBot.Interactivity
 
         public async Task<bool> JudgeAsync(ShardedCommandContext sourceContext, T parameter)
         {
-            foreach(ICriterion<T> criterion in _criteria)
+            bool result;
+
+            foreach (ICriterion<T> criterion in _criteria)
             {
-                bool result = await criterion.JudgeAsync(sourceContext, parameter).ConfigureAwait(false);
+                result = await criterion.JudgeAsync(sourceContext, parameter).ConfigureAwait(false);
 
                 if (!result)
                 {

@@ -17,19 +17,17 @@ namespace FinBot.Handlers
         [Command("help"), Summary("gives you information on each command"), Remarks("(PREFIX)help(all commands)/(PREFIX)help <command>")]
         public async Task Help(params string[] arg)
         {
-            if(arg.Length == 0)
+            switch(arg.Length)
             {
-                await HelpAsync();
-            }
-
-            if (arg.Length == 1)
-            {
-                await HelpAsync(arg.First());
-            }
-
-            else if (arg.Length > 1)
-            {
-                await Context.Message.ReplyAsync("Please only enter one parameter");
+                case 0:
+                    await HelpAsync();
+                    break;
+                case 1:
+                    await HelpAsync(arg.First());
+                    break;
+                default:
+                    await Context.Message.ReplyAsync("Please only enter one parameter");
+                    break;
             }
         }
 
@@ -49,14 +47,16 @@ namespace FinBot.Handlers
                 }
             };
             string guildPrefix = await Global.DeterminePrefix(Context);
+            string description = null;
+            PreconditionResult result;
 
             foreach (ModuleInfo module in _service.Modules)
             {
-                string description = null;
+                description = null;
 
                 foreach (CommandInfo cmd in module.Commands)
                 {
-                    PreconditionResult result = await cmd.CheckPreconditionsAsync(Context);
+                    result = await cmd.CheckPreconditionsAsync(Context);
 
                     if (Global.hiddenCommands.Contains(cmd.Name.ToString().ToLower())) //Took me a long while to noice...but without lowercasing the string, it'll fail, as I found out today.
                     {
@@ -164,10 +164,11 @@ namespace FinBot.Handlers
                 Color = new Color(114, 137, 218),
                 Description = $"Here are some commands like **{command}**"
             };
+            CommandInfo cmd;
 
             foreach (CommandMatch match in result.Commands)
             {
-                CommandInfo cmd = match.Command;
+                cmd = match.Command;
                 builder.AddField(x =>
                 {
                     x.Name = "_ _"; //This makes an empty space, leaving the field without a name throws an exception and so this is essentially the only way to make a seemingly empty space.

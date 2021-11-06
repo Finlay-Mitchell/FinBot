@@ -38,10 +38,11 @@ namespace FinBot.Handlers
                 conn.Open();
                 MySqlCommand cmd = new MySqlCommand($"SELECT * FROM MutedUsers WHERE userId = {arg.Id} AND guildId = {arg.Guild.Id}", conn);
                 using MySqlDataReader reader = cmd.ExecuteReader();
+                IRole role;
 
                 while (reader.Read())
                 {
-                    IRole role = (arg.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
+                    role = (arg.Guild as IGuild).Roles.FirstOrDefault(x => x.Name == "Muted");
                     await arg.AddRoleAsync(role);
                 }
 

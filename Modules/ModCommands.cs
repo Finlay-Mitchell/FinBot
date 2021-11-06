@@ -2093,7 +2093,7 @@ namespace FinBot.Modules
             await getMessage.RemoveAllReactionsAsync();
         }
 
-        [Command("Nick")]
+        [Command("Nick"), Summary("Sets a users nickname."), Remarks("(PREFIX)nick <user <new nickname>/<reset>")]
         [RequireBotPermission(GuildPermission.ManageNicknames | GuildPermission.ChangeNickname)]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Nickname(SocketGuildUser user, [Remainder] string nick)

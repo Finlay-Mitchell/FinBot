@@ -697,10 +697,11 @@ namespace FinBot.Modules
             {
                 ResultLimit = maxSearch
             });
+            string link;
 
             foreach (WikiSearchResult result in response.Query.SearchResults)
             {
-                string link = $"**[{result.Title}]({result.ConstantUrl("en")})** (Words: {result.WordCount})\n{result.Preview}\n\n";
+                link = $"**[{result.Title}]({result.ConstantUrl("en")})** (Words: {result.WordCount})\n{result.Preview}\n\n";
 
                 if (sb.Length > 2047)
                 {
@@ -913,11 +914,15 @@ namespace FinBot.Modules
                     embed.ThumbnailUrl = thumbFromVideo.Snippet.Thumbnails.Default__.Url;
                 }
 
+                string fullVideoUrl;
+                string videoId;
+                string description;
+
                 foreach (SearchResult result in results.Where(r => r.Id.Kind == "youtube#video").Take(3))
                 {
-                    string fullVideoUrl = string.Empty;
-                    string videoId = string.Empty;
-                    string description = string.Empty;
+                    fullVideoUrl = string.Empty;
+                    videoId = string.Empty;
+                    description = string.Empty;
 
                     if (string.IsNullOrEmpty(result.Snippet.Description))
                     {
@@ -1141,6 +1146,9 @@ namespace FinBot.Modules
                 };
                 string format = "```";
                 string username = "";
+                SocketGuildUser user;
+                int spaceCount;
+                string spaces;
 
                 while (reader.Read())
                 {
@@ -1149,7 +1157,7 @@ namespace FinBot.Modules
                     if (count <= 10)
                     {
                         Dictionary<string, dynamic> arr = new Dictionary<string, dynamic>();
-                        SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+                        user = (SocketGuildUser)Context.Message.Author;
 
                         if (Context.Guild.GetUser((ulong)reader.GetInt64(0)) == null)
                         {
@@ -1174,8 +1182,8 @@ namespace FinBot.Modules
                         arr.Add("name", username);
                         arr.Add("score", reader.GetInt64(5));
                         scores.Add(arr);
-                        int spaceCount = 32 - username.Length;
-                        string spaces = "";
+                        spaceCount = 32 - username.Length;
+                        spaces = "";
 
                         for (int i = 0; i < spaceCount; i++)
                         {
@@ -1398,7 +1406,6 @@ namespace FinBot.Modules
                 }
 
                 conn.Close();
-
                 return count.ToString();
             }
 
@@ -1436,15 +1443,18 @@ namespace FinBot.Modules
                 MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} AND chanId = {Context.Channel.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
                 MySqlDataReader reader = cmd.ExecuteReader();
                 EmbedBuilder b = new EmbedBuilder();
+                string username;
+                ulong uId;
+                SocketGuildUser user;
 
                 while (reader.Read())
                 {
                     b.Title = "Sniped message";
                     b.Description = (string)reader[0];
                     b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetDouble(1))}");
-                    SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
-                    string username = "";
-                    ulong uId = Convert.ToUInt64(reader[4]);
+                    user = (SocketGuildUser)Context.Message.Author;
+                    username = "";
+                    uId = Convert.ToUInt64(reader[4]);
 
                     if (Context.Guild.GetUser(uId) == null || Context.Guild.GetUser(uId).GetType() == typeof(SocketUnknownUser))
                     {
@@ -1981,7 +1991,6 @@ namespace FinBot.Modules
                 Title = "Invite me here!",
                 Url = "https://bot.finlaymitchell.ml"
             };
-
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
@@ -1994,7 +2003,6 @@ namespace FinBot.Modules
                 Title = "Join my support server!",
                 Url = "https://support.finlaymitchell.ml"
             };
-
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
@@ -2007,7 +2015,6 @@ namespace FinBot.Modules
                 Title = "View my website here!",
                 Url = "https://finbot.finlaymitchell.ml"
             };
-
             await Context.Message.ReplyAsync("", false, eb.Build());
         }
 
