@@ -1,0 +1,16 @@
+sqlalchemy
+python-chess
+discord.py
+PyNaCl
+motor
+aiml
+gtts
+lyricsgenius
+spotipy
+mee6_py_api
+mysql.connector
+youtube-search-python
+pytube
+youtube_dl
+cairosvg (download https://downloads.sk1project.net/sk1/MS_Windows/sk1-2.0rc5-win64_headless.msi and set to sys env var)
+cryptography
