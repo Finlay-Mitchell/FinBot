@@ -30,6 +30,7 @@ class GeniusSearcher:
         try:
             request = self.Genius.search_all(lyrics)
             first_run = True
+
             for hit in request['sections'][2]['hits']:
                 if first_run:
                     first_hit = hit["result"]
@@ -39,5 +40,6 @@ class GeniusSearcher:
                 return first_hit
             else:
                 return None
+
         except:
             return None

@@ -1,10 +1,4 @@
-import discord
-from discord.ext import commands
-import motor.motor_asyncio
-import aiml
-
 import asyncio
-import os
 import datetime
 import time
 from traceback import format_exc, print_tb
@@ -12,6 +6,11 @@ import re
 import sys
 from typing import Union
 import ctypes
+
+import discord
+from discord.ext import commands
+import motor.motor_asyncio
+import aiml
 
 from Handlers.mongo_handler import MongoDB
 from Data import config
@@ -93,13 +92,17 @@ class FinBot(commands.Bot):
         """
         while len(full_text) > 2000:
             newline_indices = [m.end() for m in re.finditer("\n", full_text[:2000])]
+
             if len(newline_indices) == 0:
                 to_send = full_text[:2000]
                 full_text = full_text[2000:]
+
             else:
                 to_send = full_text[:newline_indices[-1]]
                 full_text = full_text[newline_indices[-1]:]
+
             yield to_send
+
         if len(full_text) > 0:
             yield full_text
 
@@ -122,6 +125,7 @@ def get_bot():
             print("Loading Cog named {}...".format(extension_name))
             bot.load_extension("Cogs.{}".format(extension_name))
             print("Loaded cog {}!".format(extension_name))
+
         print("Ready!")
 
     @bot.event
@@ -145,6 +149,7 @@ def get_bot():
                     await ctx.invoke(bot.get_command(msg[0]), msg[1])
 
                 return
+
         return
 
     # noinspection PyUnusedLocal
@@ -154,11 +159,14 @@ def get_bot():
             embed = discord.Embed(title=f" {FinBot.user}  experienced an error when running.",
                                   colour=discord.Colour.red())
             embed.description = format_exc()[:2000]
-            print(format_exc())
+
+            if config.debug:
+                print(format_exc())
 
         except Exception as e:
-            print("Error in sending error to discord. Error was {}".format(format_exc()))
-            print("Error sending to discord was {}".format(e))
+            if config.debug:
+                print("Error in sending error to discord. Error was {}".format(format_exc()))
+                print("Error sending to discord was {}".format(e))
 
     @bot.event
     async def on_command_error(ctx, error):
@@ -168,13 +176,12 @@ def get_bot():
             return
 
         if isinstance(error, commands.CheckFailure):
-            await ctx.send(embed=bot.create_error_embed(
-                "You don't have permission to do that, {}.".format(ctx.message.author.mention)))
+            await ctx.send(embed=bot.create_error_embed(f"You don't have permission to do that, "
+                                                        f"{ctx.message.author.mention}."))
             return
 
         try:
-            embed = discord.Embed(title=f"{FinBot.user} experienced an error in a command.",
-                                  colour=discord.Colour.red())
+            embed = discord.Embed(title=f"{FinBot.user} experienced an error in a command.",colour=discord.Colour.red())
             embed.description = format_exc()[:2000]
             embed.add_field(name="Command passed error", value=error)
             embed.add_field(name="Context", value=ctx.message.content)

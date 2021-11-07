@@ -1,6 +1,5 @@
 import json
 import datetime
-import sys
 
 json_data = open("../../bin/Debug/netcoreapp3.1/Data/config.json")  # Opens the config.json file to extract data.
 data = json.load(json_data)  # Reads the data from the config.json file.
@@ -35,7 +34,7 @@ dev_uids = [305797476290527235]  # Listed bot developers.
 
 # Other global variables.
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
-# extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs", "chess"]
+# extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs", "chess_game"]
 client_commands = False
 debug = False
 
@@ -48,4 +47,4 @@ port = data["MySQLPort"]
 password = data["MySQLPassword"]
 CHESS_DB_PATH = f"mysql+pymysql://{user}:{password}@{server}/{database}"
 
-extensions = ["chess_game"]
+extensions = ["chess_game", "minecraft"]

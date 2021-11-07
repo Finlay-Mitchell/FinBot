@@ -19,14 +19,13 @@ def get_game(user_id: int, game_id: int) -> database.Game:
         user = get_database_user(user_id)
         game = user.last_game
 
-        if config.debug:
-            if game is None:
-                raise RuntimeError(f"User #{user_id} does not have a last game")
+        if game is None:
+            raise RuntimeError(f"User #{user_id} does not have a last game")
     else:
         game = database.session.query(database.Game).get(game_id)
-        if config.debug:
-            if game is None:
-                raise RuntimeError(f"Game #{game_id} does not exist in the database")
+
+        if game is None:
+            raise RuntimeError(f"Game #{game_id} does not exist in the database")
 
     return game
 
@@ -144,5 +143,4 @@ def which_player(game: database.Game, user: database.User) -> int:
     elif user == game.black:
         return constants.BLACK
     else:
-        if config.debug:
-            raise RuntimeError(f"User #{user.discord_id} is not a player in game #{game.id}")
+        raise RuntimeError(f"User #{user.discord_id} is not a player in game #{game.id}")

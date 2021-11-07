@@ -1,4 +1,3 @@
-from main import FinBot
 from .chess.database import *
 from .chess.utils import *
 from .chess.constants import *
@@ -15,7 +14,7 @@ class chess_cog(commands.Cog):
                 return
         try:
             status_str, img = get_game_status(self.bot, game)
-        except RuntimeError as err:
+        except RuntimeError:
             await ctx.reply(embed=self.bot.create_error_embed("Failed to get status for that game."))
             return
 
@@ -40,14 +39,14 @@ class chess_cog(commands.Cog):
             return
 
         if not is_player(game, user):
-            await ctx.reply(embed=self.bot.create_error_embed(f"{ctx.author.mention} tried to illegaly accept in game "
+            await ctx.reply(embed=self.bot.create_error_embed(f"{ctx.author.mention} tried to illegally accept in game "
                                                               f"#{game.id}"))
             return
 
         if game.white_accepted_action != game.black_accepted_action:
             try:
                 handle_action_accept(user, game)
-            except RuntimeError as err:
+            except RuntimeError:
                 await ctx.reply(embed=self.bot.create_error_embed("You can't accept your own actions"))
                 return
 
@@ -78,13 +77,13 @@ class chess_cog(commands.Cog):
 
         try:
             handle_turn_check(user, game)
-        except RuntimeError as err:
+        except RuntimeError:
             await ctx.reply(embed=self.bot.create_error_embed("It is not your turn."))
             return
 
         try:
             handle_move(game, san_move)
-        except ValueError as err:
+        except ValueError:
             await ctx.reply(embed=self.bot.create_error_embed(f"{san_move} is not a valid SAN move in this game."))
             return
 
@@ -123,7 +122,7 @@ class chess_cog(commands.Cog):
 
         try:
             handle_action_offer(user, game, action_type)
-        except RuntimeError as err:
+        except RuntimeError:
             await ctx.reply(embed=self.bot.create_error_embed("You can't offer an action in this game."))
             return
 
@@ -179,13 +178,13 @@ class chess_cog(commands.Cog):
     """---------------------------------------------------------------------------------------"""
 
     @commands.command()
-    async def games(self, ctx, all: str = "") -> None:
+    async def games(self, ctx, all_option: str = "") -> None:
         user = await get_author_user_ctx(ctx)
         if user is None:
             return
 
         games = user.ongoing_games
-        if all.lower() == "all":
+        if all_option.lower() == "all":
             games = [*games, *user.finished_games]
 
         outputs = []

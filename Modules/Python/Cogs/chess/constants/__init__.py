@@ -1,3 +1,5 @@
+from typing import Union
+
 WHITE = 0
 BLACK = 1
 DRAW = 2
@@ -9,7 +11,7 @@ def turn_to_str(turn: int) -> str:
     return ["white", "black", "draw"][turn]
 
 
-def result_to_int(result: int) -> int:
+def result_to_int(result: int) -> Union[float, int]:
     if result < 0 or result > DRAW:
         raise RuntimeError("Invalid result in result_to_int().")
 
@@ -26,7 +28,6 @@ ACTION_DRAW = 1
 ACTION_UNDO = 2
 
 OFFERABLE_ACTIONS = {"DRAW": ACTION_DRAW, "UNDO": ACTION_UNDO}
-
 OFFERABLE_ACTIONS_REVERSE = {ACTION_DRAW: "DRAW", ACTION_UNDO: "UNDO"}
 
 ELO_K = 24

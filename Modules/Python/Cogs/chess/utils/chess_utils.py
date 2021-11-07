@@ -73,8 +73,7 @@ def get_winner(board: chess.Board, claim_draw: bool = False, both_agreed: bool =
     elif winner == "1/2-1/2":
         return constants.DRAW
     else:
-        if config.debug:
-            raise RuntimeError("Game is not over yet, can't get the winner")
+        raise RuntimeError("Game is not over yet, can't get the winner")
 
 
 def get_game_over_reason(board: chess.Board, claim_draw: bool = False, both_agreed: bool = False) -> str:
@@ -111,8 +110,7 @@ def get_game_over_reason(board: chess.Board, claim_draw: bool = False, both_agre
     if len(possible) > 0:
         return possible[0]
     else:
-        if config.debug:
-            raise RuntimeError("No possible game over reason")
+        raise RuntimeError("No possible game over reason")
 
 
 def get_turn(board: chess.Board) -> int:

@@ -1,23 +1,20 @@
 from .. import database, constants
-from Data import config
 
 
 def recalculate_elo(game: database.Game) -> None:
     if game is None:
-        if config.debug:
-            raise RuntimeError("Game is None")
+        raise RuntimeError("Game is None")
 
     white = game.white
     black = game.black
     game_result = game.winner
 
-    if config.debug:
-        if game_result is None:
-            raise RuntimeError("game is not over yet")
-        if white is None or black is None:
-            raise RuntimeError("Either white or black is None")
-        if white.elo is None or black.elo is None:
-            raise RuntimeError("Either white or black does not have an elo rating")
+    if game_result is None:
+        raise RuntimeError("game is not over yet")
+    if white is None or black is None:
+        raise RuntimeError("Either white or black is None")
+    if white.elo is None or black.elo is None:
+        raise RuntimeError("Either white or black does not have an elo rating")
 
     wea = round(1 / (1 + 10 ** ((black.elo - white.elo) / 400)), 2)
     white_actual = constants.result_to_int(game_result)

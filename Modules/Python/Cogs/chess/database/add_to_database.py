@@ -15,5 +15,4 @@ def add_to_database(obj: T) -> None:
     except DatabaseError as err:
         if config.debug:
             print(err)
-
         session.rollback()

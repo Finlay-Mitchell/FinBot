@@ -1,7 +1,8 @@
+from io import BytesIO
+
 import pydub
 from pydub import effects
 from gtts import gTTS
-from io import BytesIO
 
 
 def get_speak_file(message_content, lang, speed, tld):

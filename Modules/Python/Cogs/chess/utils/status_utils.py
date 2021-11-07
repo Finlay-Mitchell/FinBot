@@ -7,7 +7,6 @@ from .chess_utils import load_from_pgn, to_png, get_turn
 from .user_utils import get_discord_user
 from .game_utils import who_offered_action
 from .. import database, constants
-from Data import config
 
 
 def _get_status_mentions(white: discord.User, black: discord.User, game: database.Game) -> Tuple[str, str]:
@@ -32,9 +31,8 @@ def get_vs_line(bot: commands.Bot, game: database.Game) -> str:
 
 
 def get_game_status(bot: commands.Bot, game: database.Game) -> Tuple[str, discord.File]:
-    if config.debug:
-        if not game.white or not game.black:
-            raise RuntimeError(f"Either white or black player is not present in game #{game.id}")
+    if not game.white or not game.black:
+        raise RuntimeError(f"Either white or black player is not present in game #{game.id}")
 
     vs_line = get_vs_line(bot, game)
     status = f"__Game ID: {game.id}__\n{vs_line}\n"
@@ -46,15 +44,13 @@ def get_game_status(bot: commands.Bot, game: database.Game) -> Tuple[str, discor
         status += f"*{turn_str.capitalize()}'s turn.*\n"
 
         if game.action_proposed in constants.OFFERABLE_ACTIONS.values():
-            if config.debug:
-                if not (game.white_accepted_action or game.black_accepted_action):
-                    raise RuntimeError("An action was offered but neither player accepted it")
+            if not (game.white_accepted_action or game.black_accepted_action):
+                raise RuntimeError("An action was offered but neither player accepted it")
 
             action = constants.OFFERABLE_ACTIONS_REVERSE.get(game.action_proposed)
 
-            if config.debug:
-                if action is None:
-                    raise RuntimeError("Action is not present in OFFERABLE_ACTIONS_REVERSE")
+            if action is None:
+                raise RuntimeError("Action is not present in OFFERABLE_ACTIONS_REVERSE")
 
             action_str = action.lower()
             action_side = who_offered_action(game)
@@ -80,7 +76,6 @@ def get_game_status(bot: commands.Bot, game: database.Game) -> Tuple[str, discor
 
         status += f"\n**Game over!** {result}"
     else:
-        if config.debug:
-            raise RuntimeError(f"Either game.winner or game.win_reason is not present in game #{game.id}")
+        raise RuntimeError(f"Either game.winner or game.win_reason is not present in game #{game.id}")
 
     return status, to_png(board)

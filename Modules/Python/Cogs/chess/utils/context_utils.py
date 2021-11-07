@@ -1,3 +1,5 @@
+from typing import Union
+
 import discord
 from discord.ext import commands
 
@@ -8,10 +10,10 @@ from main import FinBot
 from Data import config
 
 
-async def get_game_ctx(ctx: commands.Context, user_id: int, game_id: int) -> database.Game:
+async def get_game_ctx(ctx: commands.Context, user_id: int, game_id: int) -> Union[None, database.Game]:
     try:
         game = get_game(user_id, game_id)
-    except RuntimeError as err:
+    except RuntimeError:
         if game_id is None:
             await ctx.reply(embed=FinBot.create_error_embed(f"You don't have a last game."))
         else:
@@ -23,7 +25,7 @@ async def get_game_ctx(ctx: commands.Context, user_id: int, game_id: int) -> dat
     return game
 
 
-async def get_author_user_ctx(ctx: commands.Context) -> database.User:
+async def get_author_user_ctx(ctx: commands.Context) -> Union[None, database.User]:
     try:
         user = get_database_user(ctx.author.id)
         return user
@@ -35,7 +37,7 @@ async def get_author_user_ctx(ctx: commands.Context) -> database.User:
         return None
 
 
-async def create_database_user_ctx(ctx: commands.Context, discord_user: discord.User) -> database.User:
+async def create_database_user_ctx(ctx: commands.Context, discord_user: discord.User) -> Union[None, database.User]:
     try:
         database_user = create_database_user(discord_user)
     except RuntimeError as err:
