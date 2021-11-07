@@ -21,4 +21,16 @@ router.get('/', (request, response) => {
     }
 });
 
+router.get('/test', (request, response) => {
+    if(request.user)
+    {
+        response.send(`https://cdn.discordapp.com/avatars/${request.user.discordId}/${request.user.avatar}.webp?size=128`);
+    }
+
+    else 
+    {
+        response.status(401).send("Unauthorised");
+    }
+});
+
 module.exports = router;
