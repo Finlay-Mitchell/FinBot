@@ -177,7 +177,7 @@ class chess_cog(commands.Cog):
 
     """---------------------------------------------------------------------------------------"""
 
-    @commands.command(aliasses=["chessgames"])
+    @commands.command(aliasses=["chessgames", "chessgame", "chess_game"])
     async def chess_games(self, ctx, all_option: str = "") -> None:
         user = await get_author_user_ctx(ctx)
         if user is None:

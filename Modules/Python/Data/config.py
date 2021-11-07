@@ -34,7 +34,7 @@ dev_uids = [305797476290527235]  # Listed bot developers.
 
 # Other global variables.
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
-# extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs", "chess_game"]
+extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs", "chess_game"]
 client_commands = False
 debug = False
 
@@ -46,5 +46,3 @@ database = data["MySQLDatabase"]
 port = data["MySQLPort"]
 password = data["MySQLPassword"]
 CHESS_DB_PATH = f"mysql+pymysql://{user}:{password}@{server}/{database}"
-
-extensions = ["chess_game", "minecraft"]

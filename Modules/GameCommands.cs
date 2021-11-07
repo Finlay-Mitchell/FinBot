@@ -41,7 +41,7 @@ namespace FinBot.Modules
             return Task.CompletedTask;
         }
 
-        [Command("chess_games"), Summary("Gets a list of your chess games."), Remarks("(PREFIX)chess_games (optional)<all>")]
+        [Command("chess_games"), Summary("Gets a list of your chess games."), Remarks("(PREFIX)chess_games (optional)<all>"), Alias("chessgames", "chessgame", "chess_game")]
         public Task ChessGames(params string[] args)
         {
             return Task.CompletedTask;
