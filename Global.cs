@@ -155,7 +155,7 @@ namespace FinBot
         /// Commands hidden from regular users - available to developers.
         /// </summary>
         public static List<string> hiddenCommands = new List<string> { "restart", "terminate", "updatesupport", "tld", "exec", "reset_chatbot", "getguilddata", "enbotclientcommands", "clearalldata", "update", 
-            "execute", "test", "twitch", "twitchchannel", "addtwitch", "ftest" };
+            "execute", "test", "twitch", "twitchchannel", "addtwitch", "ftest", "vertest", "afk" };
         /// <summary>
         /// Listed developer ids.
         /// </summary>
@@ -349,37 +349,37 @@ namespace FinBot
 
                 foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
                 {
-                   foreach (KeyValuePair<ulong, string> f in t)
-                   {
-                       if (context.Guild.Id == f.Key)
-                       {
-                           return f.Value;
-                       }
-                   }
+                    foreach (KeyValuePair<ulong, string> f in t)
+                    {
+                        if (context.Guild.Id == f.Key)
+                        {
+                            return f.Value;
+                        }
+                    }
                 }
 
-                   MongoClient MongoClient = new MongoClient(Mongoconnstr);
-                   IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                   IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                   ulong _id = context.Guild.Id;
-                   BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                   string itemVal = item?.GetValue("prefix").ToString();
+                MongoClient MongoClient = new MongoClient(Mongoconnstr);
+                IMongoDatabase database = MongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = context.Guild.Id;
+                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+                string itemVal = item?.GetValue("prefix").ToString();
 
-                   if (itemVal != null)
-                   {
-                       return itemVal;
-                   }
-
-                   else
-                   {
-                       return Prefix;
-                   }
-                }
-
-                catch
+                if (itemVal != null)
                 {
-                   return Prefix;
+                    return itemVal;
                 }
+
+                else
+                {
+                    return Prefix;
+                }
+            }
+
+            catch
+            {
+                return Prefix;
+            }
         }
         /// <summary>
         /// Determines whether guild user levelling is enabled or not - if a value is not found or an error occurs, we return "False" to be handled to the user.

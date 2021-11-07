@@ -127,6 +127,15 @@ namespace FinBot.Handlers
                             });
                             break;
 
+                        case "GameCommands":
+                            builder.AddField(x =>
+                            {
+                                x.Name = "Game commands";
+                                x.Value = description.Remove(description.LastIndexOf(','));
+                                x.IsInline = false;
+                            });
+                            break;
+
                         default:
                             builder.AddField(x =>
                             {

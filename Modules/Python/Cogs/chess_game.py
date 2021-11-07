@@ -19,17 +19,17 @@ class chess_cog(commands.Cog):
             return
 
         message = await ctx.reply(file=img)
-        embed = self.bot.create_completed_embed("Started new game", status_str)
+        embed = self.bot.create_completed_embed("Chess game", status_str)
         embed.set_image(url=message.attachments[0].url)
         await message.delete()
         await ctx.reply(embed=embed)
 
-    @commands.command()
-    async def status(self, ctx: commands.Context, game_id: int = None) -> None:
+    @commands.command(aliases=["chessstatus", "chess_stats", "chessstats"])
+    async def chess_status(self, ctx: commands.Context, game_id: int = None) -> None:
         await self.status_func(ctx, game_id=game_id)
 
-    @commands.command()
-    async def accept(self, ctx, game_id: int = None) -> None:
+    @commands.command(aliases=["chessaccept", "acceptchess", "accept_chess"])
+    async def chess_accept(self, ctx, game_id: int = None) -> None:
         game = await get_game_ctx(ctx, ctx.author.id, game_id)
         if game is None:
             return
@@ -56,8 +56,8 @@ class chess_cog(commands.Cog):
         else:
             await ctx.reply(embed=self.bot.create_error_embed("There is nothing to accept for this game"))
 
-    @commands.command()
-    async def move(self, ctx, san_move: str, game_id: int = None) -> None:
+    @commands.command(aliases=["chessmove", "move_chess", "movechess"])
+    async def chess_move(self, ctx, san_move: str, game_id: int = None) -> None:
         game = await get_game_ctx(ctx, ctx.author.id, game_id)
         if game is None:
             return
@@ -92,8 +92,8 @@ class chess_cog(commands.Cog):
         add_to_database(user)
         await self.status_func(ctx, game=game)
 
-    @commands.command()
-    async def offer(self, ctx, action: str, game_id: int = None) -> None:
+    @commands.command(aliases=["chessoffer", "offer_chess", "offerchess"])
+    async def chess_offer(self, ctx, action: str, game_id: int = None) -> None:
         game = await get_game_ctx(ctx, ctx.author.id, game_id)
         if game is None:
             return
@@ -131,8 +131,8 @@ class chess_cog(commands.Cog):
         add_to_database(user)
         await self.status_func(ctx, game=game)
 
-    @commands.command()
-    async def play(self, ctx, user: discord.Member) -> None:
+    @commands.command(aliases=["chessplay", "playchess", "play_chess"])
+    async def chess_play(self, ctx, user: discord.Member) -> None:
         white = await create_database_user_ctx(ctx, ctx.author)
         black = await create_database_user_ctx(ctx, user)
 
@@ -152,8 +152,8 @@ class chess_cog(commands.Cog):
 
         await self.status_func(ctx, game=game)
 
-    @commands.command()
-    async def concede(self, ctx, game_id: int = None) -> None:
+    @commands.command(aliases=["chessconcede", "concede_chess", "concedechess"])
+    async def chess_concede(self, ctx, game_id: int = None) -> None:
         game = await get_game_ctx(ctx, ctx.author, game_id)
         if game is None:
             return
@@ -177,8 +177,8 @@ class chess_cog(commands.Cog):
 
     """---------------------------------------------------------------------------------------"""
 
-    @commands.command()
-    async def games(self, ctx, all_option: str = "") -> None:
+    @commands.command(aliasses=["chessgames"])
+    async def chess_games(self, ctx, all_option: str = "") -> None:
         user = await get_author_user_ctx(ctx)
         if user is None:
             return
@@ -201,8 +201,8 @@ class chess_cog(commands.Cog):
         else:
             await ctx.reply(embed=self.bot.create_completed_embed("Your games:", output))
 
-    @commands.command()
-    async def elo(self, ctx) -> None:
+    @commands.command(aliases=["chesselo", "elochess", "elo_chess"])
+    async def chess_elo(self, ctx) -> None:
         user = await get_author_user_ctx(ctx)
         if user is None:
             return
@@ -212,8 +212,8 @@ class chess_cog(commands.Cog):
 
         await ctx.reply(embed=self.bot.create_completed_embed(f"{ctx.author}'s elo rating", f"{user.elo}"))
 
-    @commands.command()
-    async def leaderboard(self, ctx, top: int = 10) -> None:
+    @commands.command(aliases=["chessleaderboard"])
+    async def chess_leaderboard(self, ctx, top: int = 10) -> None:
         if top < 3 or top > 50:
             await ctx.reply(embed=self.bot.create_error_embed("Please choose another value of \"Top *N*\""))
             return
