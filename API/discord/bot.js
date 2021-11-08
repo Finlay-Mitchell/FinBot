@@ -7,8 +7,19 @@ const messages = require("../database/schemas/messages");
 
 client.on('message', async (message) => {
     try 
-    {
+    {    
+        var messageAttachments = []
+        var embed = message.embeds[0] || null;
+
+        if(message.attachments.size > 0)
+        {
+            message.attachments.forEach(function(attachment) {
+                messageAttachments += `${attachment.url}`;
+            });
+        }
+
         const newMessage = await messages.create({
+            _id: message.id,
             discordId: message.author.id,
             discordTag: `${message.author.username}#${message.author.discriminator}`,
             avatar: message.author.avatar,
@@ -16,7 +27,8 @@ client.on('message', async (message) => {
             channelId: message.channel.id,
             createdTimestamp: message.createdTimestamp,
             content: message.content,
-            messageId: message.id,
+            attachments: messageAttachments,
+            embeds: embed,
             deleted: false
         });
     }
@@ -52,6 +64,20 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
     {
         console.log(err);
     }
+});
+
+client.on('messageDeleteBulk', async deletedMessages => {    
+    deletedMessages.forEach(async function(message) {
+        try 
+        {
+            await messages.findOneAndUpdate({messageId: message.id}, {deleted: true}).exec();
+        }
+    
+        catch(err)
+        {
+            console.log(err);
+        }
+    })
 });
 
 exports.lastmessage = function lastmessage()

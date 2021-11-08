@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
+    _id: {
+        type: String,
+        required: true,
+    },
     guildId: {
         type: String,
         required: true,
@@ -21,15 +25,19 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
-    messageId: {
-        type: String,
-        required: true,
-    },
     createdTimestamp: {
         type: String,
         required: true,
     },
     edits: {
+        type: Array,
+        required: false,
+    },
+    attachments: {
+        type: Array,
+        required: false,
+    },
+    embeds: {
         type: Array,
         required: false,
     },

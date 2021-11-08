@@ -21,10 +21,31 @@ router.get('/', (request, response) => {
     }
 });
 
-router.get('/test', (request, response) => {
+function contains(arr, key, val) 
+{
+    for (var i = 0; i < arr.length; i++) 
+    {
+      if (arr[i][key] === val) 
+      {
+          return true;
+      }
+    }
+
+    return false;
+}
+
+router.get('/test/', (request, response) => {
     if(request.user)
     {
-        response.send(`https://cdn.discordapp.com/avatars/${request.user.discordId}/${request.user.avatar}.webp?size=128`);
+        if(contains(request.user.guilds, "id", request.query.guildid))
+        {
+            response.send(request.user.guilds.filter(x => x.id === request.query.guildid))
+        }
+
+        else 
+        {
+            response.send(`${request.user.discordTag}\https://cdn.discordapp.com/avatars/${request.user.discordId}/${request.user.avatar}.webp?size=128`);
+        }
     }
 
     else 
