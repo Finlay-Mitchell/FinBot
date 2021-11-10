@@ -50,16 +50,17 @@ class FinBot(commands.Bot):
         :param message: The message which was sent.
         :return: Returns the prefix for the guild.
         """
-        if not hasattr(message, "guild") or message.guild is None:
-            return ""
-        if self.mongo is None:
-            return f"a{config.prefix}"
-        guild_document = await self.mongo.find_by_id(self.mongo.client.finlay.guilds, message.guild.id)
-        if guild_document is None or guild_document.get("prefix") is None:
-            return commands.when_mentioned_or(config.prefix)(bot, message)
-        else:
-            guild_prefix = guild_document.get("prefix")
-            return commands.when_mentioned_or(guild_prefix)(bot, message)
+        # if not hasattr(message, "guild") or message.guild is None:
+        #     return ""
+        # if self.mongo is None:
+        #     return f"a{config.prefix}"
+        # guild_document = await self.mongo.find_by_id(self.mongo.client.finlay.guilds, message.guild.id)
+        # if guild_document is None or guild_document.get("prefix") is None:
+        #     return commands.when_mentioned_or(config.prefix)(bot, message)
+        # else:
+        #     guild_prefix = guild_document.get("prefix")
+        #     return commands.when_mentioned_or(guild_prefix)(bot, message)
+        return commands.when_mentioned_or("dev.")(bot, message)
 
     @staticmethod
     def create_completed_embed(title, text):
