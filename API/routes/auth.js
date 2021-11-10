@@ -108,7 +108,7 @@ router.get('/', async ({ query }, response) => {
 
 	if (code) {
 		try {
-			const oauthResult = await fetch('https://discord.com/api/oauth2/token', {
+			const oauthResult = await fetch('https://discord.com/api/oauth2/token', { // Change to https://discord.com/api/v8
 				method: 'POST',
 				body: new URLSearchParams({
 					client_id: config.config.ClientId,
