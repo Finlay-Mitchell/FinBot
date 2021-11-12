@@ -1,41 +1,15 @@
-# from flask import Flask, render_template, request, session
-#
-# from Data import config
-# from Oauth import Oauth
-#
-# app = Flask(__name__, template_folder="Website/HTML")
-# app.config["SECRET_KEY"] = "test"
-#
-#
-# @app.route("/")
-# def home():
-#     return render_template("index.html",  discord_url=config.discord_login_url)
-#
-#
-# @app.route("/login")
-# def login():
-#     code = request.args.get("code")
-#     access_token = Oauth.get_access_token(code)
-#     session["token"] = access_token
-#     user = Oauth.get_user_json(access_token)
-#     username, discriminator = user.get("username"), user.get("discriminator")
-#
-#     return f"{username}#{discriminator}"
-#
-#
-# if __name__ == "__main__":
-#     app.run(debug=True)
-
+import asyncio
 
 from quart import Quart, render_template, request, session, redirect, url_for
 from quart_discord import DiscordOAuth2Session
 from discord.ext import ipc
 
 from Data import config
+import mongo
 
-
-app = Quart(__name__, template_folder="Website/HTML")
+app = Quart(__name__, template_folder="Website/HTML", static_folder="Website")
 ipc_client = ipc.Client(secret_key="Swas")
+
 app.config["SECRET_KEY"] = "testing"
 app.config["DISCORD_CLIENT_ID"] = config.client_id
 app.config["DISCORD_CLIENT_SECRET"] = config.client_secret
@@ -45,7 +19,12 @@ discord = DiscordOAuth2Session(app)
 
 @app.route("/")
 async def home():
-    return await render_template("index.html", authorized=await discord.authorized)
+    return await render_template("index.html", authorized=await discord.authorized, discord=discord)
+
+
+# @app.route("/")
+# async def home():
+#     return await render_template("index.html", authorized=await discord.authorized)
 
 
 @app.route("/login")
@@ -63,7 +42,7 @@ async def callback():
     return redirect(url_for("dashboard"))
 
 
-@app.route("/dashboard")
+@app.route("/dashboard", strict_slashes=False)
 async def dashboard():
     if not await discord.authorized:
         return redirect(url_for("login"))
@@ -80,7 +59,7 @@ async def dashboard():
             guild.class_color = "green-border" if guild.id in guild_ids else "red-border"
             guilds.append(guild)
 
-    guilds.sort(key = lambda x: x.class_color == "red-border")
+    guilds.sort(key=lambda x: x.class_color == "red-border")
     name = (await discord.fetch_user()).name
     return await render_template("dashboard.html", guild_count=guild_count, guilds=guilds, username=name)
 
@@ -94,8 +73,15 @@ async def dashboard_server(guild_id):
     if guild is None:
         return redirect(f'https://discord.com/oauth2/authorize?&client_id={config.client_id}&scope=bot&permissions='
                         f'8&guild_id={guild_id}&response_type=code&redirect_uri={config.discord_redirect_uri}')
-    return guild["name"]
+    return str(guild)
+
+
+@app.route("/logout")
+async def logout():
+    discord.revoke()
+    return redirect("/")
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    asyncio.get_event_loop().run_until_complete(mongo.initiate_mongo())
+    app.run(debug=config.debug)

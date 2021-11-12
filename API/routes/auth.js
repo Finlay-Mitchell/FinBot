@@ -108,13 +108,13 @@ router.get('/', async ({ query }, response) => {
 
 	if (code) {
 		try {
-			const oauthResult = await fetch('https://discord.com/api/oauth2/token', { // Change to https://discord.com/api/v8
+			const oauthResult = await fetch('https://discord.com/api/v8/oauth2/token', { // Change to https://discord.com/api/v8
 				method: 'POST',
 				body: new URLSearchParams({
 					client_id: config.config.ClientId,
 					client_secret: config.config.ClientSecret,
 					code,
-					grant_type: 'authorization_code',
+					grant_type: "authorization_code",
 					redirect_uri: `http://localhost:3000/api/auth/`,
 					scope: 'identify',
 				}),

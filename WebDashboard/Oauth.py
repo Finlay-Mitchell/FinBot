@@ -18,7 +18,8 @@
 #             "Content-Type": "application/x-www-form-urlencoded"
 #         }
 #         # access_token = requests.post(url=config.discord_token_url, data=payload).json()
-#         access_token = requests.post('%s/oauth2/token' % config.discord_api_endpoint, data=payload, headers=headers).json()
+#         access_token = requests.post('%s/oauth2/token' % config.discord_api_endpoint, data=payload,
+#         headers=headers).json()
 #         return access_token.get("access_token")
 # 
 #     @staticmethod

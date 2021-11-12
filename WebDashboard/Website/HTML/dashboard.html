@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Dashboard</title>
-    <link rel="stylesheet" type="text/css" href="static/index.css" />
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='CSS/dashboard.css') }}">
   </head>
   <body>
     <h1>Coding Bot Dashboard!</h1>
@@ -16,12 +16,9 @@
         <div class="card">
           <a href="/dashboard/{{guild.id}}">
             {% if guild.icon_url is not none %}
-            <img src="{{guild.icon_url}}" class="{{guild.class_color}}" />
+            <img src="{{guild.icon_url}}" class="{{guild.class_color}} img-rounded" />
             {% else %}
-            <img
-              src="https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png"
-              class="{{guild.class_color}}"
-            />
+            <img src="{{ url_for('static', filename='Media/322c936a8c8be1b803cd94861bdfa868.png') }}" class="{{guild.class_color}}"/>
             {% endif %}
           </a>
           <br />
@@ -30,5 +27,12 @@
         {% endfor %}
       </section>
     </div>
+
+    <form method="post" action="dashboard.html">
+
+      <input type="submit" value="Encrypt" name="Encrypt"/>
+      <input type="submit" value="Decrypt" name="Decrypt" />
+
+</form>
   </body>
 </html>
