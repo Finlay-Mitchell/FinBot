@@ -1,0 +1,26 @@
+*
+{
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+*:focus {
+  outline: 0 !important;
+}
+
+html
+{
+    scroll-behavior: smooth;
+}
+
+body
+{
+    background-color: #252627 !important;
+}
+
+.picker .card img {
+    width:10%;
+    display: flex;
+    border-radius: 50%;
+}

@@ -33,7 +33,7 @@ class Lyrics(commands.Cog):
             await paginator.start()
 
     @commands.command()
-    async def lyricSearch(self, ctx, *, lyrics):
+    async def lyricsearch(self, ctx, *, lyrics):
         song = self.Genius.get_track_by_lyrics(lyrics)
         author = self.Genius.get_track(song['title'])
 

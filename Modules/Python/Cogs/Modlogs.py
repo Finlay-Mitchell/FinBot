@@ -1,14 +1,15 @@
+import datetime
+import traceback
+
 import discord
 from discord.ext import commands
 import mysql.connector
-
-import datetime
-import traceback
 
 from main import FinBot
 from Data.config import data
 from Checks.permission_check import logs_perms
 from Handlers.pagination_handler import Paginator
+from Data import config
 
 
 class Modlogs(commands.Cog):
@@ -26,8 +27,10 @@ class Modlogs(commands.Cog):
     async def modlogs(self, ctx, *, user: discord.Member = None):
         connection = None
         cursor = None
+
         try:
             logstr = ""
+
             if user is not None:
                 connection = self.auth()
                 cursor = connection.cursor()
@@ -53,12 +56,15 @@ class Modlogs(commands.Cog):
                 await ctx.reply(embed=self.bot.create_error_embed("Please mention a user"))
 
         except Exception as ex:
-            print(ex)
+            if config.debug:
+                print(ex)
+
             await ctx.reply(f"Can you like, stop writing awful code please?\n {ex}\n\n{traceback.format_exc()}")
 
         finally:
             if connection is not None and connection.is_connected():
                 connection.close()
+
                 if cursor is not None:
                     cursor.close()
 

@@ -1,8 +1,4 @@
-import discord
-from discord.ext import commands
-
 import aiohttp
-import asyncio
 import secrets
 
 from Handlers.minecraft_handler import *
@@ -18,8 +14,9 @@ class Minecraft(commands.Cog):
     async def bw_stats(self, ctx, arg):
         async with aiohttp.ClientSession() as session:
             uuid = await mc_uuid(arg, session)
+
             if uuid is None:
-                ctx.reply(embed=self.bot.create_error_embed(title="Minecraft User Not found"))
+                ctx.reply(embed=self.bot.create_error_embed("Minecraft User Not found"))
                 return
             else:
                 random_string = secrets.token_urlsafe(16).replace("-", "")
@@ -42,27 +39,29 @@ class Minecraft(commands.Cog):
             async with aiohttp.ClientSession() as session:
                 for username in args:
                     futures.append(asyncio.create_task(bw_info(username, session)))
-                compare_stats = await asyncio.gather(*futures)
-            if not all(compare_stats):
-                await ctx.reply(embed=self.bot.create_error_embed("**Player either does not exist or has not played  enough"
-                                                              " bedwars**"))
-                return
-            embed = discord.Embed(title="Bedwars Statistics Comparison", color=0x0d0d77)
-            embed.set_author(name="{} Vs {}".format(args[0], args[1]))
-            embed.add_field(name="Kills", value="{}".format(str(compare_stats[0]['kills'])), inline=True)
-            embed.add_field(name="\u200b", value="\u200b", inline=True)
-            embed.add_field(name="Kills", value="{}".format(compare_stats[1]['kills']), inline=True)
-            embed.add_field(name="Deaths", value="\n {}".format(compare_stats[0]['deaths'], inline=True))
-            embed.add_field(name="\u200b", value="\u200b", inline=True)
-            embed.add_field(name="Deaths", value="{}".format(compare_stats[1]['deaths'], inline=True))
-            embed.add_field(name="Wins ", value=("{} ".format(compare_stats[0]['wins'], inline=True)))
-            embed.add_field(name="\u200b", value="\u200b", inline=True)
-            embed.add_field(name="Wins ", value=("{} ".format(compare_stats[1]['wins'], inline=True)))
-            embed.add_field(name="Kill/Death ratio", value="{}".format(compare_stats[0]['fkd']), inline=True)
-            embed.add_field(name="\u200b", value="\u200b", inline=True)
-            embed.add_field(name="Kill/Death ratio", value="{}".format(compare_stats[1]['fkd']), inline=True)
-            await ctx.reply(embed=embed)
 
+                compare_stats = await asyncio.gather(*futures)
+
+            if not all(compare_stats):
+                await ctx.reply(embed=self.bot.create_error_embed("**Player either does not exist or has not played "
+                                                                  "enough bedwars**"))
+                return
+
+            embed = discord.Embed(title="Bedwars Statistics Comparison", color=0x0d0d77)
+            embed.set_author(name=f"{args[0]} Vs {args[1]}")
+            embed.add_field(name="Kills", value=f"{str(compare_stats[0]['kills'])}", inline=True)
+            embed.add_field(name="\u200b", value="\u200b", inline=True)
+            embed.add_field(name="Kills", value=f"{compare_stats[1]['kills']}", inline=True)
+            embed.add_field(name="Deaths", value=f"\n {compare_stats[0]['deaths']}", inline=True)
+            embed.add_field(name="\u200b", value="\u200b", inline=True)
+            embed.add_field(name="Deaths", value=f"{compare_stats[1]['deaths']}", inline=True)
+            embed.add_field(name="Wins ", value=f"{compare_stats[0]['wins']} ", inline=True)
+            embed.add_field(name="\u200b", value="\u200b", inline=True)
+            embed.add_field(name="Wins ", value=f"{compare_stats[1]['wins']} ", inline=True)
+            embed.add_field(name="Kill/Death ratio", value=f"{compare_stats[0]['fkd']}", inline=True)
+            embed.add_field(name="\u200b", value="\u200b", inline=True)
+            embed.add_field(name="Kill/Death ratio", value=f"{compare_stats[1]['fkd']}", inline=True)
+            await ctx.reply(embed=embed)
         else:
             await ctx.reply(embed=self.bot.create_error_embed("**Not correct amount or arguments given**"))
             return
