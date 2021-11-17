@@ -10,26 +10,25 @@ const routes = require("./routes");
 var port = process.env.PORT || 3000;
 var app = express();
 app.use(express.json())
+const messages = require("./database/schemas/messages");
 
 
 app.get('/', (request, response) => {
     response.status(200).send(`${discord.lastmessage()}`)
 });
 
-app.get('/status', (request, response) => {
-    response.status(200).send('Working')
-});
-
-app.get('/botstats', (request, response) => {
-     response.header('Access-Control-Allow-Origin', '*');
-     var person = {
-        guildcount: discord.ServerCount(),
-        usercount: discord.UserCount(),
-        channelcount: discord.ChannelCount(),
-        messagecount: discord.GetMessages()
-      };
-    response.status(200).send(person);
-});
+// app.get('/botstats', async (request, response) => {
+//      response.header('Access-Control-Allow-Origin', '*');
+//      var person = {
+//         guildcount: discord.ServerCount(),
+//         usercount: discord.UserCount(),
+//         channelcount: discord.ChannelCount(),
+//         messagecount: await messages.count({}).exec(),
+//         deletedmessagecount: await messages.count({deleted: true}).exec(),
+//         remainingmessages: await messages.count({deleted: false}).exec()
+//       };
+//     response.status(200).send(person);
+// });
 
 mongoose.connect(`mongodb://localhost:27017/FinBot`, {
     useNewUrlParser: true,

@@ -1,0 +1,67 @@
+.light-theme
+{
+    background-color: white !important; 
+}
+
+.light-theme .card 
+{
+    background-color: white !important; 
+}
+
+.light-theme footer hr 
+{
+    border: 2px solid lightgray;
+}
+
+.light-theme .underline-section hr 
+{
+    background-color: lightgrey;
+}
+
+.light-theme footer button 
+{
+    background-color: white;
+}
+
+.light-theme .card-text *
+{
+    color: black !important;
+}
+
+.light-theme .container .card .card-title
+{
+  color: black;
+}
+
+.light-theme .statssection * 
+{
+    color: black;
+}
+
+.light-theme .card .card-body .card-title 
+{
+    color: darkblue;
+}
+
+.light-theme .col-sm-9 h2
+{
+    color: black !important;
+}
+
+.light-theme .container .col-sm-9 h1
+{
+    color: black !important;
+}
+
+.light-theme .col-sm-9 ip 
+{
+    color: orchid !important;
+}
+
+.light-theme .dropdown-toggle {
+    color: black !important;
+}
+
+.light-theme .container-fluid .dropdown .dropdown-menu {
+    background-color: white !important;
+  }
