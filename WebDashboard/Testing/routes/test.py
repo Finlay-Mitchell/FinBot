@@ -1,50 +1,38 @@
-import asyncio
-
-from quart import Quart, render_template, request, session, redirect, url_for
 from quart_discord import DiscordOAuth2Session
+from quart import render_template, redirect, url_for
 from discord.ext import ipc
 
+from main import app
 from Data import config
-import mongo
+from . import blueprint
 
-app = Quart(__name__, template_folder="Website/HTML", static_folder="Website")
-app.url_map.strict_slashes = False  # This means that a URL holding an extra "/" at the end won't cause a 404.
 
+discord = DiscordOAuth2Session(app)  # figure out why this isn't working.
 ipc_client = ipc.Client(secret_key="Swas")
 
-app.config["SECRET_KEY"] = "testing"
-app.config["DISCORD_CLIENT_ID"] = config.client_id
-app.config["DISCORD_CLIENT_SECRET"] = config.client_secret
-app.config["DISCORD_REDIRECT_URI"] = config.discord_redirect_uri
-discord = DiscordOAuth2Session(app)
 
-
-@app.route("/")
+@blueprint.route("/")
 async def home():
+    print("tried")
     return await render_template("index.html", authorized=await discord.authorized, discord=discord)
 
 
-# @app.route("/")
-# async def home():
-#     return await render_template("index.html", authorized=await discord.authorized)
-
-
-@app.route("/login")
+@blueprint.route("/login")
 async def login():
     return await discord.create_session()
 
 
-@app.route("/callback")
+@blueprint.route("/callback")
 async def callback():
     try:
         await discord.callback()
     except Exception:
         pass
 
-    return redirect(url_for("dashboard"))
+    return redirect(url_for("routing.dashboard"))
 
 
-@app.route("/dashboard")
+@blueprint.route("/dashboard", strict_slashes=False)
 async def dashboard():
     if not await discord.authorized:
         return redirect(url_for("login"))
@@ -66,7 +54,7 @@ async def dashboard():
     return await render_template("dashboard.html", guild_count=guild_count, guilds=guilds, username=name)
 
 
-@app.route("/dashboard/<int:guild_id>")
+@blueprint.route("/dashboard/<int:guild_id>")
 async def dashboard_server(guild_id):
     if not await discord.authorized:
         return redirect(url_for("login"))
@@ -78,12 +66,7 @@ async def dashboard_server(guild_id):
     return str(guild)
 
 
-@app.route("/logout")
+@blueprint.route("/logout")
 async def logout():
     discord.revoke()
     return redirect("/")
-
-
-if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(mongo.initiate_mongo())
-    asyncio.run(app.run_task(debug=config.debug))
