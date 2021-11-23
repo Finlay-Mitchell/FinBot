@@ -31,6 +31,7 @@ using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
 using System.Drawing;
 using QRCoder;
+using MongoDB.Bson.Serialization;
 
 namespace FinBot.Modules
 {
@@ -1384,40 +1385,27 @@ namespace FinBot.Modules
             return null;
         }
 
+
+        readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+
+
         /// <summary>
         /// Gets the number of elements in a query result.
         /// </summary>
         /// <param name="guildId">The Id of the guild to get the channel of.</param>
         /// <returns>A string of a number for how many results there are.</returns>
-        private string GetQueryCount(ulong guildId, ulong chanId)
+        private long GetQueryCount(ulong guildId, ulong chanId)
         {
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
-
             try
             {
-                conn.Open();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipeLogs WHERE guildId = {guildId} AND chanId = {chanId}", conn);
-                MySqlDataReader reader = cmd.ExecuteReader();
-                int count = 0;
-
-                while(reader.Read())
-                {
-                    count++;
-                }
-
-                conn.Close();
-                return count.ToString();
+                IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                return messages.CountDocuments(new BsonDocument { { "guildId", guildId.ToString() }, { "channelId", chanId.ToString() }, { "deleted", true } });
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
-                return "err";
-            }
-
-            finally
-            {
-                conn.Close();
+                return 0;
             }
         }
 
@@ -1425,45 +1413,41 @@ namespace FinBot.Modules
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Snipe(int num = 0)
         {
-            await Context.Channel.TriggerTypingAsync();
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.Title = "Sniped message";
-            eb.Description = "Gathering message...";
-            IUserMessage msg = await Context.Message.ReplyAsync("", false, eb.Build());
-            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
-
-            if(num != 0)
+            if (num != 0)
             {
                 num = num - 1;
             }
 
             try
             {
-                conn.Open();
-                MySqlCommand cmd = new MySqlCommand($"SELECT * FROM snipelogs WHERE guildId = {Context.Guild.Id} AND chanId = {Context.Channel.Id} ORDER BY MessageTimestamp DESC LIMIT {num}, 1", conn);
-                MySqlDataReader reader = cmd.ExecuteReader();
-                EmbedBuilder b = new EmbedBuilder();
-                string username;
-                ulong uId;
-                SocketGuildUser user;
+                IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                await Context.Channel.TriggerTypingAsync();
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.Title = "Sniped message";
+                eb.Description = "Gathering message...";
+                IUserMessage msg = await Context.Message.ReplyAsync("", false, eb.Build());
 
-                while (reader.Read())
+                if (num >= GetQueryCount(Context.Guild.Id, Context.Message.Channel.Id))
                 {
-                    b.Title = "Sniped message";
-                    b.Description = (string)reader[0];
-                    b.WithFooter($"{Global.UnixTimeStampToDateTime(reader.GetDouble(1))}");
-                    user = (SocketGuildUser)Context.Message.Author;
-                    username = "";
-                    uId = Convert.ToUInt64(reader[4]);
+                    await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are only {GetQueryCount(Context.Guild.Id, Context.Message.Channel.Id)} deleted messages in the database for this channel.", false, Color.Red));
+                    return;
+                }
 
-                    if (Context.Guild.GetUser(uId) == null || Context.Guild.GetUser(uId).GetType() == typeof(SocketUnknownUser))
+                IFindFluent<BsonDocument, BsonDocument> message = messages.Find(new BsonDocument { { "guildId", Context.Guild.Id.ToString() }, { "channelId", Context.Channel.Id.ToString() }, { "deleted", true } }).Sort(new BsonDocument { { "deletedTimestamp", -1 } }).Limit(1).Skip(num);
+
+                foreach (BsonDocument document in message.ToList())
+                {
+                    string username = "";
+                    SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+
+                    if (Context.Guild.GetUser(Convert.ToUInt64(document.GetValue("discordId"))) == null || Context.Guild.GetUser(Convert.ToUInt64(document.GetValue("discordId"))).GetType() == typeof(SocketUnknownUser))
                     {
-                        username = $"<@{uId}>";
+                        username = $"<@{document.GetValue("discordId")}>";
                     }
 
                     else
                     {
-                        user = Context.Guild.GetUser(uId);
+                        user = Context.Guild.GetUser(Convert.ToUInt64(document.GetValue("discordId")));
 
                         if (user.Nickname != null)
                         {
@@ -1481,41 +1465,91 @@ namespace FinBot.Modules
                         Name = username,
                         IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
                     };
-                    b.WithAuthor(Author);
-                    b.Color = Color.Red;
-                }
+                    eb.WithAuthor(Author);
+                    BsonDocument previousMessage = await messages.Find(new BsonDocument { { "guildId", Context.Guild.Id.ToString() }, { "channelId", Context.Channel.Id.ToString() }, { "deleted", false }, 
+                        { "createdTimestamp", new BsonDocument { { "$gte", document.GetValue("createdTimestamp") } } } }).Limit(1).FirstOrDefaultAsync();
+                    string URLs = "";
+                    string attachments = document?.GetValue("attachments").ToJson();
 
-                conn.Close();
-                await Global.ModifyMessage(msg, b);
+                    if(attachments != null)
+                    {
+                        List<string> attachmentArray = JsonConvert.DeserializeObject<string[]>(attachments).ToList();
+
+                        foreach(string attachmentURL in attachmentArray)
+                        {
+                            URLs += $"\n{attachmentURL}";
+                        }
+                    }
+
+                    string embedContent = "";
+                    string embedTitle = "";
+                    string description = "";
+                    string embedFields = "";
+                    string content = "";
+                    string footer = "";
+                    BsonDocument[] embeds = document.GetValue("embeds").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+
+                    if (embeds.Count() > 0)
+                    {
+                        foreach (BsonDocument embed in embeds)
+                        {
+                            description = string.IsNullOrEmpty(embed.GetValue("description").ToString()) ? "" : embed.GetValue("description").ToString();
+                            content = "";
+                            footer = string.IsNullOrEmpty(embed.GetValue("footer").ToString()) ? "" : embed.GetValue("footer").ToString();
+                            BsonDocument[] fields = embed.GetValue("fields").AsBsonArray.Select(y => y.AsBsonDocument).ToArray();
+                            BsonDocument[] titleFields = embed.GetValue("title").AsBsonArray.Select(z => z.AsBsonDocument).ToArray();
+
+                            foreach (BsonDocument title in titleFields)
+                            {
+                                if (!string.IsNullOrEmpty(title.GetValue("url").ToString()))
+                                {
+                                    embedTitle = $"**[{title.GetValue("url")}]({title.GetValue("value")})**";
+                                }
+
+                                else
+                                {
+                                    embedTitle = $"**{title.GetValue("value")}**";
+                                }
+                            }
+
+                            foreach (BsonDocument field in fields)
+                            {
+                                embedFields += $"**{field.GetValue("name")}**\n{field.GetValue("value")}\n";
+                            }
+
+                            embedContent = $"{embedTitle}\n\n{description}\n{embedFields}\n{footer}";
+
+                            if (!string.IsNullOrEmpty(embed.GetValue("image").ToString()))
+                            {
+                                eb.ImageUrl = embed.GetValue("image").ToString();
+                            }
+
+                            eb.Color = string.IsNullOrEmpty(embed.GetValue("colour").ToString()) ? Color.Default : new Color(Convert.ToUInt32(embed.GetValue("colour")));
+                        }
+
+                        eb.Description = embedContent;
+                    }
+                    
+                    else
+                    {
+                        eb.Description = document.GetValue("content").ToString();
+                    }
+
+                    eb.AddField("_ _", $"[The previous message](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{previousMessage.GetValue("_id")})", true);
+
+                    if (!string.IsNullOrEmpty(document.GetValue("replyingTo").ToString()))
+                    {
+                        eb.AddField("_ _", $"[The message that was replied too](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{document.GetValue("replyingTo")})", true);
+                    }
+                    
+                    await Global.ModifyMessage(msg, eb);
+                    await msg.ModifyAsync(x => { x.Content = $"{content}\n{URLs}"; });
+                }
             }
 
             catch (Exception ex)
             {
-                if(ex.Message.Contains("50035"))
-                {
-                    string ElemCount = GetQueryCount(Context.Guild.Id, Context.Channel.Id);
-                
-                    if (ElemCount == "err")
-                    {
-                        await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are not that many deleted messages in the database for this channel.", false, Color.Red));
-                        return;
-                    }
-
-                    await Global.ModifyMessage(msg, Global.EmbedMessage("Error", $"There are only {ElemCount} deleted messages in the database for this channel.", false, Color.Red));
-                    return;
-                }
-
-                if (ex.Message.GetType() != typeof(NullReferenceException))
-                {
-                    EmbedBuilder eeb = new EmbedBuilder();
-                    eeb.WithAuthor(Context.User);
-                    eeb.WithTitle("Error getting info from database:");
-                    eeb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
-                    eeb.WithCurrentTimestamp();
-                    eeb.WithColor(Color.Red);
-                    eeb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
-                    await Global.ModifyMessage(msg, eeb);
-                }
+                Global.ConsoleLog(ex.ToString());
             }
         }
 

@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System;
 using MySql.Data.MySqlClient;
-using System.Text.RegularExpressions;
 using System.Linq;
-using System.Collections.Generic;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using System.Collections.Generic;
+using Discord.Rest;
 
 namespace FinBot.Services
 {
@@ -19,6 +19,7 @@ namespace FinBot.Services
         private readonly DiscordShardedClient _discord;
         private readonly CommandService _commands;
         readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+
 
         public LoggingService(ILogger<LoggingService> logger, DiscordShardedClient discord, CommandService commands)
         {
@@ -31,7 +32,70 @@ namespace FinBot.Services
             _discord.ShardReady += OnShardReady;
             _discord.MessageReceived += OnLogMessage;
             _discord.MessageDeleted += OnMessageDelete;
+            _discord.MessageReceived += LogExperience;
             _discord.MessageReceived += OnMessageReceived;
+            _discord.MessageUpdated += OnMessageUpdate;
+            _discord.MessagesBulkDeleted += OnPurge;
+        }
+
+        private async Task OnPurge(IReadOnlyCollection<Cacheable<IMessage, ulong>> arg1, Cacheable<IMessageChannel, ulong> arg2)
+        {
+            try
+            {
+                IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                SocketUserMessage message;
+                SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
+                string messageContent = "";
+
+                foreach (Cacheable<IMessage, ulong> msg in arg1)
+                {
+                    message = (SocketUserMessage)await msg.GetOrDownloadAsync();
+
+                    if(msg.HasValue)
+                    {
+                        messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
+                    }
+
+                    if(message == null)
+                    {
+                        return;
+                    }
+
+                    messageContent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
+                    _logger.LogDebug($"[BULK DELETED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{sGC.Name}] -> [{messageContent}]");
+                }
+
+                return;
+
+            }
+            catch(Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
+        }
+
+        private async Task OnMessageUpdate(Cacheable<IMessage, ulong> before, SocketMessage after, ISocketMessageChannel arg3)
+        {
+            try
+            {
+                IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                IMessage message = await before.GetOrDownloadAsync();
+                messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)before.Id } }, new BsonDocument { { "$push", new BsonDocument { { "edits", new BsonDocument { { "content", message.Content }, 
+                    { "updatedTimestamp", (decimal)Global.ConvertToTimestamp(after.EditedTimestamp.Value.DateTime) } } } } }, { "$set", new BsonDocument { { "content", after.Content } } } });
+
+                if(before.HasValue)
+                {
+                    SocketGuildChannel sGC = (SocketGuildChannel)arg3;
+                    _logger.LogDebug($"[UPDATED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{arg3.Name}]: [{message.Content}] -> [{after.Content}]");
+                }
+
+                return;
+            }
+
+            catch (Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
         }
 
         /// <summary>
@@ -63,39 +127,9 @@ namespace FinBot.Services
                 }
             }
 
-            catch(Exception ex)
-            {
-                await arg.Channel.SendMessageAsync(ex.Message);
-                Global.ConsoleLog(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Adds data to the snipelogs database.
-        /// </summary>
-        /// <param name="type">The option for what kind of interaction is made with the database.</param>
-        /// <param name="conn">The connection string to the database.</param>
-        /// <param name="content">The content to append to the database.</param>
-        /// <param name="message">The message that we're appending.</param>
-        /// <param name="socketGuildChannel">The channel where the message was deleted.</param>
-        private async Task AddToSnipe(MySqlConnection conn, string content, SocketUserMessage message, SocketGuildChannel socketGuildChannel)
-        {
-            try
-            {
-                long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
-
-                if (message == null)
-                {
-                    return;
-                }
-
-                MySqlCommand cmd = new MySqlCommand($"INSERT INTO SnipeLogs(message, MessageTimestamp, guildId, chanId, author) VALUES('{content}', {Now}, {socketGuildChannel.Guild.Id}, {socketGuildChannel.Id}, {message.Author.Id})", conn);
-                cmd.ExecuteNonQuery();
-            }
-
             catch (Exception ex)
             {
-                await message.Channel.SendMessageAsync(ex.Message);
+                await arg.Channel.SendMessageAsync(ex.Message);
                 Global.ConsoleLog(ex.Message);
             }
         }
@@ -136,7 +170,7 @@ namespace FinBot.Services
         /// Handles levelling and XP for users when they send a message.
         /// </summary>
         /// <param name="arg">The message which was sent.</param>
-        public async Task OnMessageReceived(SocketMessage arg)
+        public async Task LogExperience(SocketMessage arg)
         {
             if (arg.Author.IsBot || arg.Channel.GetType() == typeof(SocketDMChannel))
             {
@@ -211,7 +245,7 @@ namespace FinBot.Services
                         }
                     }
 
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Global.ConsoleLog(ex.Message);
                     }
@@ -258,6 +292,45 @@ namespace FinBot.Services
             }
         }
 
+        public async Task OnMessageReceived(SocketMessage message)
+        {
+            SocketGuildChannel sGC = (SocketGuildChannel)message.Channel;
+            IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+            BsonArray attachments = new BsonArray();
+            BsonArray embeds = new BsonArray();
+            BsonArray embedFields = new BsonArray();
+            BsonArray title = new BsonArray();
+
+            foreach (Attachment attachment in message.Attachments)
+            {
+                attachments.Add(attachment.ProxyUrl);
+            }
+
+            foreach (Embed embed in message.Embeds)
+            {
+                foreach (EmbedField field in embed.Fields)
+                {
+                    embedFields.Add(new BsonDocument { { "name", field.Name }, { "value", field.Value } });
+                }
+
+                title.Add(new BsonDocument { { "value", string.IsNullOrEmpty(embed.Title) ? "" : embed.Title }, { "url", string.IsNullOrEmpty(embed.Url) ? "" : embed.Url } });
+                embeds.Add(new BsonDocument { { "title", title}, { "description", string.IsNullOrEmpty(embed.Description) ? "" : embed.Description }, { "fields", embedFields }, 
+                    { "footer", string.IsNullOrEmpty(embed.Footer.ToString()) ? "" : embed.Footer.ToString() }, { "video", string.IsNullOrEmpty(embed.Video.ToString()) ? "" : embed.Video.ToString() }, 
+                    { "image", string.IsNullOrEmpty(embed.Image.ToString()) ? "" : embed.Image.ToString() }, { "colour", string.IsNullOrEmpty(embed.Color.ToString()) ? "" : embed.Color.Value.RawValue.ToString() } });
+            }
+
+            string reference = "";
+
+            if (message.Reference != null)
+            {
+                reference = message.Reference.MessageId.ToString();
+            }
+
+            messages.InsertOne(new BsonDocument { { "_id", (decimal)message.Id }, { "discordId",message.Author.Id.ToString() }, { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" },
+                    { "guildId", sGC.Guild.Id.ToString() }, { "channelId", sGC.Id.ToString() }, { "createdTimestamp",  (decimal)Global.ConvertToTimestamp(message.CreatedAt.DateTime) }, { "content", message.Content },
+                    { "attachments", attachments }, { "embeds", embeds }, {  "deleted", false }, { "replyingTo", reference } });
+        }
+
         /// <summary>
         /// Handles building the snipe embed for a deleted message & logs it to the console.
         /// </summary>
@@ -267,96 +340,37 @@ namespace FinBot.Services
         {
             try
             {
-                SocketUserMessage author = (SocketUserMessage)await msg.GetOrDownloadAsync();
+                SocketUserMessage message = (SocketUserMessage)await msg.GetOrDownloadAsync();
                 SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
-                string messagecontent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
 
                 if (msg.HasValue)
                 {
-                    if (author.Embeds.Count > 0)
-                    {
-                        string fields = "";
-                        List<string> content = new List<string>();
-                        IEmbed message = author.Embeds.First();
-                        EmbedBuilder embed = message.ToEmbedBuilder();
-
-                        if (embed.Fields.Count > 0)
-                        {
-                            foreach (EmbedFieldBuilder field in embed.Fields)
-                            {
-                                fields += $"**{field.Name}**\n{field.Value}\n";
-                            }
-                        }
-
-                        content.Add(string.IsNullOrEmpty(embed.Title) ? "" : $"**{embed.Title}**");
-                        content.Add(string.IsNullOrEmpty(embed.Description) ? "" : embed.Description);
-                        fields = string.IsNullOrEmpty(fields) ? "" : $"\n{fields}";
-                        content.Add(string.IsNullOrEmpty(author.Content) ? "" : author.Content);
-                        content.Add(string.IsNullOrEmpty(embed.Footer.Text) ? "" : embed.Footer.Text);
-                        messagecontent = $"{content[2]}\n{content[0]}\n\n{content[1]}\n{fields}\n{content[3]}";
-                    }
+                    IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                    messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
                 }
 
-                MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
-
-                try
-                {
-                    long Now = Global.ConvertToTimestamp(DateTimeOffset.Now.UtcDateTime);
-
-                    if (messagecontent.Contains("'"))
-                    {
-                        messagecontent = Regex.Replace(messagecontent, "'", "\"");
-                    }
-
-                    conn.Open();
-                    await AddToSnipe(conn, messagecontent, author, sGC);
-                    conn.Close();
-                }
-
-                catch (Exception ex)
-                {
-                    if (ex.Message.GetType() != typeof(NullReferenceException))
-                    {
-                        EmbedBuilder eb = new EmbedBuilder();
-                        eb.WithAuthor(author.Author);
-                        eb.WithTitle("Error logging deleted message:");
-                        eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
-                        eb.WithCurrentTimestamp();
-                        eb.WithColor(Color.Red);
-                        eb.WithFooter("Please DM the bot \"support <issue>\" about this error and the developers will look at your ticket");
-                        await author.Channel.SendMessageAsync("", false, eb.Build());
-                        return;
-                    }
-
-                    Global.ConsoleLog(ex.Message);
-                }
-
-                finally
-                {
-                    conn.Close();
-                }
-
-                if (author == null)
+                if(message == null)
                 {
                     return;
                 }
-
-                string logMessage = $"[DELETED]User: [{author.Author.Username}]<->[{author.Author.Id}] Discord Server: [{sGC.Guild.Name}/{arg2}] -> [{messagecontent}]";
+                
+                string messageContent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
+                string logMessage = $"[DELETED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{sGC.Name}] -> [{messageContent}]";
                 _logger.LogDebug(logMessage);
                 return;
             }
 
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Global.ConsoleLog(ex.Message);
             }
         }
 
-        /// <summary>
-        /// Logs the message and some basic information about it to the console.
-        /// </summary>
-        /// <param name="arg">The message to log.</param>
-        private Task OnLogMessage(SocketMessage arg)
+    /// <summary>
+    /// Logs the message and some basic information about it to the console.
+    /// </summary>
+    /// <param name="arg">The message to log.</param>
+    private Task OnLogMessage(SocketMessage arg)
         {
             if (arg.Channel.GetType() == typeof(SocketTextChannel))
             {

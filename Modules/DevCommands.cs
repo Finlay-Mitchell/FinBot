@@ -410,19 +410,23 @@ namespace FinBot.Modules
         [RequireDeveloper]
         public async Task GPe(params string[] args)
         {
-            //Doesn't work amazingly, but somewhat does.
-            string joined = string.Join(" ", Context.Message.Content.Replace("```cs", "").Replace("```", "").Split(' ').Skip(1));
-            Script<object> create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq").WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
-                        Assembly.GetAssembly(typeof(DiscordWebhookClient)), Assembly.GetExecutingAssembly()).WithImports("Discord", "Discord.WebSocket", "Discord.Commands"), typeof(ShardedCommandContext));
-
+            ////Doesn't work amazingly, but somewhat does.
+            string joined = string.Join(" ", Context.Message.Content.Replace("```cs", "").Replace("```", "").Replace(" ", "").Replace("dev.execute", ""));//.Split(' ').Skip(1));
+            //Script<object> create = CSharpScript.Create(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq").WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)),
+            //            Assembly.GetAssembly(typeof(DiscordWebhookClient)), Assembly.GetExecutingAssembly()).WithImports("Discord", "Discord.WebSocket", "Discord.Commands"));
             try
             {
-                ScriptState<object> state = await create.RunAsync(Context);
+                //ScriptState<object> state = await create.RunAsync(create, globals: new DevCommands(_services));
 
-                if (state.ReturnValue == null)
-                {
-                    await Context.Message.AddReactionAsync(Emote.Parse("<a:tick:859032462410907649>"));
-                }
+                //if (state.ReturnValue == null)
+                //{
+                //    await Context.Message.AddReactionAsync(Emote.Parse("<a:tick:859032462410907649>"));
+                //}
+
+                await Context.Message.ReplyAsync((string)await CSharpScript.EvaluateAsync(joined, ScriptOptions.Default.WithImports("System", "System.Threading.Tasks", "System.Linq")
+                    .WithReferences(Assembly.GetAssembly(typeof(EmbedBuilder)), Assembly.GetAssembly(typeof(DiscordWebhookClient)), Assembly.GetExecutingAssembly()).WithImports("Discord", "Discord.Commands", "Discord.WebSocket"), 
+                    globals: new DevCommands(_services)));
+                
             }
 
             catch (CompilationErrorException cee)

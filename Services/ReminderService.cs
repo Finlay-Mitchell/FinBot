@@ -140,7 +140,7 @@ namespace FinBot.Services
 
                 if (!read)
                 {
-                    await chan.SendMessageAsync($"Set a reminder for {message} for {duration}");
+                    await chan.SendMessageAsync($"Set a reminder with message \"{message}\" for {duration}");
                 }
 
                 conn.Close();
