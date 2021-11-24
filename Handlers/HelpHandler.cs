@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FinBot.Handlers
@@ -47,6 +48,8 @@ namespace FinBot.Handlers
                 }
             };
             string guildPrefix = await Global.DeterminePrefix(Context);
+            guildPrefix = guildPrefix.Replace("`", "\\`").Replace("__", "\\__").Replace("~~", "\\~~").Replace("```", "\\```");
+            //guildPrefix = Regex.Replace(guildPrefix, @"`|~~|__|``````|```|\*{2,3}", $"\\");
             string description = null;
             PreconditionResult result;
 

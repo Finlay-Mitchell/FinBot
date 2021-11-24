@@ -53,7 +53,8 @@ namespace FinBot.Services
 
                     if(msg.HasValue)
                     {
-                        messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
+                        messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, 
+                            { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
                     }
 
                     if(message == null)
@@ -80,14 +81,69 @@ namespace FinBot.Services
             {
                 IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
                 IMessage message = await before.GetOrDownloadAsync();
-                messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)before.Id } }, new BsonDocument { { "$push", new BsonDocument { { "edits", new BsonDocument { { "content", message.Content }, 
-                    { "updatedTimestamp", (decimal)Global.ConvertToTimestamp(after.EditedTimestamp.Value.DateTime) } } } } }, { "$set", new BsonDocument { { "content", after.Content } } } });
+                BsonArray embeds = new BsonArray();
 
-                if(before.HasValue)
+                if (after.Embeds.Count > 0)
+                {
+                    Embed afterEmbed = (Embed)message.Embeds.First();
+                    BsonDocument updateDocument = new BsonDocument();
+                    BsonArray title = new BsonArray();
+                    string url = "";
+                    BsonArray fields = new BsonArray();
+                    int count = 0;
+                    string fieldName = "";
+                    string fieldValue = "";
+
+                    foreach(Embed embed in after.Embeds)
+                    {
+                        if (embed.Url != null && embed.Url != null)
+                        {
+                            if (embed.Url != afterEmbed.Url)
+                            {
+                                url = embed.Url;
+                            }
+                        }
+
+                        foreach (EmbedField field in embed.Fields)
+                        {
+                            count++;
+                            fieldName = "";
+                            fieldValue = "";
+
+                            if (count >= afterEmbed.Fields.Count())
+                            {
+                                fields.Add(new BsonDocument { { "name", field.Name }, { "value", field.Value } });
+                            }
+
+                            else
+                            {
+                                if (field.Name != afterEmbed.Fields[count - 1].Name)
+                                {
+                                    fieldName = embed.Fields[count - 1].Name;
+                                }
+
+                                if (field.Value != afterEmbed.Fields[count - 1].Value)
+                                {
+                                    fieldValue = embed.Fields[count - 1].Value;
+                                }
+
+                                fields.Add(new BsonDocument { { "name", string.IsNullOrEmpty(fieldName) ? "" : fieldName }, { "value", string.IsNullOrEmpty(fieldValue) ? "" : fieldValue } });
+                            }
+                        }
+
+                        title.Add(new BsonDocument { { "value", embed.Title != afterEmbed.Title ? embed.Title : "" }, { "url", url } });
+                        embeds.Add(new BsonDocument { { "title", title }, { "description", embed.Description != afterEmbed.Description ? embed.Description : "" }, { "fields", fields } });
+                    }
+                }
+
+                if (before.HasValue)
                 {
                     SocketGuildChannel sGC = (SocketGuildChannel)arg3;
                     _logger.LogDebug($"[UPDATED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{arg3.Name}]: [{message.Content}] -> [{after.Content}]");
                 }
+
+                messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)before.Id } }, new BsonDocument { { "$push", new BsonDocument { { "edits", new BsonDocument { { "content", message.Content },
+                    { "updatedTimestamp", (decimal)Global.ConvertToTimestamp(after.EditedTimestamp.Value.DateTime) }, { "embeds", embeds } } } } }, { "$set", new BsonDocument { { "content", after.Content } } } });
 
                 return;
             }

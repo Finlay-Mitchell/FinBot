@@ -1475,8 +1475,15 @@ namespace FinBot.Modules
                     {
                         List<string> attachmentArray = JsonConvert.DeserializeObject<string[]>(attachments).ToList();
 
-                        foreach(string attachmentURL in attachmentArray)
+                        foreach (string attachmentURL in attachmentArray)
                         {
+                            //WebClient wc = new WebClient();
+                            //byte[] bytes = wc.DownloadData(attachmentURL);
+                            //MemoryStream ms = new MemoryStream(bytes);
+                            //Bitmap bmp = new Bitmap(ms);
+                            //System.Drawing.Image img = bmp;
+                            //ms = new MemoryStream(Global.ImageToByteArray(img));
+                            //await Context.Message.Channel.SendFileAsync(ms, $"{username}-{attachmentURL}-{GenerateRandom()}");
                             URLs += $"\n{attachmentURL}";
                         }
                     }
@@ -1541,13 +1548,127 @@ namespace FinBot.Modules
                     {
                         eb.AddField("_ _", $"[The message that was replied too](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{document.GetValue("replyingTo")})", true);
                     }
-                    
+
+                    eb.Footer = new EmbedFooterBuilder()
+                    {
+                        Text = $"Message sent at: {Global.UnixTimeStampToDateTime(Convert.ToUInt64(document.GetValue("createdTimestamp")))}\nMessage deleted at: {Global.UnixTimeStampToDateTime(Convert.ToUInt64(document.GetValue("deletedTimestamp")))}"
+                    };
+                    eb.WithCurrentTimestamp();
+
                     await Global.ModifyMessage(msg, eb);
                     await msg.ModifyAsync(x => { x.Content = $"{content}\n{URLs}"; });
                 }
             }
 
             catch (Exception ex)
+            {
+                Global.ConsoleLog(ex.ToString());
+            }
+        }
+
+        [Command("edits")]
+        public async Task edits(params string[] args)
+        {
+            try
+            {
+                string referencedMessage = Context.Message.Reference?.ToString() ?? null;
+
+                if (referencedMessage == null)
+                {
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error!", "Please reply to a message for this command.", false, Color.Red).Build());
+                    return;
+                }
+
+                IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                BsonDocument messageDocument = await messages.Find(new BsonDocument { { "_id", (decimal)Context.Message.Reference.MessageId } }).FirstOrDefaultAsync();
+                BsonDocument[] editsDocument = messageDocument.GetValue("edits").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+
+                if (editsDocument.Count() == 0)
+                {
+                    await Context.Message.ReplyAsync("", false, Global.EmbedMessage("Error!", "This message has no edits.", false, Color.Red).Build());
+                    return;
+                }
+
+                BsonDocument[] embeds = editsDocument[0].GetValue("embeds").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+                IMessage msg = await Context.Message.Channel.GetMessageAsync(Context.Message.Reference.MessageId.Value);
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.Title = "Getting message edits...";
+                eb.Description = "Getting edits for message";
+                eb.Color = Color.Orange;
+                IUserMessage message = await Context.Message.ReplyAsync("", false, eb.Build());
+                eb.Author = new EmbedAuthorBuilder()
+                {
+                    Name = $"{msg.Author.Username}#{msg.Author.Discriminator}",
+                    IconUrl = msg.Author.GetAvatarUrl() ?? msg.Author.GetDefaultAvatarUrl()
+                };
+                eb.WithCurrentTimestamp();
+                eb.Color = Color.Green;
+                uint count = 0;
+                eb.Description = "";
+
+                if (embeds.Count() > 0)
+                {
+                    string embedTitle = "";
+                    eb.Title = "Edits for emebd";
+
+                    foreach (BsonDocument edit in editsDocument)
+                    {
+                        BsonDocument[] embed = edit.GetValue("embeds").AsBsonArray.Select(y => y.AsBsonDocument).ToArray();
+
+                        foreach(BsonDocument e in embed)
+                        {
+                            count++;
+                            BsonDocument[] titleFields = e.GetValue("title").AsBsonArray.Select(z => z.AsBsonDocument).ToArray();
+
+                            foreach (BsonDocument title in titleFields)
+                            {
+                                if (!string.IsNullOrEmpty(title.GetValue("url").ToString()))
+                                {
+                                    embedTitle = $"[{title.GetValue("url")}]({title.GetValue("value")})";
+                                }
+
+                                else
+                                {
+                                    embedTitle = $"{title.GetValue("value")}";
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(embedTitle))
+                            {
+                                eb.Description += $"Original title: {embedTitle}";
+                            }
+
+                            if (!string.IsNullOrEmpty(e.GetValue("description").ToString()))
+                            {
+                                eb.Description += $"\nOriginal description: {e.GetValue("description")}";
+                            }
+
+                            BsonDocument[] fields = e.GetValue("fields").AsBsonArray.Select(y => y.AsBsonDocument).ToArray();
+
+                            foreach (BsonDocument field in fields)
+                            {
+                                eb.AddField($"Edit {count} ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(e.GetValue("updatedTimestamp")))}):", $"{field.GetValue("name")}\n{field.GetValue("value")}\n");
+                            }
+                        }
+                    }
+                }
+
+                else
+                {
+                    eb.Title = "Edits for message";
+
+                    foreach (BsonDocument edit in editsDocument)
+                    {
+                        count++;
+                        eb.AddField($"Edit {count} ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(edit.GetValue("updatedTimestamp")))}):", $"{edit.GetValue("content")}");
+                    }
+                }
+
+                eb.AddField("_ _", $"[Jump to message](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{Context.Message.Reference.MessageId})", true);
+                await Global.ModifyMessage(message, eb);
+            }
+
+            catch(Exception ex)
             {
                 Global.ConsoleLog(ex.ToString());
             }
