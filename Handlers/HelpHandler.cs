@@ -48,8 +48,6 @@ namespace FinBot.Handlers
                 }
             };
             string guildPrefix = await Global.DeterminePrefix(Context);
-            guildPrefix = guildPrefix.Replace("`", "\\`").Replace("__", "\\__").Replace("~~", "\\~~").Replace("```", "\\```");
-            //guildPrefix = Regex.Replace(guildPrefix, @"`|~~|__|``````|```|\*{2,3}", $"\\");
             string description = null;
             PreconditionResult result;
 

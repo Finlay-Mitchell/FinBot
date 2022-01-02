@@ -1,21 +1,26 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Discord.Interactions;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using System.Linq;
+using ISlashResult = Discord.Interactions.IResult;
+using IResult = Discord.Commands.IResult;
+using System.Reflection;
 
 namespace FinBot.Handlers
 {
-    class CommandHandler : ModuleBase<ShardedCommandContext>
+     class CommandHandler : ModuleBase<ShardedCommandContext>
     {
         private CommandService _commands;
         private DiscordShardedClient _client;
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
+        private InteractionService _interactioncommands;
 
         public CommandHandler(IServiceProvider services)
         {
@@ -23,8 +28,39 @@ namespace FinBot.Handlers
             _client = services.GetRequiredService<DiscordShardedClient>();
             _commands = services.GetRequiredService<CommandService>();
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
-
+            _interactioncommands = services.GetRequiredService<InteractionService>();
             _client.MessageReceived += HandleCommandAsync;
+        }
+
+        public async Task InitializeAsync()
+        {
+            await _interactioncommands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+
+            _client.InteractionCreated += HandleInteractionAsync;
+
+            _interactioncommands.SlashCommandExecuted += OnSlashCommandExecuted;
+        }
+
+        private async Task OnSlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, ISlashResult arg3)
+        {
+        }
+
+        private async Task HandleInteractionAsync(SocketInteraction arg)
+        {
+            try
+            {
+                ShardedInteractionContext context = new ShardedInteractionContext(_client, arg);
+                //await context.Interaction.DeferAsync();
+                await _interactioncommands.ExecuteCommandAsync(context, _services);
+            }
+
+            catch(Exception ex)
+            {
+                if(arg.Type == InteractionType.ApplicationCommand)
+                {
+                    await arg.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+                }
+            }
         }
 
         /// <summary>

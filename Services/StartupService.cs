@@ -2,6 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -44,8 +46,19 @@ namespace FinBot.Services
                 throw new Exception("Invalid token");
             }
 
+            await InitMongo();
             await _discord.StartAsync();
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+        }
+
+        public async Task InitMongo()
+        {
+            MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
+            IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+            IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
+
+            var options = new CreateIndexOptions { Unique = false };
+            await messages.Indexes.CreateOneAsync("{ deleted: 1 }", options);
         }
     }
 }

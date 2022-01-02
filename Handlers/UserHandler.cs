@@ -98,11 +98,11 @@ namespace FinBot.Handlers
         /// Sends a message to the welcome/leave channel, if specified, when the user leaves.
         /// </summary>
         /// <param name="arg">The user who left the guild.</param>
-        public async Task HandleGoodbyeAsync(SocketGuildUser arg)
+        public async Task HandleGoodbyeAsync(SocketGuild guild, SocketUser user)
         {
             try
             {
-                ulong GuildWelcomeChannel = Convert.ToUInt64(GetWelcomeChannel(arg.Guild).Result);
+                ulong GuildWelcomeChannel = Convert.ToUInt64(GetWelcomeChannel(guild).Result);
 
                 if (GuildWelcomeChannel == 0)
                 {
@@ -113,7 +113,7 @@ namespace FinBot.Handlers
                 {
                     try
                     {
-                        await arg.SendMessageAsync("", false, new EmbedBuilder()
+                        await user.SendMessageAsync("", false, new EmbedBuilder()
                         {
                             Title = $"***Sorry to see you leave!***",
                             Description = "Sorry to see you leave the server, Hope to see you soon!",
@@ -129,20 +129,20 @@ namespace FinBot.Handlers
                         Title = $"***Sorry to see you go!***",
                         Footer = new EmbedFooterBuilder()
                         {
-                            IconUrl = arg.GetAvatarUrl(),
-                            Text = $"{arg.Username}#{arg.Discriminator}"
+                            IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
+                            Text = $"{user.Username}#{user.Discriminator}"
                         },
-                        Description = $"{arg} has left the server, goodbye",
+                        Description = $"{user} has left the server, goodbye",
                         Color = Color.Green
                     };
-                    SocketTextChannel Channel = (SocketTextChannel)arg.Guild.GetChannel(GuildWelcomeChannel);
+                    SocketTextChannel Channel = (SocketTextChannel)guild.GetChannel(GuildWelcomeChannel);
                     await Channel.SendMessageAsync("", false, eb.Build());
                 }
             }
 
             catch(Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Leave Message - " + ex.Message);
             }
         }
 
@@ -188,7 +188,7 @@ namespace FinBot.Handlers
 
             catch(Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Welcome Message - " + ex.Message);
             }
         }
     }

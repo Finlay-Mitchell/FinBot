@@ -1,6 +1,6 @@
-﻿using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
+﻿using FinBot.Services;
+using FinBot.Handlers;
+
 using System;
 using System.Threading.Tasks;
 using System.IO;
@@ -9,29 +9,31 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Net;
-using Newtonsoft.Json;
-using FinBot.Handlers;
-using Color = Discord.Color;
-using Discord.Rest;
-using WikiDotNet;
 using System.Text;
 using System.Net.Http.Headers;
 using System.Diagnostics;
 using System.Web;
+using System.Data;
+
+using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
+using Discord.Rest;
+using Color = Discord.Color;
+using Newtonsoft.Json;
+using WikiDotNet;
 using QuickChart;
 using ICanHazDadJoke.NET;
-using System.Data;
 using MySql.Data.MySqlClient;
 using MongoDB.Driver;
 using UptimeSharp;
 using UptimeSharp.Models;
 using SearchResult = Google.Apis.YouTube.v3.Data.SearchResult;
-using FinBot.Services;
 using MongoDB.Bson;
 using Newtonsoft.Json.Linq;
-using System.Drawing;
 using QRCoder;
-using MongoDB.Bson.Serialization;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace FinBot.Modules
 {
@@ -48,7 +50,6 @@ namespace FinBot.Modules
             RedditHandler data = JsonConvert.DeserializeObject<RedditHandler>(resp);
             Regex r = new Regex(@"https:\/\/i.redd.it\/(.*?)\.");
             IEnumerable<Child> childs = data.Data.Children.Where(x => r.IsMatch(x.Data.Url.ToString())); //For some reason, this can still sometimes throw an exception. Not overly concerned since it doesn't cause any issues.
-            SocketTextChannel Chan = Context.Message.Channel as SocketTextChannel;
             IDisposable tp = Context.Channel.EnterTypingState();
 
             if (!childs.Any())
@@ -72,8 +73,8 @@ namespace FinBot.Modules
             }
 
             Random rand = new Random();
-            int count = childs.Count();
             Child post = childs.ToArray()[rand.Next() % childs.Count()];
+            SocketTextChannel Chan = Context.Message.Channel as SocketTextChannel;
 
             if (!(Chan.IsNsfw) && post.Data.over_18)
             {
@@ -108,7 +109,6 @@ namespace FinBot.Modules
             };
             b.AddField("Post info", $"Score: {post.Data.score}\nTotal awards received: {post.Data.total_awards_received}\nurl: [Visit post here](https://reddit.com/{post.Data.permalink})\nCreated at: {Global.UnixTimeStampToDateTime(post.Data.created)}");
             b.WithCurrentTimestamp();
-            await Context.Channel.TriggerTypingAsync();
             await Context.Message.ReplyAsync("", false, b.Build());
             tp.Dispose();
         }
@@ -197,8 +197,8 @@ namespace FinBot.Modules
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task Ping()
         {
-            DateTime before = DateTime.Now;
             await Context.Channel.TriggerTypingAsync();
+            DateTime before = DateTime.Now;
             RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("Pong!");
             DateTime after = DateTime.Now;
             ulong snowflake = (ulong)Math.Round((after - before).TotalSeconds * 1000);
@@ -278,9 +278,7 @@ namespace FinBot.Modules
 
             try
             {
-                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-                IMongoDatabase database = mongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                IMongoCollection<BsonDocument> collection = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("guilds");
                 ulong _id = context.Guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
                 string itemVal = item?.GetValue("blacklistedterms").ToJson();
@@ -395,8 +393,8 @@ namespace FinBot.Modules
             eb.AddField("Boost level", boosttier, true);
             eb.AddField("Number of roles", Context.Guild.Roles.Count, true);
             eb.AddField("Number of channels", $"Text channels: {Context.Guild.TextChannels.Count}\nVoice channels: {Context.Guild.VoiceChannels.Count}\nCategories: {Context.Guild.CategoryChannels.Count}", true);
-            _ = eb.AddField($"VIP perks [{Context.Guild.Features.Count}]", string.IsNullOrEmpty(string.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower()) ? "None" : 
-                string.Join(separator: ", ", values: Context.Guild.Features.ToList().Select(r => r.ToString())).ToLower().Replace("_", " "), true);
+            _ = eb.AddField($"VIP perks [{Context.Guild.Features.Experimental.Count}]", string.IsNullOrEmpty(string.Join(separator: ", ", values: Context.Guild.Features.Experimental.ToList().Select(r => r.ToString())).ToLower()) ? "None" : 
+                string.Join(separator: ", ", values: Context.Guild.Features.Experimental.ToList().Select(r => r.ToString())).ToLower().Replace("_", " "), true);
             eb.WithCurrentTimestamp();
             eb.WithColor(Color.Blue);
             await Context.Message.ReplyAsync("", false, eb.Build());
@@ -562,9 +560,7 @@ namespace FinBot.Modules
 
             try
             {
-                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-                IMongoDatabase database = mongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                IMongoCollection<BsonDocument> collection = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("guilds");
                 ulong _id = context.Guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
                 string itemVal = item?.GetValue("blacklistedterms").ToJson();
@@ -907,7 +903,7 @@ namespace FinBot.Modules
             if (results != null)
             {
                 string videoUrlPrefix = $"https://www.youtube.com/watch?v=";
-                embed.Title = $"YouTube Search For (**{searchFor}**)";
+                embed.Title = $"YouTube Search For: **{searchFor}**";
                 SearchResult thumbFromVideo = results.Where(r => r.Id.Kind == "youtube#video").Take(1).FirstOrDefault();
 
                 if (thumbFromVideo != null)
@@ -940,7 +936,7 @@ namespace FinBot.Modules
                         fullVideoUrl = $"{videoUrlPrefix}{result.Id.VideoId}";
                     }
 
-                    sb.AppendLine($":video_camera: **__{result.Snippet.ChannelTitle}__** -> [**{result.Snippet.Title}**]({fullVideoUrl})\n\n *{description}*\n");
+                    sb.AppendLine($":video_camera: **__{WebUtility.HtmlDecode(result.Snippet.ChannelTitle)}__** -> [**{WebUtility.HtmlDecode(result.Snippet.Title)}**]({fullVideoUrl})\n\n *{WebUtility.HtmlDecode(description)}*\n");
                 }
 
                 embed.Description = sb.ToString();
@@ -1150,6 +1146,7 @@ namespace FinBot.Modules
                 SocketGuildUser user;
                 int spaceCount;
                 string spaces;
+                IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
 
                 while (reader.Read())
                 {
@@ -1162,7 +1159,17 @@ namespace FinBot.Modules
 
                         if (Context.Guild.GetUser((ulong)reader.GetInt64(0)) == null)
                         {
-                            username = $"<@{reader.GetInt64(0)}>";
+                            BsonDocument dbUser = await users.Find(new BsonDocument { { "_id", reader.GetInt64(0).ToString() } }).FirstOrDefaultAsync();
+
+                            if (dbUser == null)
+                            {
+                                username = $"<@{reader.GetInt64(0)}>";
+                            }
+
+                            else
+                            {
+                                username = dbUser.GetValue("discordTag").ToString();
+                            }
                         }
 
                         else
@@ -1439,10 +1446,12 @@ namespace FinBot.Modules
                 {
                     string username = "";
                     SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+                    IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
+                    BsonDocument dbUser = await users.Find(new BsonDocument { { "_id", document.GetValue("discordId") } }).FirstOrDefaultAsync();
 
                     if (Context.Guild.GetUser(Convert.ToUInt64(document.GetValue("discordId"))) == null || Context.Guild.GetUser(Convert.ToUInt64(document.GetValue("discordId"))).GetType() == typeof(SocketUnknownUser))
                     {
-                        username = $"<@{document.GetValue("discordId")}>";
+                        username = dbUser.GetValue("discordTag").ToString();
                     }
 
                     else
@@ -1463,11 +1472,11 @@ namespace FinBot.Modules
                     EmbedAuthorBuilder Author = new EmbedAuthorBuilder()
                     {
                         Name = username,
-                        IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
+                        IconUrl = dbUser.GetValue("avatarURL").ToString()
                     };
                     eb.WithAuthor(Author);
-                    BsonDocument previousMessage = await messages.Find(new BsonDocument { { "guildId", Context.Guild.Id.ToString() }, { "channelId", Context.Channel.Id.ToString() }, { "deleted", false }, 
-                        { "createdTimestamp", new BsonDocument { { "$gte", document.GetValue("createdTimestamp") } } } }).Limit(1).FirstOrDefaultAsync();
+                    BsonDocument previousMessage = await messages.Find(new BsonDocument { { "guildId", Context.Guild.Id.ToString() }, { "channelId", Context.Channel.Id.ToString() }, { "deleted", false },
+                        { "createdTimestamp", new BsonDocument { { "$gte", document.GetValue("createdTimestamp") } } } }).Sort(new BsonDocument { { "createdTimestamp", 1 } }).Limit(1).FirstOrDefaultAsync();
                     string URLs = "";
                     string attachments = document?.GetValue("attachments").ToJson();
 
@@ -1542,7 +1551,8 @@ namespace FinBot.Modules
                         eb.Description = document.GetValue("content").ToString();
                     }
 
-                    eb.AddField("_ _", $"[The previous message](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{previousMessage.GetValue("_id")})", true);
+                    IReadOnlyCollection<IMessage> test = await Context.Channel.GetMessagesAsync(Convert.ToUInt64(previousMessage.GetValue("_id")), Direction.Before, 1).FirstOrDefaultAsync();
+                    eb.AddField("_ _", $"[The previous message](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{test.First().Id})", true);
 
                     if (!string.IsNullOrEmpty(document.GetValue("replyingTo").ToString()))
                     {
@@ -1566,7 +1576,8 @@ namespace FinBot.Modules
             }
         }
 
-        [Command("edits")]
+        [Command("edits"), Summary("Gets the edit history of a referenced message."), Remarks("<reply to desired message> edits"), Alias("messageedits")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task edits(params string[] args)
         {
             try
@@ -1609,7 +1620,9 @@ namespace FinBot.Modules
                 if (embeds.Count() > 0)
                 {
                     string embedTitle = "";
-                    eb.Title = "Edits for emebd";
+                    string editsBuilder = "";
+                    int fieldCount = 0;
+                    eb.Title = "Edits for emebd(Beta)";
 
                     foreach (BsonDocument edit in editsDocument)
                     {
@@ -1647,8 +1660,16 @@ namespace FinBot.Modules
 
                             foreach (BsonDocument field in fields)
                             {
-                                eb.AddField($"Edit {count} ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(e.GetValue("updatedTimestamp")))}):", $"{field.GetValue("name")}\n{field.GetValue("value")}\n");
+                                if(field.GetValue("name") == "" && field.GetValue("value") == "")
+                                {
+                                    continue;
+                                }
+
+                                editsBuilder += $"Field {fieldCount} name: {field.GetValue("name")} | value: {field.GetValue("value")}\n";
+                                fieldCount += 1;
                             }
+
+                            eb.AddField($"Edit {count} ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(edit.GetValue("updatedTimestamp")))}):", editsBuilder);
                         }
                     }
                 }
@@ -1660,7 +1681,16 @@ namespace FinBot.Modules
                     foreach (BsonDocument edit in editsDocument)
                     {
                         count++;
-                        eb.AddField($"Edit {count} ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(edit.GetValue("updatedTimestamp")))}):", $"{edit.GetValue("content")}");
+
+                        if (count == 1)
+                        {
+                            eb.AddField($"Original message ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(edit.GetValue("updatedTimestamp")))}):", $"{edit.GetValue("content")}");
+                        }
+
+                        else
+                        {
+                            eb.AddField($"Edit {count - 1} ({Global.UnixTimeStampToDateTime(Convert.ToUInt64(edit.GetValue("updatedTimestamp")))}):", $"{edit.GetValue("content")}");
+                        }
                     }
                 }
 
@@ -1744,6 +1774,7 @@ namespace FinBot.Modules
                     string Username = "labels: [";
                     string Data = "data: [";
                     SocketGuildUser user = (SocketGuildUser)Context.Message.Author;
+                    IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
 
                     while (reader.Read())
                     {
@@ -1754,7 +1785,17 @@ namespace FinBot.Modules
 
                             if (Context.Guild.GetUser((ulong)reader.GetInt64(0)) == null)
                             {
-                                Username += $"'<@{reader.GetInt64(0)}>', ";
+                                BsonDocument dbUser = await users.Find(new BsonDocument { { "_id", reader.GetInt64(0).ToString() } }).FirstOrDefaultAsync();
+
+                                if (dbUser == null)
+                                {
+                                    Username += $"'<@{reader.GetInt64(0)}>', ";
+                                }
+
+                                else
+                                {
+                                    Username = dbUser.GetValue("discordTag").ToString();
+                                }
                             }
 
                             else
@@ -1791,40 +1832,53 @@ namespace FinBot.Modules
                     Username += "]";
                     Data = Data.Remove(Data.LastIndexOf(','));
                     Data += "]";
+                    WebClient wc = new WebClient();
+                    byte[] bytes;
+                    MemoryStream ms;
 
                     switch (graph[0].ToLower())
                     {
                         case "pie":
                             qc.Config = $"{{type: 'pie', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            bytes = wc.DownloadData(qc.GetUrl());
+                            ms = new MemoryStream(bytes);
+                            await Context.Channel.SendFileAsync(ms, $"guild_stats_pie-{GenerateRandom()}.png");
                             tp.Dispose();
                             break;
 
                         case "bar":
                             qc.Config = $"{{type: 'bar', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            bytes = wc.DownloadData(qc.GetUrl());
+                            ms = new MemoryStream(bytes);
+                            await Context.Channel.SendFileAsync(ms, $"guild_stats_bar-{GenerateRandom()}.png");
                             tp.Dispose();
                             break;
 
                         case "line":
                             qc.Config = $"{{type: 'line', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-                            await Context.Message.ReplyAsync(qc.GetUrl());
-                            tp.Dispose();
+                            bytes = wc.DownloadData(qc.GetUrl());
+                            ms = new MemoryStream(bytes);
+                            await Context.Channel.SendFileAsync(ms, $"guild_stats_line-{GenerateRandom()}.png"); tp.Dispose();
                             break;
 
                         case "doughnut":
+                        case "donut":
                             qc.Config = $"{{type: 'doughnut', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            bytes = wc.DownloadData(qc.GetUrl());
+                            ms = new MemoryStream(bytes);
+                            await Context.Channel.SendFileAsync(ms, $"guild_stats_doughnut-{GenerateRandom()}.png");
                             tp.Dispose();
                             break;
 
                         case "polararea":
                             qc.Config = $"{{type: 'polarArea', data: {{ {Username}, datasets: [{{ label: 'Leaderboard stats for {Context.Guild}', {Data} }}] }}, options: {{ plugins: {{ datalabels: {{ color: '#000000' }} }} }} }}";
-                            await Context.Message.ReplyAsync(qc.GetUrl());
+                            bytes = wc.DownloadData(qc.GetUrl());
+                            ms = new MemoryStream(bytes);
+                            await Context.Channel.SendFileAsync(ms, $"guild_stats_polararea-{GenerateRandom()}.png");
                             tp.Dispose();
                             break;
                         default:
-                            await ReplyAsync("Please only enter \"pie\", \"bar\", \"line\", \"doughnut\" or \"polararea\"");
+                            await ReplyAsync("Please only enter \"pie\", \"bar\", \"line\", \"doughnut/donut\" or \"polararea\"");
                             tp.Dispose();
                             break;
                     }
@@ -2022,34 +2076,54 @@ namespace FinBot.Modules
                                 eb.WithTitle("Getting poll results...");
                                 eb.Color = Color.Orange;
                                 RestUserMessage message = (RestUserMessage)await Context.Message.ReplyAsync("", false, eb.Build());
-                                msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
-                                msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
-                                eb.Title = $"{msg.Embeds.First().Title}";
-                                eb.WithAuthor(Context.Message.Author);
-                                eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
-                                eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
-                                eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
-                                await Global.ModifyMessage(message, eb);
-                                queryConn.Open();
-                                AddToPolls(2, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
-                                queryConn.Close();
-                                tp.Dispose();
+
+                                try
+                                {
+                                    msg.Reactions.TryGetValue(Global.reactions[0], out ReactionMetadata YesReactions);
+                                    msg.Reactions.TryGetValue(Global.reactions[1], out ReactionMetadata NoReactions);
+                                    eb.Title = $"{msg.Embeds.First().Title}";
+                                    eb.WithAuthor(Context.Message.Author);
+                                    eb.WithFooter($"Poll ended at {Context.Message.Timestamp}");
+                                    eb.AddField("✅", $"{YesReactions.ReactionCount - 1}", true);
+                                    eb.AddField("❌", $"{NoReactions.ReactionCount - 1}", true);
+                                    eb.AddField("Results:", $"The poll was {(float)Math.Round((YesReactions.ReactionCount - 1f) / (YesReactions.ReactionCount - 1 + NoReactions.ReactionCount - 1) * 10000) / 100f}% positive.");
+                                    await Global.ModifyMessage(message, eb);
+                                    queryConn.Open();
+                                    AddToPolls(2, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                    queryConn.Close();
+                                    tp.Dispose();
+                                }
+
+                                catch (Exception ex)
+                                {
+                                    if (ex.GetType() == typeof(DivideByZeroException))
+                                    {
+                                        eb.AddField("Results:", $"The poll had zero votes.");
+                                        await Global.ModifyMessage(message, eb);
+                                        queryConn.Open();
+                                        AddToPolls(2, queryConn, msg.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                        queryConn.Close();
+                                        tp.Dispose();
+                                    }
+
+                                    else
+                                    {
+                                        await Context.Message.ReplyAsync($"Error: {ex}");
+                                        queryConn.Open();
+                                        AddToPolls(2, queryConn, Context.Message.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
+                                        queryConn.Close();
+                                        tp.Dispose();
+                                    }
+                                }
+
+                                finally
+                                {
+                                    queryConn.Close();
+                                    tp.Dispose();
+                                }
                             }
 
-                            catch (Exception ex)
-                            {
-                                await Context.Message.ReplyAsync($"Error: {ex}");
-                                queryConn.Open();
-                                AddToPolls(2, queryConn, Context.Message.Id, Context.Guild.Id, Context.Message.Author.Id, "Inactive", Context.Channel.Id);
-                                queryConn.Close();
-                                tp.Dispose();
-                            }
-
-                            finally
-                            {
-                                queryConn.Close();
-                                tp.Dispose();
-                            }
+                            catch { }
                         }
 
                         else
@@ -2183,7 +2257,7 @@ namespace FinBot.Modules
             string json = await response.Content.ReadAsStringAsync();
             dynamic commits = JArray.Parse(json);
             string commit = commits[0].commit.message;
-            string[] title = commit.Split(new string[] { "\n\n" }, 2 , StringSplitOptions.None);
+            string[] title = commit.Split(new string[] { "\n\n" }, 2, StringSplitOptions.None);
             string authorId = commits[0].committer.id;
             string authorName = commits[0].commit.author.name;
             string commitDate = commits[0].commit.author.date;
@@ -2208,7 +2282,7 @@ namespace FinBot.Modules
 
             foreach (RestInviteMetadata invite in invites)
             {
-                if(Context.Guild.VanityURLCode != null)
+                if (Context.Guild.VanityURLCode != null)
                 {
                     RestInviteMetadata vanityURL = await Context.Guild.GetVanityInviteAsync();
                     url = vanityURL.Url;
@@ -2227,7 +2301,7 @@ namespace FinBot.Modules
                 }
             }
 
-            if(url == "")
+            if (url == "")
             {
                 SocketTextChannel channel = Context.Channel as SocketTextChannel;
                 IInviteMetadata invite = await channel.CreateInviteAsync(null, null, false);
@@ -2285,13 +2359,13 @@ namespace FinBot.Modules
                 stringChars[i] = chars[random.Next(chars.Length)];
             }
 
-            return stringChars.ToString();
+            return new string(stringChars);
         }
 
         [Command("weather"), Summary("Gets the weather for a given location"), Remarks("(PREFIX)weather <location>")]
         public async Task Weather([Remainder] string city)
         {
-            if(city == null)
+            if (city == null)
             {
                 await Context.Message.ReplyAsync("Please enter a valid city name.");
             }
@@ -2369,7 +2443,7 @@ namespace FinBot.Modules
             IUserMessage delmsg = await Context.Channel.SendMessageAsync($"Created your suggestion in {suggestionschannel.Mention}");
             await msg.AddReactionsAsync(Global.reactions.ToArray());
 
-            if(Context.Channel == suggestionschannel)
+            if (Context.Channel == suggestionschannel)
             {
                 await Task.Delay(5000);
                 await delmsg.DeleteAsync();
@@ -2379,8 +2453,70 @@ namespace FinBot.Modules
         /*
          * 
          * BOILERPLACE CODE FOR PYTHON MODULE 
-         * 
          */
+
+
+        [Command("waddle")]
+        public async Task Waddle()
+        {
+            WebClient wc = new WebClient();
+            byte[] bytes = wc.DownloadData("https://cdn.discordapp.com/attachments/592463507124125706/719941828476010606/wqqJzxAeASEAAAAASUVORK5CYII.png");
+            MemoryStream ms = new MemoryStream(bytes);
+            System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+            bytes = wc.DownloadData(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl());
+            ms = new MemoryStream(bytes);
+            System.Drawing.Image img2 = System.Drawing.Image.FromStream(ms);
+            int width = img.Width;
+            int height = img.Height;
+
+            using (img)
+            {
+                using (Bitmap bitmap = new Bitmap(img.Width, img.Height))
+                {
+                    using (Graphics canvas = Graphics.FromImage(bitmap))
+                    {
+                        canvas.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                        canvas.DrawImage(img,
+                                         new Rectangle(0, //100
+                                                       0, //-30
+                                                       width,
+                                                       height),
+                                         new Rectangle(0,
+                                                       0,
+                                                       img.Width,
+                                                       img.Height),
+                                         GraphicsUnit.Pixel);
+
+                        canvas.DrawImage(OvalImage(img2), (img.Width / 2) - (img2.Width / 2) + 5, (img.Height / 2) - img2.Height - 65, 120, 110);
+                        canvas.Save();
+                    }
+
+                    try
+                    {
+                        img = bitmap;
+                        ms = new MemoryStream(Global.ImageToByteArray(img));
+                        await Context.Channel.SendFileAsync(ms, $"waddle-{GenerateRandom()}-{Context.User.Discriminator}.png");
+                    }
+
+                    catch (Exception ex) { }
+                }
+            }
+        }
+
+        public static System.Drawing.Image OvalImage(System.Drawing.Image img)
+        {
+            Bitmap bmp = new Bitmap(img.Width, img.Height);
+            using (GraphicsPath gp = new GraphicsPath())
+            {
+                gp.AddEllipse(0, 0, img.Width, img.Height);
+                using (Graphics gr = Graphics.FromImage(bmp))
+                {
+                    gr.SetClip(gp);
+                    gr.DrawImage(img, Point.Empty);
+                }
+            }
+            return bmp;
+        }
 
         [Command("chatbot"), Summary("ALlows you to interact with the AI chatbot"), Remarks("(PREFIX)chatbot")]
         public Task Chatbot(params string[] arg)

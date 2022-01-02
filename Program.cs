@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Discord.Interactions;
 using FinBot.Handlers;
 using FinBot.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,19 +64,46 @@ namespace FinBot
                         GatewayIntents.GuildMessageReactions |
                         GatewayIntents.GuildMessageTyping |
                         GatewayIntents.GuildWebhooks |
+                        GatewayIntents.GuildPresences |
+                        GatewayIntents.GuildScheduledEvents |
                         GatewayIntents.DirectMessageReactions |
                         GatewayIntents.DirectMessages |
-                        GatewayIntents.DirectMessageTyping |
-                        GatewayIntents.GuildPresences,
+                        GatewayIntents.DirectMessageTyping,
                     LogLevel = LogSeverity.Error,
                     MessageCacheSize = 1000,
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
                 {
-                    DefaultRunMode = RunMode.Async,
+                    DefaultRunMode = Discord.Commands.RunMode.Async,
                     LogLevel = LogSeverity.Verbose,
                     CaseSensitiveCommands = false,
-                    ThrowOnError = false
+                    ThrowOnError = false,
+                }))
+                .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordShardedClient>(), new InteractionServiceConfig
+                {
+                    LogLevel = LogSeverity.Verbose,
+                    ThrowOnError = false,
+                }))
+                .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+                {
+                    GatewayIntents =
+                        GatewayIntents.GuildMembers |
+                        GatewayIntents.GuildMessages |
+                        GatewayIntents.GuildIntegrations |
+                        GatewayIntents.Guilds |
+                        GatewayIntents.GuildBans |
+                        GatewayIntents.GuildVoiceStates |
+                        GatewayIntents.GuildEmojis |
+                        GatewayIntents.GuildInvites |
+                        GatewayIntents.GuildMessageReactions |
+                        GatewayIntents.GuildMessageTyping |
+                        GatewayIntents.GuildWebhooks |
+                        GatewayIntents.DirectMessageReactions |
+                        GatewayIntents.DirectMessages |
+                        GatewayIntents.DirectMessageTyping |
+                        GatewayIntents.GuildPresences,
+                    LogLevel = LogSeverity.Error,
+                    MessageCacheSize = 1000
                 }))
                 .AddSingleton<StartupService>()
                 .AddSingleton<CommandHandler>()
@@ -96,12 +124,38 @@ namespace FinBot
                 .AddSingleton<TwitchService>()
                 .AddSingleton<AFKHandler>()
                 .AddSingleton<SuggestionHandler>()
+                .AddSingleton<MessageCountHandler>()
+                .AddSingleton<AutoSlowmode>()
+                .AddSingleton<GuildDeleteHandler>()
                 .AddSingleton<LoggingService>();
             ConfigureServices(services);
             ServiceProvider serviceProvider = services.BuildServiceProvider();
             serviceProvider.GetRequiredService<LoggingService>();
             await serviceProvider.GetRequiredService<StartupService>().StartAsync();
             serviceProvider.GetRequiredService<CommandHandler>();
+
+            DiscordShardedClient client = serviceProvider.GetRequiredService<DiscordShardedClient>();
+            InteractionService commands = serviceProvider.GetRequiredService<InteractionService>();
+
+            client.ShardReady += async (DiscordSocketClient arg) =>
+            {
+                if (true)
+                {
+                    //foreach (ulong guildID in Global.DevServers)
+                    //{
+                        Global.ConsoleLog($"Registered commands to guild - {725886999646437407}");
+                        await commands.RegisterCommandsToGuildAsync(725886999646437407, true); //Registers commands to guild of `guildID` - instant registration.
+                    //}
+                }
+
+                else
+                {
+                    await commands.RegisterCommandsGloballyAsync(true); //Registers commands to all guilds the bot is in - can take up to a few hours for commands to be fully integrated.
+                }
+            };
+
+            await serviceProvider.GetRequiredService<CommandHandler>().InitializeAsync(); // Initialises interaction services.
+
             await Task.Delay(-1); //This keeps our application running.
         }
 

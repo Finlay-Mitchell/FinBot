@@ -80,7 +80,7 @@ def get_bot():
     async def prefix(ctx, new_prefix: str) -> None:
         test = motor.motor_asyncio.AsyncIOMotorClient(config.mongo_connection_uri, serverSelectionTimeoutMS=5000)
 
-        test.client.finlay.guilds.update_one({"_id": ctx.guild.id}, {"$set": {"prefix": new_prefix}}, upsert=True)
+        test.finlay.guilds.update_one({"_id": ctx.guild.id}, {"$set": {"prefix": new_prefix}}, upsert=True)
 
         await ctx.send("Hi")
 

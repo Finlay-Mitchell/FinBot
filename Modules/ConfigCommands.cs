@@ -664,5 +664,70 @@ namespace FinBot.Modules
                 }.Build());
             }
         }
+
+        [Command("autoslowmode"), Summary("Enables bot autoslowmode to max 3msg's/sec per channel."), Remarks("(PREFIX)autoslowmode <on/off/true/false>")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        public async Task AutoSlowmode([Remainder] string toggle)
+        {
+            SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
+
+            if (GuildUser.GuildPermissions.ManageChannels || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            {
+                bool enabled = false;
+
+                if (toggle == "true" || toggle == "on")
+                {
+                    enabled = true;
+                }
+
+                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
+                IMongoDatabase database = mongoClient.GetDatabase("finlay");
+                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                ulong _id = Context.Guild.Id;
+                BsonDocument guildDocument = await MongoHandler.FindById(collection, _id);
+
+                if (guildDocument == null)
+                {
+                    MongoHandler.InsertGuild(_id);
+                }
+
+                BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+
+                if (guild == null)
+                {
+                    BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "autoslowmode", enabled } };
+                    collection.InsertOne(document);
+                }
+
+                else
+                {
+                    collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), Builders<BsonDocument>.Update.Set("levelling", enabled));
+                }
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("Success");
+                embed.WithDescription($"Successfully set autoslowmode to {enabled}!");
+                embed.WithColor(Color.Green);
+                embed.WithAuthor(Context.Message.Author);
+                embed.WithCurrentTimestamp();
+                await Context.Message.ReplyAsync("", false, embed.Build());
+            }
+
+            else
+            {
+                await Context.Channel.TriggerTypingAsync();
+                await Context.Message.Channel.SendMessageAsync("", false, new EmbedBuilder()
+                {
+                    Color = Color.LightOrange,
+                    Title = "You don't have Permission!",
+                    Description = $"Sorry, {Context.Message.Author.Mention} but you do not have permission to use this command.",
+                    Footer = new EmbedFooterBuilder()
+                    {
+                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                        Text = $"{Context.User}"
+                    },
+                }.WithCurrentTimestamp().Build());
+            }
+        }
     }
 }

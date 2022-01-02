@@ -30,6 +30,7 @@ namespace FinBot.Modules
         public DiscordShardedClient _client;
         public IServiceProvider _services;
         IUserMessage UpdateMessage;
+        readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
 
         public DevCommands(IServiceProvider services)
         {
@@ -594,19 +595,19 @@ namespace FinBot.Modules
             }
 
             BsonDocument guild = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+            BsonArray userStatus = new BsonArray().Add(new BsonDocument { { "UserId", (decimal)Context.User.Id }, { "AFKStatus", status } });
 
             if (guild == null)
             {
                 //BsonDocument statusDocument = new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", new BsonArray { new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } } };
-                BsonDocument statusDocument = new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", /*new BsonArray {*/ new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } /*} */};
-                collection.InsertOne(statusDocument);
+                //BsonDocument statusDocument = new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", /*new BsonArray {*/ new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } /*} */};
+
+                collection.InsertOne(new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", new BsonArray(userStatus) } });
             }
 
             else
             {
-                BsonDocument test = new BsonDocument { { "$push", new BsonDocument { { "AFKUsers", new BsonDocument { { Context.Message.Author.Id.ToString(), status } } } } } };
-                BsonDocument testing = new BsonDocument { { "_id", (decimal)_id } };
-                collection.UpdateOne(testing, test);
+                collection.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)_id } }, new BsonDocument { { "$push", new BsonDocument { { "AFKUsers", userStatus } } } });
             }
 
             await Context.Message.ReplyAsync($"Successfully set AFK status to: {status}");
@@ -633,6 +634,214 @@ namespace FinBot.Modules
             }
 
             catch { }
+        }
+
+        [Command("filldb", RunMode = RunMode.Async)]
+        [RequireDeveloper]
+        public async Task filldb (string localchan)
+        {
+            IMongoCollection<BsonDocument> messageDB = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+            IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
+            EmbedBuilder embed = Global.EmbedMessage("Getting messages...", "Generating embed....", false, Color.DarkGreen);
+            IUserMessage msg = await Context.Message.Channel.SendMessageAsync("", false, embed.Build());
+            messageDB.DeleteOne(new BsonDocument { { "_id", (decimal)msg.Id } });
+            long index = 0;
+            BsonArray attachments = new BsonArray();
+            BsonArray embeds = new BsonArray();
+            BsonArray embedFields = new BsonArray();
+            BsonArray title = new BsonArray();
+            SocketGuildChannel sGC;
+            int cI = 0;
+            ulong count = 0;
+
+            try
+            {
+                if (localchan == "localchan")
+                {
+                    ulong lastId = Context.Message.Id;
+                    for (int i = 0; i < int.MaxValue; i++)
+                    {
+                        IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(fromMessageId: lastId, dir: Direction.Before, limit: 50).FlattenAsync();
+
+                        foreach (IMessage message in messages)
+                        {
+                            index++;
+                            BsonDocument s = await messageDB.Find(new BsonDocument { { "_id", (decimal)message.Id } }).FirstOrDefaultAsync();
+
+                            if (s == null || string.IsNullOrEmpty(s.ToString()))
+                            {
+                                sGC = (SocketGuildChannel)message.Channel;
+
+                                foreach (Attachment attachment in message.Attachments)
+                                {
+                                    attachments.Add(attachment.ProxyUrl);
+                                }
+
+                                foreach (Embed e in message.Embeds)
+                                {
+                                    foreach (EmbedField field in e.Fields)
+                                    {
+                                        embedFields.Add(new BsonDocument { { "name", field.Name }, { "value", field.Value } });
+                                    }
+
+                                    title.Add(new BsonDocument { { "value", string.IsNullOrEmpty(e.Title) ? "" : e.Title }, { "url", string.IsNullOrEmpty(e.Url) ? "" : e.Url } });
+                                    embeds.Add(new BsonDocument { { "title", title}, { "description", string.IsNullOrEmpty(e.Description) ? "" : e.Description }, { "fields", embedFields },
+                                { "footer", string.IsNullOrEmpty(e.Footer.ToString()) ? "" : e.Footer.ToString() }, { "video", string.IsNullOrEmpty(e.Video.ToString()) ? "" : e.Video.ToString() },
+                                { "image", string.IsNullOrEmpty(e.Image.ToString()) ? "" : e.Image.ToString() }, { "colour", string.IsNullOrEmpty(e.Color.ToString()) ? "" : e.Color.Value.RawValue.ToString() } });
+                                }
+
+                                string reference = "";
+
+                                if (message.Reference != null)
+                                {
+                                    reference = message.Reference.MessageId.ToString();
+                                }
+
+                                BsonDocument user = await users.Find(new BsonDocument { { "_id", message.Author.Id.ToString() } }).FirstOrDefaultAsync();
+
+                                if (user == null)
+                                {
+                                    users.InsertOne(new BsonDocument { { "_id", message.Author.Id.ToString() }, { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" },
+                                { "avatarURL", message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl() } });
+                                }
+
+                                else
+                                {
+                                    if (user.GetValue("discordTag") != $"{message.Author.Username}#{message.Author.Discriminator}")
+                                    {
+                                        users.FindOneAndUpdate(new BsonDocument { { "_id", message.Author.Id.ToString() } }, new BsonDocument { { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" } });
+                                    }
+
+                                    if (user.GetValue("avatarURL").ToString() != message.Author.GetAvatarUrl())
+                                    {
+                                        users.FindOneAndUpdate(new BsonDocument { { "_id", message.Author.Id.ToString() } }, new BsonDocument { { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" }, { "avatarURL", message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl() } });
+                                    }
+                                }
+
+                                messageDB.InsertOne(new BsonDocument { { "_id", (decimal)message.Id }, { "discordId",message.Author.Id.ToString() }, { "guildId", sGC.Guild.Id.ToString() }, { "channelId", sGC.Id.ToString() },
+                                { "createdTimestamp",  (decimal)Global.ConvertToTimestamp(message.CreatedAt.DateTime) }, { "content", string.IsNullOrEmpty(message.Content) ? "" : message.Content},
+                                { "attachments", attachments }, { "embeds", embeds }, {  "deleted", false }, { "replyingTo", reference } });
+
+                                embed.Description = $"{message.Author}({message.Author.Id})\n{message.Id}\nAdded to database\nItem #{count}";
+                                lastId = message.Id;
+                            }
+
+                            else
+                            {
+                                embed.Description = $"{message.Author}({message.Author.Id})\n{message.Id}\nAlready exists within database or couldn't fetch message.\nItem #{count}";
+                            }
+
+                            embed.Footer = new EmbedFooterBuilder()
+                            {
+                                Text = $"Getting message {index}/{messages.Count()}"
+                            };
+
+                            await Global.ModifyMessage(msg, embed);
+                        }
+                    }
+                }
+
+                else
+                {
+
+                    foreach (SocketTextChannel channel in (from c in Context.Guild.Channels where c.GetType() == typeof(SocketTextChannel) select c).ToList())
+                    {
+                        cI++;
+                        index = 0;
+                        IEnumerable<IMessage> messages = await channel.GetMessagesAsync(int.MaxValue).FlattenAsync();
+
+                        foreach (IMessage message in messages)
+                        {
+                            index++;
+                            count++;
+                            BsonDocument s = await messageDB.Find(new BsonDocument { { "_id", (decimal)message.Id } }).FirstOrDefaultAsync();
+
+                            if (s == null || string.IsNullOrEmpty(s.ToString()))
+                            {
+                                sGC = (SocketGuildChannel)message.Channel;
+
+                                foreach (Attachment attachment in message.Attachments)
+                                {
+                                    attachments.Add(attachment.ProxyUrl);
+                                }
+
+                                foreach (Embed e in message.Embeds)
+                                {
+                                    foreach (EmbedField field in e.Fields)
+                                    {
+                                        embedFields.Add(new BsonDocument { { "name", field.Name }, { "value", field.Value } });
+                                    }
+
+                                    title.Add(new BsonDocument { { "value", string.IsNullOrEmpty(e.Title) ? "" : e.Title }, { "url", string.IsNullOrEmpty(e.Url) ? "" : e.Url } });
+                                    embeds.Add(new BsonDocument { { "title", title}, { "description", string.IsNullOrEmpty(e.Description) ? "" : e.Description }, { "fields", embedFields },
+                                { "footer", string.IsNullOrEmpty(e.Footer.ToString()) ? "" : e.Footer.ToString() }, { "video", string.IsNullOrEmpty(e.Video.ToString()) ? "" : e.Video.ToString() },
+                                { "image", string.IsNullOrEmpty(e.Image.ToString()) ? "" : e.Image.ToString() }, { "colour", string.IsNullOrEmpty(e.Color.ToString()) ? "" : e.Color.Value.RawValue.ToString() } });
+                                }
+
+                                string reference = "";
+
+                                if (message.Reference != null)
+                                {
+                                    reference = message.Reference.MessageId.ToString();
+                                }
+
+                                BsonDocument user = await users.Find(new BsonDocument { { "_id", message.Author.Id.ToString() } }).FirstOrDefaultAsync();
+
+                                if (user == null)
+                                {
+                                    users.InsertOne(new BsonDocument { { "_id", message.Author.Id.ToString() }, { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" },
+                                { "avatarURL", message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl() } });
+                                }
+
+                                else
+                                {
+                                    if (user.GetValue("discordTag") != $"{message.Author.Username}#{message.Author.Discriminator}")
+                                    {
+                                        users.FindOneAndUpdate(new BsonDocument { { "_id", message.Author.Id.ToString() } }, new BsonDocument { { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" } });
+                                    }
+
+                                    if (user.GetValue("avatarURL").ToString() != message.Author.GetAvatarUrl())
+                                    {
+                                        users.FindOneAndUpdate(new BsonDocument { { "_id", message.Author.Id.ToString() } }, new BsonDocument { { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" }, { "avatarURL", message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl() } });
+                                    }
+                                }
+
+                                messageDB.InsertOne(new BsonDocument { { "_id", (decimal)message.Id }, { "discordId",message.Author.Id.ToString() }, { "guildId", sGC.Guild.Id.ToString() }, { "channelId", sGC.Id.ToString() },
+                            { "createdTimestamp",  (decimal)Global.ConvertToTimestamp(message.CreatedAt.DateTime) }, { "content", string.IsNullOrEmpty(message.Content) ? "" : message.Content},
+                            { "attachments", attachments }, { "embeds", embeds }, {  "deleted", false }, { "replyingTo", reference } });
+
+                                embed.Description = $"{message.Author}({message.Author.Id})\n{message.Id}\nAdded to database\nChannel: {cI}/{Context.Guild.Channels.Where(x => x.GetType() == typeof(SocketTextChannel)).Count()}({channel.Id})\nItem #{count}";
+                            }
+
+                            else
+                            {
+                                embed.Description = $"{message.Author}({message.Author.Id})\n{message.Id}\nAlready exists within database or couldn't fetch message.\nChannel: {cI}/{Context.Guild.Channels.Where(x => x.GetType() == typeof(SocketTextChannel)).Count()}({channel.Id})\nItem #{count}";
+                            }
+
+                            embed.Footer = new EmbedFooterBuilder()
+                            {
+                                Text = $"Getting message {index}/{messages.Count()} in channel {channel.Name}"
+                            };
+
+                            await Global.ModifyMessage(msg, embed);
+                        }
+                    }
+                }
+
+                embed = Global.EmbedMessage("Completed!", $"The database has been appended with {count} items", false, Color.Green);
+
+                await Global.ModifyMessage(msg, embed);
+
+            }
+
+            catch (Exception ex)
+            {
+                Global.ConsoleLog(ex.ToString());
+                embed.Color = Color.Red;
+                embed.Title = "An error occured:";
+                embed.Description = $"{ex.Message}";
+                await Global.ModifyMessage(msg, embed);
+            }
         }
     }
 }

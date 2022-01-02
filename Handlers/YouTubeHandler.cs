@@ -55,6 +55,17 @@ namespace FinBot.Handlers
             public Thumbnails thumbnails { get; set; }
             public string channelTitle { get; set; }
             public string liveBroadcastContent { get; set; }
+            public contentDetails ContentDetails { get; set; }
+        }
+
+        public class contentDetails
+        {
+            public contentRating ContentRating { get; set; }
+        }
+
+        public class contentRating
+        {
+            public string ytRating { get; set; } // = ytAgeRestricted if it's age restricted
         }
 
         public class Thumbnails

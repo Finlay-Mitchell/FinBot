@@ -27,14 +27,13 @@ async def get_guild_prefix(guild_id) -> str:
     test = motor.motor_asyncio.AsyncIOMotorClient(config.mongo_connection_uri, serverSelectionTimeoutMS=5000)
 
     if test is None:
-        print("1")
         return config.prefix
 
-    guild_document = await find_by_id(test.client.finlay.guilds, guild_id)
+    guild_document = await find_by_id(test.finlay.guilds, guild_id)
     print(guild_document)
 
     if guild_document is None or guild_document.get("prefix") is None:
-        print("2")
+
         return config.prefix
     else:
         return guild_document.get("prefix")

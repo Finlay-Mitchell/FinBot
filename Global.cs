@@ -114,6 +114,14 @@ namespace FinBot
         /// This is the Twitch.tv redirect URL for generating our new access token.
         /// </summary>
         public static string TwitchRedirectURL { get; set; }
+        /// <summary>
+        /// This is how much the autoslowmode incremennts the slowmode value by.
+        /// </summary>
+        public static int SlowModeIncrementValue { get; set; }
+        /// <summary>
+        /// Defines how many messages can be sent on average per second before autoslowmode takes control.
+        /// </summary>
+        public static int MaxMessagesPerSecond { get; set; }
 
         /*
          * Our global variables that we do not read from the config.
@@ -222,6 +230,8 @@ namespace FinBot
             TwitchClientId = data.TwitchClientId;
             TwitchClientSecret = data.TwitchClientSecret;
             TwitchRedirectURL = data.TwitchRedirectURL;
+            SlowModeIncrementValue = data.SlowModeIncrementValue;
+            MaxMessagesPerSecond = data.MaxMessagesPerSecond;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}"; //The connection string for the MySql server.
         }
@@ -256,6 +266,8 @@ namespace FinBot
             public string TwitchClientId { get; set; }
             public string TwitchClientSecret { get; set; }
             public string TwitchRedirectURL { get; set; }
+            public int SlowModeIncrementValue { get; set; }
+            public int MaxMessagesPerSecond { get; set; }
         }
 
         /// <summary>
@@ -341,45 +353,49 @@ namespace FinBot
         /// <returns>A string containing the prefix for the guild.</returns>
         public static async Task<string> DeterminePrefix(SocketCommandContext context)
         {
-            try
-            {
-                /*
-                 * This will be commented out until I fix the prefx command calling an embed whilst using cached prefixes
-                 */
+            //try
+            //{
+            //    /*
+            //     * This will be commented out until I fix the prefx command calling an embed whilst using cached prefixes
+            //     */
 
-                foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
-                {
-                    foreach (KeyValuePair<ulong, string> f in t)
-                    {
-                        if (context.Guild.Id == f.Key)
-                        {
-                            return f.Value;
-                        }
-                    }
-                }
+            //    foreach (Dictionary<ulong, string> t in Global.demandPrefixes)
+            //    {
+            //        foreach (KeyValuePair<ulong, string> f in t)
+            //        {
+            //            if (context.Guild.Id == f.Key)
+            //            {
+            //                return f.Value;
+            //            }
+            //        }
+            //    }
 
-                MongoClient MongoClient = new MongoClient(Mongoconnstr);
-                IMongoDatabase database = MongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
-                BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
-                string itemVal = item?.GetValue("prefix").ToString();
+            //    MongoClient MongoClient = new MongoClient(Mongoconnstr);
+            //    IMongoDatabase database = MongoClient.GetDatabase("finlay");
+            //    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+            //    ulong _id = context.Guild.Id;
+            //    BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
+            //    string itemVal = item?.GetValue("prefix").ToString();
 
-                if (itemVal != null)
-                {
-                    return itemVal;
-                }
+            //    if (itemVal != null)
+            //    {
+            //        itemVal = itemVal.Replace("`", "\\`").Replace("__", "\\__").Replace("~~", "\\~~").Replace("```", "\\```");
+            //        //guildPrefix = Regex.Replace(guildPrefix, @"`|~~|__|``````|```|\*{2,3}", $"\\");
+            //        return itemVal;
+            //    }
 
-                else
-                {
-                    return Prefix;
-                }
-            }
+            //    else
+            //    {
+            //        return Prefix;
+            //    }
+            //}
 
-            catch
-            {
-                return Prefix;
-            }
+            //catch
+            //{
+            //    return Prefix;
+            //}
+
+            return "dev.";
         }
         /// <summary>
         /// Determines whether guild user levelling is enabled or not - if a value is not found or an error occurs, we return "False" to be handled to the user.
@@ -648,6 +664,20 @@ namespace FinBot
             {
                 return "0";
             }
+        }
+
+        public static string GenerateRandom(uint size = 16)
+        {
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            char[] stringChars = new char[size];
+            Random random = new Random();
+
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+
+            return new string(stringChars);
         }
     }
 }

@@ -1815,12 +1815,12 @@ namespace FinBot.Modules
 
         [Command("copyemote"), Summary("Allows you to copy an emote from elsewhere to the guild"), Remarks("(PREFIX)copyemote <emote_id> <guild_id> <new_name> OR (PREFIX)copyemote <emote_url> <new_name>"), Alias("copyemoji", "stealemote", "stealemoji")]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
-        [RequireBotPermission(GuildPermission.ManageEmojis)]
+        [RequireBotPermission(GuildPermission.ManageEmojisAndStickers)]
         public async Task EMDEL(params string[] args)
         {
             SocketGuildUser GuildUser = Context.Guild.GetUser(Context.User.Id);
 
-            if (GuildUser.GuildPermissions.ManageEmojis || Global.DevUIDs.Contains(Context.Message.Author.Id))
+            if (GuildUser.GuildPermissions.ManageEmojisAndStickers || Global.DevUIDs.Contains(Context.Message.Author.Id))
             {
                 string emoji = args[0];
                 string name = "";

@@ -9,7 +9,6 @@ using System.Linq;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using System.Collections.Generic;
-using Discord.Rest;
 
 namespace FinBot.Services
 {
@@ -71,7 +70,7 @@ namespace FinBot.Services
             }
             catch(Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Purge Event - " + ex.Message);
             }
         }
 
@@ -150,7 +149,7 @@ namespace FinBot.Services
 
             catch (Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                //Global.ConsoleLog("Message Update Event - " + ex.Message);
             }
         }
 
@@ -352,6 +351,7 @@ namespace FinBot.Services
         {
             SocketGuildChannel sGC = (SocketGuildChannel)message.Channel;
             IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+            IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
             BsonArray attachments = new BsonArray();
             BsonArray embeds = new BsonArray();
             BsonArray embedFields = new BsonArray();
@@ -382,9 +382,30 @@ namespace FinBot.Services
                 reference = message.Reference.MessageId.ToString();
             }
 
-            messages.InsertOne(new BsonDocument { { "_id", (decimal)message.Id }, { "discordId",message.Author.Id.ToString() }, { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" },
-                    { "guildId", sGC.Guild.Id.ToString() }, { "channelId", sGC.Id.ToString() }, { "createdTimestamp",  (decimal)Global.ConvertToTimestamp(message.CreatedAt.DateTime) }, { "content", message.Content },
-                    { "attachments", attachments }, { "embeds", embeds }, {  "deleted", false }, { "replyingTo", reference } });
+            BsonDocument user = await users.Find(new BsonDocument { { "_id", message.Author.Id.ToString() } }).FirstOrDefaultAsync();
+
+            if(user == null)
+            {
+                users.InsertOne(new BsonDocument { { "_id", message.Author.Id.ToString() }, { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" }, 
+                    { "avatarURL", message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl() } });
+            }
+
+            else
+            {
+                if (user.GetValue("discordTag") != $"{message.Author.Username}#{message.Author.Discriminator}")
+                {
+                    users.FindOneAndUpdate(new BsonDocument { { "_id", message.Author.Id.ToString() } }, new BsonDocument { { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" } });
+                }
+
+                if (user.GetValue("avatarURL").ToString() != message.Author.GetAvatarUrl())
+                {
+                    users.FindOneAndUpdate(new BsonDocument { { "_id", message.Author.Id.ToString() } }, new BsonDocument { { "discordTag", $"{message.Author.Username}#{message.Author.Discriminator}" }, { "avatarURL", message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl() } });
+                }
+            }
+
+            messages.InsertOne(new BsonDocument { { "_id", (decimal)message.Id }, {  "deleted", false }, { "discordId",message.Author.Id.ToString() }, { "guildId", sGC.Guild.Id.ToString() }, { "channelId", sGC.Id.ToString() }, 
+                { "createdTimestamp",  (decimal)Global.ConvertToTimestamp(DateTime.Now) }, { "content", string.IsNullOrEmpty(message.Content) ? "" : message.Content}, 
+                { "attachments", attachments }, { "embeds", embeds }, { "replyingTo", reference } });
         }
 
         /// <summary>
@@ -418,7 +439,7 @@ namespace FinBot.Services
 
             catch (Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Message Delete Event - " + ex.Message);
             }
         }
 

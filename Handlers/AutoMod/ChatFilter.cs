@@ -114,7 +114,7 @@ namespace FinBot.Handlers.AutoMod
 
             catch (Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Chat Filter[blacklisted terms] - " + ex.Message);
             }
         }
 
@@ -199,7 +199,7 @@ namespace FinBot.Handlers.AutoMod
 
             catch(Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Chat Filter[links] - " + ex.Message);
             }
         }
 

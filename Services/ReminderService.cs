@@ -172,6 +172,62 @@ namespace FinBot.Services
             }
         }
 
+        public async static Task SetReminder(SocketGuild guild, SocketUser user, SocketTextChannel chan, DateTime timeSet, string duration, string message, Discord.Interactions.ShardedInteractionContext context)
+        {
+            long currentTime = Global.ConvertToTimestamp(timeSet);
+            TimeSpan time = TimeSpan.FromSeconds(Convert.ToInt64(await Parse_time(duration)));
+            DateTime remindertime = DateTime.Now + time;
+            long reminderTimestamp = Global.ConvertToTimestamp(remindertime);
+            MySqlConnection conn = new MySqlConnection(Global.MySQL.ConnStr);
+            MySqlConnection QueryConn = new MySqlConnection(Global.MySQL.ConnStr);
+
+            try
+            {
+                conn.Open();
+                bool read = false;
+                MySqlCommand cmd1 = new MySqlCommand($"SELECT * FROM Reminders WHERE userId = {user.Id} AND guildId = {guild.Id}", conn);
+                MySqlDataReader reader = (MySqlDataReader)await cmd1.ExecuteReaderAsync();
+
+                while (reader.Read())
+                {
+                    read = true;
+                    await context.Interaction.RespondAsync($"You already have a timer active. Please try again after this has expired or stop the timer by using the stopreminder command.");
+                }
+
+                if (!read)
+                {
+                    await context.Interaction.RespondAsync($"Set a reminder with message \"{message}\" for {duration}");
+                }
+
+                conn.Close();
+                QueryConn.Open();
+                await InsertToDBAsync(0, QueryConn, user.Id, guild.Id, currentTime, reminderTimestamp, message, chan);
+                QueryConn.Close();
+            }
+
+            catch (Exception ex)
+            {
+                //if (ex.Message.GetType() != typeof(NullReferenceException))
+                //{
+                //    EmbedBuilder eb = new EmbedBuilder();
+                //    eb.WithAuthor(user);
+                //    eb.WithTitle("Error setting reminder message:");
+                //    eb.WithDescription($"The database returned an error code:{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n{ex.TargetSite}");
+                //    eb.WithCurrentTimestamp();
+                //    eb.WithColor(Color.Red);
+                //    eb.WithFooter("Please DM the bot ```support <issue>``` about this error and the developers will look at your ticket");
+                //    await chan.SendMessageAsync("", false, eb.Build());
+                //    return;
+                //}
+                Global.ConsoleLog(ex.Message);
+            }
+
+            finally
+            {
+                conn.Close();
+            }
+        }
+
         /// <summary>
         /// Converts a string of how long to mute a user for into seconds, e.g: "1h" will return "3600";
         /// </summary>

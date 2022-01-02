@@ -54,7 +54,37 @@ namespace FinBot.Handlers
                 return "0";
             }
         }
-        
+
+        public async Task HandleUserCount(SocketGuild guild, SocketUser user)
+        {
+            try
+            {
+                ulong MemberCountChannel = Convert.ToUInt64(GetUserCountChannel(guild).Result);
+
+                if (MemberCountChannel == 0)
+                {
+                    return;
+                }
+
+                else
+                {
+                    SocketVoiceChannel channel = guild.GetVoiceChannel(MemberCountChannel);
+                    string msg = $"Total Users: {guild.MemberCount}";
+
+                    if (channel.Name != msg)
+                    {
+                        await channel.ModifyAsync(x => x.Name = msg);
+                    }
+                }
+            }
+
+            catch (Exception ex)
+            {
+                Global.ConsoleLog("Member Count - " + ex.Message);
+                return;
+            }
+        }
+
         /// <summary>
         /// Updates the membercount channel if present.
         /// </summary>
@@ -85,7 +115,7 @@ namespace FinBot.Handlers
 
             catch(Exception ex)
             {
-                Global.ConsoleLog(ex.Message);
+                Global.ConsoleLog("Member Count - " + ex.Message);
                 return;
             }
         }
