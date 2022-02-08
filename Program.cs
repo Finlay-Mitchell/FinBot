@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Serilog;
 using FinBot.Handlers.AutoMod;
 using FinBot.Interactivity;
+using System.IO;
+using System.Text;
 
 namespace FinBot
 {
@@ -143,8 +145,14 @@ namespace FinBot
                 {
                     //foreach (ulong guildID in Global.DevServers)
                     //{
-                        Global.ConsoleLog($"Registered commands to guild - {725886999646437407}");
-                        await commands.RegisterCommandsToGuildAsync(725886999646437407, true); //Registers commands to guild of `guildID` - instant registration.
+                    //    Global.ConsoleLog($"Registered commands to guild - {guildID}");
+                    //    await commands.RegisterCommandsToGuildAsync(guildID, true); //Registers commands to guild of `guildID` - instant registration.
+                    //}
+                    //foreach (ulong guildID in Global.DevServers)
+                    //{
+                        Global.ConsoleLog($"Registered commands to guild - {892556323902881823}");
+                    //await commands.RegisterCommandsToGuildAsync(892556323902881823, true); //Registers commands to guild of `guildID` - instant registration.
+                    await commands.RegisterCommandsToGuildAsync(892556323902881823, true);
                     //}
                 }
 
@@ -155,7 +163,6 @@ namespace FinBot
             };
 
             await serviceProvider.GetRequiredService<CommandHandler>().InitializeAsync(); // Initialises interaction services.
-
             await Task.Delay(-1); //This keeps our application running.
         }
 

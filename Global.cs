@@ -197,6 +197,10 @@ namespace FinBot
         /// This is the Twitch oauth key.
         /// </summary>
         public static string TwitchOauthKey { get; set; }
+        /// <summary>
+        /// This is the list of development servers to register slash commands too.
+        /// </summary>
+        public static List<ulong> DevServers = new List<ulong> { 892556323902881823, 725886999646437407 };
 
         /// <summary>
         /// This reads data from json.config and assigns the values to the variables labeled above.
@@ -636,7 +640,7 @@ namespace FinBot
         /// </summary>
         /// <param name="context"></param>
         /// <returns>a channel Id || 0</returns>
-        public static async Task<string> DetermineSuggestionChannel(SocketCommandContext context)
+        public static async Task<string> DetermineSuggestionChannel(SocketGuild guild)
         {
             //If no data found, defaults to 0.
 
@@ -645,7 +649,7 @@ namespace FinBot
                 MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
                 IMongoDatabase database = MongoClient.GetDatabase("finlay");
                 IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
-                ulong _id = context.Guild.Id;
+                ulong _id = guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
                 string itemVal = item?.GetValue("suggestionschannel").ToString();
 

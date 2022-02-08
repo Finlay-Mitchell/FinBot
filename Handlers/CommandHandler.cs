@@ -99,7 +99,7 @@ namespace FinBot.Handlers
 
             if (!(message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix(await Global.DeterminePrefix(context), ref argPos)))
             {
-                if(message.Content.Contains("@someone"))
+                if (message.Content.Contains("@someone"))
                 {
                     await message.ReplyAsync(context.Guild.Users.ToList()[new Random().Next(0, context.Guild.Users.Count())].Mention);
                     return;

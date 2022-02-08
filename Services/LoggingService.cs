@@ -417,23 +417,49 @@ namespace FinBot.Services
         {
             try
             {
-                SocketUserMessage message = (SocketUserMessage)await msg.GetOrDownloadAsync();
-                SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
-
-                if (msg.HasValue)
+                //Unable to cast object of type 'Discord.WebSocket.SocketSystemMessage' to type 'Discord.WebSocket.SocketUserMessage'.
+                try
                 {
-                    IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
-                    messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
+                    SocketUserMessage message = (SocketUserMessage)await msg.GetOrDownloadAsync();
+                    SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
+
+                    if (msg.HasValue)
+                    {
+                        IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                        messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
+                    }
+
+                    if (message == null)
+                    {
+                        return;
+                    }
+
+                    string messageContent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
+                    string logMessage = $"[DELETED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{sGC.Name}] -> [{messageContent}]";
+                    _logger.LogDebug(logMessage);
                 }
 
-                if(message == null)
+                catch
                 {
-                    return;
+                    SocketMessage message = (SocketMessage)await msg.GetOrDownloadAsync();
+                    SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
+
+                    if (msg.HasValue)
+                    {
+                        IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+                        messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
+                    }
+
+                    if (message == null)
+                    {
+                        return;
+                    }
+
+                    string messageContent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
+                    string logMessage = $"[DELETED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{sGC.Name}] -> [{messageContent}]";
+                    _logger.LogDebug(logMessage);
                 }
-                
-                string messageContent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
-                string logMessage = $"[DELETED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{sGC.Name}] -> [{messageContent}]";
-                _logger.LogDebug(logMessage);
+
                 return;
             }
 

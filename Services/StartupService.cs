@@ -21,6 +21,7 @@ namespace FinBot.Services
             _services = services;
             _discord = _services.GetRequiredService<DiscordShardedClient>();
             _commands = _services.GetRequiredService<CommandService>();
+            _commands = _services.GetRequiredService<CommandService>();
         }
 
         /// <summary>
@@ -57,8 +58,12 @@ namespace FinBot.Services
             IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
             IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
 
-            var options = new CreateIndexOptions { Unique = false };
-            await messages.Indexes.CreateOneAsync("{ deleted: 1 }", options);
+            CreateIndexOptions options = new CreateIndexOptions { Unique = false };
+            //await messages.Indexes.CreateOneAsync("{ deleted: 1 }", options);
+            await messages.Indexes.CreateOneAsync("{ deletedTimestamp: 1 } ", options);
+            await messages.Indexes.CreateOneAsync(" { createdTimestamp: 1 } ", options);
+            await messages.Indexes.CreateOneAsync(" { content: \"text\" } ", options);
+            Global.ConsoleLog("Initiated MongoDB indexes.");
         }
     }
 }

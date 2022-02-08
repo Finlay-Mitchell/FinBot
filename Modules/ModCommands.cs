@@ -1946,7 +1946,7 @@ namespace FinBot.Modules
                 return;
             }
 
-            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context);
+            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context.Guild);
 
             if (suggestionschannelid == "0")
             {
@@ -2025,7 +2025,7 @@ namespace FinBot.Modules
                 return;
             }
 
-            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context);
+            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context.Guild);
 
             if (suggestionschannelid == "0")
             {

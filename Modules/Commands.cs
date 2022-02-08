@@ -34,6 +34,8 @@ using Newtonsoft.Json.Linq;
 using QRCoder;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using Discord.Webhook;
+using FinBot.Attributes.Preconditions;
 
 namespace FinBot.Modules
 {
@@ -2414,7 +2416,7 @@ namespace FinBot.Modules
         [Command("suggest"), Summary("Makes a suggestion to the server"), Remarks("(PREFIX)suggest <suggestion>"), Alias("suggestion")]
         public async Task Suggest([Remainder] string suggestion)
         {
-            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context);
+            string suggestionschannelid = await Global.DetermineSuggestionChannel(Context.Guild);
 
             if (suggestionschannelid == "0")
             {
@@ -2523,5 +2525,46 @@ namespace FinBot.Modules
         {
             return Task.CompletedTask;
         }
+
+ //       [Command("testii")]
+ //       public async Task testing()
+ //       {
+ ////           [10:27:03 DBG] User:[UnbelievaBoat]<->[897489301615542303] Discord Server: [ahhh monkey/ balance - spam] -> []
+ ////           [10:27:10 ERR] Command: Discord.Commands.CommandException: Error occurred executing "testii" for ?Finlay Mitchell ?#7374 in ahhh monkey/??-ahhh-monkey.
+ ////--->System.TypeLoadException : Method 'get_ApplicationId' in type 'Discord.Webhook.RestInternalWebhook' from assembly 'Discord.Net.Webhook, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null' does not have an implementation.
+            
+ ////              at Discord.Webhook.DiscordWebhookClient..ctor(String webhookUrl, DiscordRestConfig config)
+            
+ ////              at Discord.Webhook.DiscordWebhookClient..ctor(String webhookUrl)
+            
+ ////              at FinBot.Modules.Commands.testing() in D:\Utils\C#\FinBot\Modules\Commands.cs:line 2537
+ ////  at Discord.Commands.ModuleClassBuilder.<> c__DisplayClass6_0.<< BuildCommand > g__ExecuteCallback | 0 > d.MoveNext()
+ ////           -- - End of stack trace from previous location where exception was thrown-- -
+ ////              at Discord.Commands.CommandInfo.ExecuteInternalAsync(ICommandContext context, Object[] args, IServiceProvider services)
+ ////              -- - End of inner exception stack trace-- -
+ ////           [10:27:10 INF] Command: Executed "testii" for ?Finlay Mitchell ?#7374 in ahhh monkey/??-ahhh-monkey
+
+
+
+
+ //           //if (Context.Interaction.User.Discriminator != "7374")
+ //           //    return;
+
+ //           SocketTextChannel channel = (SocketTextChannel)Context.Channel;/*.GetChannel(838878750346182666);*/
+
+ //           Discord.Rest.RestWebhook webhook = await channel.CreateWebhookAsync("FinBot test");// new MemoryStream(Encoding.UTF8.GetBytes(client.CurrentUser.GetAvatarUrl() ?? client.CurrentUser.GetDefaultAvatarUrl())));
+ //           using (DiscordWebhookClient wHC = new DiscordWebhookClient($"https://discord.com/api/webhooks/{webhook.Id}/{webhook.Token}"))
+ //           {
+ //               var embed = new EmbedBuilder
+ //               {
+ //                   Title = "Test Embed",
+ //                   Description = "Test Description"
+ //               };
+
+ //               // Webhooks are able to send multiple embeds per message
+ //               // As such, your embeds must be passed as a collection.
+ //               await wHC.SendMessageAsync(text: "Send a message to this webhook!", embeds: new[] { embed.Build() });
+ //           }
+ //       }
     }
 }
