@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
+using FinBot.Attributes.Interactivity.Preconditions;
 using FinBot.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
@@ -95,7 +96,7 @@ namespace FinBot.Modules.InteractivityCommands
                     Color = Color.Green,
                 };
                 string format = "```";
-                string username = "";
+                string username = string.Empty;
                 SocketGuildUser user;
                 int spaceCount;
                 string spaces;
@@ -144,7 +145,7 @@ namespace FinBot.Modules.InteractivityCommands
                         arr.Add("score", reader.GetInt64(5));
                         scores.Add(arr);
                         spaceCount = 32 - username.Length;
-                        spaces = "";
+                        spaces = string.Empty;
 
                         for (int i = 0; i < spaceCount; i++)
                         {
@@ -533,7 +534,7 @@ namespace FinBot.Modules.InteractivityCommands
             //    }
             //});
 
-            eb.Description = (user == null) ? $"The phrase \"{phrase}\" has been said {count} times!" : $"{user.Username} has said the phrase \"{phrase}\" has been said {count} times!";
+            eb.Description = (user == null) ? $"The phrase \"{phrase}\" has been said {count} times!" : $"{user.Username} has said the phrase \"{phrase}\" {count} times!";
             eb.Color = Color.Green;
             eb.WithFooter("If you wish to search for a phrase, please encapsulate your selected phrase with straight double quotes(\"\").");
 
@@ -547,12 +548,13 @@ namespace FinBot.Modules.InteractivityCommands
             
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
-                x.Content = "";
+                x.Content = string.Empty;
                 x.Embed = eb.Build();
             });
         }
 
-        //[SlashCommand("test", "purely a test")]
+        [RequireDeveloper]
+        [SlashCommand("test", "purely a test")]
         public async Task teset(SocketUser user = null)
         {
             await Context.Interaction.DeferAsync();
@@ -564,146 +566,146 @@ namespace FinBot.Modules.InteractivityCommands
 
                 IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
                 string data = $"[";
-            //try
-            //{
+            try
+            {
                 //IFindFluent<BsonDocument, BsonDocument> t = messages.Find(new BsonDocument { { "guildId", $"{Context.Guild.Id}" }, { "discordId", $"{user.Id}" } });//.Sort(new BsonDocument { { "createdTimestamp", 1 } });
-                var t = messages.Find(new BsonDocument { { "delted", false }, { "guildId", $"{Context.Guild.Id}" }, { "discordId", $"{user.Id}" } }).Sort(new BsonDocument { { "createdTimestamp", 1 } });
+                var t = messages.Find(new BsonDocument { { "delted", false }, { "guildId", $"{Context.Guild.Id}" }, { "discordId", $"{user.Id}" } });//.Sort(new BsonDocument { { "createdTimestamp", 1 } });
                 Global.ConsoleLog(t.Count().ToString());
-            //    List<uint> test = new List<uint>() { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                List<uint> test = new List<uint>() { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-            //    foreach (BsonDocument document in t.ToList())
-            //    {
-            //        Global.ConsoleLog(document.ToString());
+                foreach (BsonDocument document in t.ToList())
+                {
+                    Global.ConsoleLog(document.ToString());
 
-            //        switch (Math.Floor((decimal)((Convert.ToUInt64(document.GetValue("createdTimestamp")) * 1000) / (1000 * 3600)) % 24))
-            //        {
-            //            case 1:
-            //                test[0] += 1;
-            //                break;
+                    switch (Math.Floor((decimal)((Convert.ToUInt64(document.GetValue("createdTimestamp")) * 1000) / (1000 * 3600)) % 24))
+                    {
+                        case 1:
+                            test[0] += 1;
+                            break;
 
-            //            case 2:
-            //                test[1] += 1;
-            //                break;
+                        case 2:
+                            test[1] += 1;
+                            break;
 
-            //            case 3:
-            //                test[2] += 1;
-            //                break;
+                        case 3:
+                            test[2] += 1;
+                            break;
 
-            //            case 4:
-            //                test[3] += 1;
-            //                break;
+                        case 4:
+                            test[3] += 1;
+                            break;
 
-            //            case 5:
-            //                test[4] += 1;
-            //                break;
+                        case 5:
+                            test[4] += 1;
+                            break;
 
-            //            case 6:
-            //                test[5] += 1;
-            //                break;
+                        case 6:
+                            test[5] += 1;
+                            break;
 
-            //            case 7:
-            //                test[6] += 1;
-            //                break;
+                        case 7:
+                            test[6] += 1;
+                            break;
 
-            //            case 8:
-            //                test[7] += 1;
-            //                break;
+                        case 8:
+                            test[7] += 1;
+                            break;
 
-            //            case 9:
-            //                test[8] += 1;
-            //                break;
+                        case 9:
+                            test[8] += 1;
+                            break;
 
-            //            case 10:
-            //                test[9] += 1;
-            //                break;
+                        case 10:
+                            test[9] += 1;
+                            break;
 
-            //            case 11:
-            //                test[10] += 1;
-            //                break;
+                        case 11:
+                            test[10] += 1;
+                            break;
 
-            //            case 12:
-            //                test[11] += 1;
-            //                break;
+                        case 12:
+                            test[11] += 1;
+                            break;
 
-            //            case 13:
-            //                test[12] += 1;
-            //                break;
+                        case 13:
+                            test[12] += 1;
+                            break;
 
-            //            case 14:
-            //                test[13] += 1;
-            //                break;
+                        case 14:
+                            test[13] += 1;
+                            break;
 
-            //            case 15:
-            //                test[14] += 1;
-            //                break;
+                        case 15:
+                            test[14] += 1;
+                            break;
 
-            //            case 16:
-            //                test[15] += 1;
-            //                break;
+                        case 16:
+                            test[15] += 1;
+                            break;
 
-            //            case 17:
-            //                test[16] += 1;
-            //                break;
+                        case 17:
+                            test[16] += 1;
+                            break;
 
-            //            case 18:
-            //                test[17] += 1;
-            //                break;
+                        case 18:
+                            test[17] += 1;
+                            break;
 
-            //            case 19:
-            //                test[18] += 1;
-            //                break;
+                        case 19:
+                            test[18] += 1;
+                            break;
 
-            //            case 20:
-            //                test[19] += 1;
-            //                break;
+                        case 20:
+                            test[19] += 1;
+                            break;
 
-            //            case 21:
-            //                test[20] += 1;
-            //                break;
+                        case 21:
+                            test[20] += 1;
+                            break;
 
-            //            case 22:
-            //                test[21] += 1;
-            //                break;
+                        case 22:
+                            test[21] += 1;
+                            break;
 
-            //            case 23:
-            //                test[22] += 1;
-            //                break;
+                        case 23:
+                            test[22] += 1;
+                            break;
 
-            //            case 24:
-            //                test[23] += 1;
-            //                break;
+                        case 24:
+                            test[23] += 1;
+                            break;
 
-            //            default:
-            //                Global.ConsoleLog(Math.Floor((decimal)((Convert.ToUInt64(document.GetValue("createdTimestamp")) * 1000) / (1000 * 3600)) % 24).ToString());
-            //                break;
-            //        }
-            //    }
+                        default:
+                            Global.ConsoleLog(Math.Floor((decimal)((Convert.ToUInt64(document.GetValue("createdTimestamp")) * 1000) / (1000 * 3600)) % 24).ToString());
+                            break;
+                    }
+                }
 
-            //    foreach (uint elem in test)
-            //    {
-            //        data += $"{elem}, ";
-            //    }
-            //}
+                foreach (uint elem in test)
+                {
+                    data += $"{elem}, ";
+                }
+            }
 
-            //catch(Exception ex)
-            //{
-            //    await Context.Channel.SendMessageAsync(ex.ToString());
-            //}
+            catch (Exception ex)
+            {
+                await Context.Channel.SendMessageAsync(ex.ToString());
+            }
 
-            //data = data.Substring(0, data.Length - 2);
-            //Chart qc = new Chart
-            //{
-            //    Width = 500,
-            //    Height = 300
-            //};
-            //WebClient wc = new WebClient();
-            //qc.Config = $"{{type: 'line', data: {{ labels:['01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', " +
-            //    $"'21:00', '22:00', '23:00', '00:00'],  datasets: [{{ label: 'Activity graph for {user.Username}', data: {data}], fill: false }}] }}, options: {{ plugins: {{ datalabels: {{ display: true, " +
-            //    $"align: 'bottom', backgroundColor: '#ccc', borderRadius: 3 }} }} }} }}";
-            //byte[] bytes = wc.DownloadData(qc.GetUrl());
-            //Global.ConsoleLog(qc.GetUrl());
-            //MemoryStream ms = new MemoryStream(bytes);
-            //await Context.Interaction.FollowupWithFileAsync(ms, $"user_activity_graph-{user.Id}-{Global.GenerateRandom()}.png");
+            data = data.Substring(0, data.Length - 2);
+            Chart qc = new Chart
+            {
+                Width = 500,
+                Height = 300
+            };
+            WebClient wc = new WebClient();
+            qc.Config = $"{{type: 'line', data: {{ labels:['01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', " +
+                $"'21:00', '22:00', '23:00', '00:00'],  datasets: [{{ label: 'Activity graph for {user.Username}', data: {data}], fill: false }}] }}, options: {{ plugins: {{ datalabels: {{ display: true, " +
+                $"align: 'bottom', backgroundColor: '#ccc', borderRadius: 3 }} }} }} }}";
+            byte[] bytes = wc.DownloadData(qc.GetUrl());
+            Global.ConsoleLog(qc.GetUrl());
+            MemoryStream ms = new MemoryStream(bytes);
+            await Context.Interaction.FollowupWithFileAsync(ms, $"user_activity_graph-{user.Id}-{Global.GenerateRandom()}.png");
         }
 
         //[SlashCommand("newtest", "hmm")]

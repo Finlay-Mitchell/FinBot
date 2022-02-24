@@ -18,6 +18,7 @@ namespace FinBot.Handlers.AutoMod
     {
         DiscordShardedClient _client;
         public static ModCommands modCommands;
+        readonly MongoClient MongoClient = new MongoClient(Global.Mongoconnstr);
 
         public ChatFilter(IServiceProvider service)
         {
@@ -49,9 +50,7 @@ namespace FinBot.Handlers.AutoMod
                     return;
                 }
 
-                MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-                IMongoDatabase database = mongoClient.GetDatabase("finlay");
-                IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                IMongoCollection<BsonDocument> collection = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("guilds");
                 SocketGuildChannel chan = msg.Channel as SocketGuildChannel;
                 ulong _id = chan.Guild.Id;
                 BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
@@ -143,9 +142,7 @@ namespace FinBot.Handlers.AutoMod
 
                 try
                 {
-                    MongoClient mongoClient = new MongoClient(Global.Mongoconnstr);
-                    IMongoDatabase database = mongoClient.GetDatabase("finlay");
-                    IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>("guilds");
+                    IMongoCollection<BsonDocument> collection = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("guilds");
                     ulong _id = chan.Guild.Id;
                     BsonDocument item = await collection.Find(Builders<BsonDocument>.Filter.Eq("_id", _id)).FirstOrDefaultAsync();
                     string itemVal = item?.GetValue("disablelinks").ToJson();

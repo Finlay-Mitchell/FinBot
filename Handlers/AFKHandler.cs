@@ -23,8 +23,8 @@ namespace FinBot.Handlers
             IMongoDatabase database = mongoClient.GetDatabase("finlay");
             collection = database.GetCollection<BsonDocument>("guilds");
 
-            //_client.MessageReceived += CheckForAFK;
-            //_client.MessageReceived += CheckIfUserIsAFK;
+            _client.MessageReceived += CheckForAFK;
+            _client.MessageReceived += CheckIfUserIsAFK;
         }
 
         public async Task CheckIfUserIsAFK(SocketMessage msg)
@@ -36,17 +36,15 @@ namespace FinBot.Handlers
 
             SocketGuildChannel ContextChannel = (SocketGuildChannel)msg.Channel;
             ulong _id = ContextChannel.Guild.Id;
-            BsonDocument document = new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", new BsonDocument { { "User", msg.Author.Id.ToString() } } } };
-            BsonDocument item = await collection.Find(document).FirstOrDefaultAsync();
+            BsonDocument item = await collection.Find(new BsonDocument { { "_id", (decimal)_id }, { "AFKUsers", new BsonDocument { { "User", msg.Author.Id.ToString() } } } }).FirstOrDefaultAsync();
             string itemVal = item?.GetValue($"AFKStatus").ToString();
 
             if (itemVal != null)
             {
-                Global.ConsoleLog("TEST");
-                BsonDocument DeleteDocument = new BsonDocument { { "$pull", new BsonDocument { { "AFKUsers", new BsonDocument { { "User", msg.Author.Id.ToString() } } } } } };
-                collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), DeleteDocument);
+                collection.UpdateOne(Builders<BsonDocument>.Filter.Eq("_id", _id), new BsonDocument { { "$pull", new BsonDocument { { "AFKUsers", new BsonDocument { { "User", msg.Author.Id.ToString() } } } } } });
                 await msg.Channel.SendMessageAsync($"{msg.Author.Mention} I have removed your AFK status.");
                 SocketGuildUser user = (SocketGuildUser)msg.Author;
+                
                 //await user.ModifyAsync(x =>
                 //{
                 //    x.Nickname = null;
@@ -68,8 +66,7 @@ namespace FinBot.Handlers
 
             SocketGuildChannel ContextChannel = (SocketGuildChannel)msg.Channel;
             ulong _id = ContextChannel.Guild.Id;
-            BsonDocument document = new BsonDocument { { "_id", (decimal)_id } };
-            BsonDocument item = await collection.Find(document).FirstOrDefaultAsync();
+            BsonDocument item = await collection.Find(new BsonDocument { { "_id", (decimal)_id } }).FirstOrDefaultAsync();
 
             try
             {

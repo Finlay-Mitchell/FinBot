@@ -13,13 +13,15 @@ using FinBot.Handlers.AutoMod;
 using FinBot.Interactivity;
 using System.IO;
 using System.Text;
+using Serilog.Sinks.File.Archive;
+using System.IO.Compression;
 
 namespace FinBot
 {
     class Program
     {
         /// <summary>
-        /// This starts up the bot and sets the console up.
+        /// Entry point for the program.
         /// </summary>
         /// <param name="args">Startup arguments.</param>
         static void Main(string[] args)
@@ -50,7 +52,7 @@ namespace FinBot
         {
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine($"[{DateTime.Now.TimeOfDay}] - Welcome, {Environment.UserName}");
-            Global.ReadConfig(); //Reads json.config file, this setting lots of our global members.
+            Global.ReadConfig(); //Reads json.config file, this setting lots of our global members which host information that could be sensitive/subject to change such as API keys and the Discord bot token.
             IServiceCollection services = new ServiceCollection()
                 .AddSingleton(new DiscordShardedClient(new DiscordSocketConfig
                 {
@@ -105,7 +107,7 @@ namespace FinBot
                         GatewayIntents.DirectMessageTyping |
                         GatewayIntents.GuildPresences,
                     LogLevel = LogSeverity.Error,
-                    MessageCacheSize = 1000
+                    MessageCacheSize = 1000,
                 }))
                 .AddSingleton<StartupService>()
                 .AddSingleton<CommandHandler>()
@@ -143,17 +145,8 @@ namespace FinBot
             {
                 if (true)
                 {
-                    //foreach (ulong guildID in Global.DevServers)
-                    //{
-                    //    Global.ConsoleLog($"Registered commands to guild - {guildID}");
-                    //    await commands.RegisterCommandsToGuildAsync(guildID, true); //Registers commands to guild of `guildID` - instant registration.
-                    //}
-                    //foreach (ulong guildID in Global.DevServers)
-                    //{
-                        Global.ConsoleLog($"Registered commands to guild - {892556323902881823}");
-                    //await commands.RegisterCommandsToGuildAsync(892556323902881823, true); //Registers commands to guild of `guildID` - instant registration.
-                    await commands.RegisterCommandsToGuildAsync(892556323902881823, true);
-                    //}
+                    Global.ConsoleLog($"Registered commands to guild - {811919861537964032}");
+                    await commands.RegisterCommandsToGuildAsync(811919861537964032, true);
                 }
 
                 else
@@ -163,7 +156,7 @@ namespace FinBot
             };
 
             await serviceProvider.GetRequiredService<CommandHandler>().InitializeAsync(); // Initialises interaction services.
-            await Task.Delay(-1); //This keeps our application running.
+            await Task.Delay(Timeout.Infinite); //This blocks the program until it is closed.
         }
 
         /// <summary>
@@ -207,7 +200,8 @@ namespace FinBot
 
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File(Global.LogPath)
+                .WriteTo.Async(a => a.File(@$"Data/Logs/logs-.json", rollingInterval: RollingInterval.Day, retainedFileCountLimit: Global.RetainedLogFileCount, rollOnFileSizeLimit: true, 
+                hooks: new ArchiveHooks(CompressionLevel.Optimal, @$"Data/Logs/Archived"), buffered: true))
                 .MinimumLevel.Is(level)
                 .CreateLogger();
         }

@@ -14,7 +14,7 @@ namespace FinBot.Handlers
 
         public bool XMLIsNull()
         {
-            if(xmlDocument == null)
+            if (xmlDocument == null)
             {
                 return true;
             }

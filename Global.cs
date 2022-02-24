@@ -122,6 +122,10 @@ namespace FinBot
         /// Defines how many messages can be sent on average per second before autoslowmode takes control.
         /// </summary>
         public static int MaxMessagesPerSecond { get; set; }
+        /// <summary>
+        /// How many Log files will be maintained by the logging system at one time. 
+        /// </summary>
+        public static int RetainedLogFileCount { get; set; }
 
         /*
          * Our global variables that we do not read from the config.
@@ -197,10 +201,6 @@ namespace FinBot
         /// This is the Twitch oauth key.
         /// </summary>
         public static string TwitchOauthKey { get; set; }
-        /// <summary>
-        /// This is the list of development servers to register slash commands too.
-        /// </summary>
-        public static List<ulong> DevServers = new List<ulong> { 892556323902881823, 725886999646437407 };
 
         /// <summary>
         /// This reads data from json.config and assigns the values to the variables labeled above.
@@ -236,6 +236,7 @@ namespace FinBot
             TwitchRedirectURL = data.TwitchRedirectURL;
             SlowModeIncrementValue = data.SlowModeIncrementValue;
             MaxMessagesPerSecond = data.MaxMessagesPerSecond;
+            RetainedLogFileCount = data.RetainedLogFileCount;
 
             MySQL.ConnStr = $"server={MySQL.MySQLServer};user={MySQL.MySQLUser};database={MySQL.MySQLDatabase};port={MySQL.MySQLPort};password={MySQL.MySQLPassword}"; //The connection string for the MySql server.
         }
@@ -272,6 +273,7 @@ namespace FinBot
             public string TwitchRedirectURL { get; set; }
             public int SlowModeIncrementValue { get; set; }
             public int MaxMessagesPerSecond { get; set; }
+            public int RetainedLogFileCount { get; set; }
         }
 
         /// <summary>
@@ -308,8 +310,7 @@ namespace FinBot
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
         {
             DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-            return dtDateTime;
+            return dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
         }
 
         /// <summary>
@@ -319,7 +320,7 @@ namespace FinBot
         /// <returns>A boolean of whether the user is a developer or not.</returns>
         public static bool IsDev(SocketUser user)
         {
-            if (clientCommands == true)
+            if (clientCommands)
             {
                 return DevUIDs.Contains(user.Id) || user.Id == clientId; //True if the user is a developer OR if clientCommands is manually set to true, if it's the bot calling the command.
             }
@@ -504,14 +505,14 @@ namespace FinBot
             string t = File.ReadAllText(LeetsPath);
             Dictionary<string, string> list = new Dictionary<string, string>();
 
-            if (t == "")
+            if (t == string.Empty)
             {
                 return list;
             }
 
             foreach (string i in t.Split("\n"))
             {
-                if (i != "")
+                if (i != string.Empty)
                 {
                     string[] spl = i.Split(",");
                     list.Add(spl[0], spl[1]);
@@ -529,14 +530,14 @@ namespace FinBot
             string data = File.ReadAllText(PrefixPath);
             Dictionary<ulong, string> dict = new Dictionary<ulong, string>();
 
-            if (data == "")
+            if (data == string.Empty)
             {
                 ConsoleLog("PREFIX DATA WAS NULL");
             }
 
             foreach (string str in data.Split("\n"))
             {
-                if (str != "")
+                if (str != string.Empty)
                 {
                     string[] spl = str.Split(",");
                     dict.Add((ulong)Convert.ToUInt64(spl[0]), spl[1].Substring(1));
@@ -631,14 +632,13 @@ namespace FinBot
         public static byte[] ImageToByteArray(System.Drawing.Image img)
         {
             ImageConverter _imageConverter = new ImageConverter();
-            byte[] xByte = (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
-            return xByte;
+            return (byte[])_imageConverter.ConvertTo(img, typeof(byte[]));
         }
 
         /// <summary>
         /// Gets the suggestion channel for a guild.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="guild"></param>
         /// <returns>a channel Id || 0</returns>
         public static async Task<string> DetermineSuggestionChannel(SocketGuild guild)
         {

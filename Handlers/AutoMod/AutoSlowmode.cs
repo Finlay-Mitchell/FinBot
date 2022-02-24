@@ -55,7 +55,7 @@ namespace FinBot.Handlers.AutoMod
             IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
             ulong channelId = arg.Channel.Id;
             long msgTimestamp = Global.ConvertToTimestamp(arg.CreatedAt.DateTime);
-            var t = messages.CountDocuments(new BsonDocument { { "guildId", _id.ToString() }, { "channelId", channelId.ToString() }, { "deleted", false }, { "createdTimestamp", new BsonDocument { { "$lte", msgTimestamp }, { "$gte", msgTimestamp - 10 } } } });
+            var t = messages.CountDocuments(new BsonDocument { { "deleted", false }, { "createdTimestamp", new BsonDocument { { "$lte", msgTimestamp }, { "$gte", msgTimestamp - 10 } } }, { "guildId", _id.ToString() }, { "channelId", channelId.ToString() } });
             SocketTextChannel chan = (SocketTextChannel)arg.Channel;
             int interval = chan.SlowModeInterval;
 
