@@ -1013,7 +1013,7 @@ namespace FinBot.Modules
                 {
                     BsonDocument[] edits = message.GetValue("edits").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
 
-                    await ReplyAsync(message.ToString().Substring(0, 1997) + "...");
+                    //await ReplyAsync(message.ToString().Substring(0, 1997) + "...");
 
                     if (edits.Count() > 0)
                     {
@@ -2034,6 +2034,207 @@ namespace FinBot.Modules
             eb.Title = "Scan this invite QR code for the guild";
             eb.Description = $"or simply copy the URL here: {url}";
             await Context.Interaction.RespondAsync("", embed: eb.Build());
+        }
+
+        [SlashCommand("ghostping", "Gets your last ghost ping.")]
+        public async Task GhostPing([Summary(name: "user", description: "The user to get ghost pings for - optional")] SocketUser searchUser = null)
+        {
+            if (searchUser == null)
+            {
+                searchUser = Context.User;
+            }
+
+            SocketGuildUser socketGuildUser = (SocketGuildUser)searchUser;
+            BsonArray roleIds = new BsonArray(from x in socketGuildUser.Roles select x.Id);
+
+            Global.ConsoleLog(roleIds.ToString());
+
+            await Context.Interaction.RespondAsync("", embed: Global.EmbedMessage($"Ghost ping search", $"Searching for the previous ghost ping for {searchUser}.", false, Color.Orange).Build());
+            IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
+
+            try
+            {
+                BsonDocument ghostPing = messages.Find(new BsonDocument { { "guildId", $"{Context.Guild.Id}" }, { "$or", new BsonArray { new BsonDocument("mentions", (decimal)searchUser.Id), new BsonDocument("roleMentions",
+                new BsonDocument("$in", roleIds)), new BsonDocument("mentionEveryone", true) } }, { "deleted", true } }).Sort(new BsonDocument { { "createdTimestamp", -1 } }).FirstOrDefault();
+
+                if (ghostPing == null)
+                {
+                    await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                    {
+                        x.Content = "";
+                        x.Embed = Global.EmbedMessage("Error!", $"There was no ghost pings for {searchUser}!", false, Color.Red).Build();
+                    });
+
+                    return;
+                }
+
+                EmbedBuilder eb = new EmbedBuilder();
+                string username = string.Empty;
+                SocketGuildUser user = (SocketGuildUser)Context.Interaction.User;
+                IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
+                BsonDocument dbUser = await users.Find(new BsonDocument { { "_id", ghostPing.GetValue("discordId") } }).FirstOrDefaultAsync();
+
+                if (Context.Guild.GetUser(Convert.ToUInt64(ghostPing.GetValue("discordId"))) == null || Context.Guild.GetUser(Convert.ToUInt64(ghostPing.GetValue("discordId"))).GetType() == typeof(SocketUnknownUser))
+                {
+                    username = dbUser.GetValue("discordTag").ToString();
+                }
+
+                else
+                {
+                    user = Context.Guild.GetUser(Convert.ToUInt64(ghostPing.GetValue("discordId")));
+
+                    if (user.Nickname != null)
+                    {
+                        username = user.Nickname;
+                    }
+
+                    else
+                    {
+                        username = user.Username;
+                    }
+                }
+
+                EmbedAuthorBuilder Author = new EmbedAuthorBuilder()
+                {
+                    Name = username,
+                    IconUrl = dbUser.GetValue("avatarURL").ToString()
+                };
+                eb.WithAuthor(Author);
+                string URLs = string.Empty;
+                string attachments = ghostPing?.GetValue("attachments").ToJson();
+
+                if (attachments != null)
+                {
+                    List<string> attachmentArray = JsonConvert.DeserializeObject<string[]>(attachments).ToList();
+
+                    foreach (string attachmentURL in attachmentArray)
+                    {
+                        //WebClient wc = new WebClient();
+                        //byte[] bytes = wc.DownloadData(attachmentURL);
+                        //MemoryStream ms = new MemoryStream(bytes);
+                        //Bitmap bmp = new Bitmap(ms);
+                        //System.Drawing.Image img = bmp;
+                        //ms = new MemoryStream(Global.ImageToByteArray(img));
+                        //await Context.Message.Channel.SendFileAsync(ms, $"{username}-{attachmentURL}-{GenerateRandom()}");
+                        URLs += $"\n{attachmentURL}";
+                    }
+                }
+
+                string embedContent = string.Empty;
+                string embedTitle = string.Empty;
+                string description = string.Empty;
+                string embedFields = string.Empty;
+                string content = string.Empty;
+                string footer = string.Empty;
+                BsonDocument[] embeds = { };
+
+                try
+                {
+                    BsonDocument[] edits = ghostPing.GetValue("edits").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+
+                    //await ReplyAsync(ghostPing.ToString().Substring(0, 1997) + "...");
+
+                    if (edits.Count() > 0)
+                    {
+                        embeds = edits[edits.Count() - 1].GetValue("embeds").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+                    }
+
+                    else
+                    {
+                        embeds = ghostPing.GetValue("embeds").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    //Global.ConsoleLog($"{ex}"); // This is commented out because every time you run the snipe command for a message without any edits, it just errors. 
+                    embeds = ghostPing.GetValue("embeds").AsBsonArray.Select(x => x.AsBsonDocument).ToArray();
+                }
+
+                if (embeds.Count() > 0)
+                {
+                    foreach (BsonDocument embed in embeds)
+                    {
+                        description = string.IsNullOrEmpty(embed.GetValue("description").ToString()) ? "" : embed.GetValue("description").ToString();
+                        content = string.Empty;
+                        embed.TryGetValue("footer", out BsonValue footerVal);
+                        footer = (footerVal == null) ? "" : embed.GetValue("footer").ToString();
+                        BsonDocument[] fields = embed.GetValue("fields").AsBsonArray.Select(y => y.AsBsonDocument).ToArray();
+                        BsonDocument[] titleFields = embed.GetValue("title").AsBsonArray.Select(z => z.AsBsonDocument).ToArray();
+
+                        foreach (BsonDocument title in titleFields)
+                        {
+                            if (!string.IsNullOrEmpty(title.GetValue("url").ToString()))
+                            {
+                                embedTitle = $"**[{title.GetValue("url")}]({title.GetValue("value")})**";
+                            }
+
+                            else
+                            {
+                                embedTitle = $"**{title.GetValue("value")}**";
+                            }
+                        }
+
+                        foreach (BsonDocument field in fields)
+                        {
+                            embedFields += $"**{field.GetValue("name")}**\n{field.GetValue("value")}\n";
+                        }
+
+                        embedContent = $"{embedTitle}\n\n{description}\n{embedFields}\n{footer}";
+                        embed.TryGetValue("image", out BsonValue imageVal);
+
+                        if (imageVal != null)
+                        {
+                            eb.ImageUrl = embed.GetValue("image").ToString();
+                        }
+
+                        embed.TryGetValue("colour", out BsonValue colourVal);
+                        eb.Color = (colourVal == null || colourVal == string.Empty) ? Color.Default : new Color(Convert.ToUInt32(embed.GetValue("colour")));
+                    }
+
+                    if (embedContent.Length > 5800)
+                    {
+                        embedContent = embedContent.Substring(0, 2021) + "...";
+                    }
+
+                    eb.Description = embedContent;
+                }
+
+                else
+                {
+                    if (ghostPing.GetValue("content").ToString().Length > 2021)
+                    {
+                        eb.Description = ghostPing.GetValue("content").ToString().Substring(0, 2021) + "...";
+                    }
+
+                    else
+                    {
+                        eb.Description = ghostPing.GetValue("content").ToString();
+                    }
+                }
+
+                eb.WithCurrentTimestamp();
+                eb.Color = Color.Green;
+                eb.Footer = new EmbedFooterBuilder()
+                {
+                    Text = $"Message sent at: {Global.UnixTimeStampToDateTime(Convert.ToUInt64(ghostPing.GetValue("createdTimestamp")))}\nMessage deleted at: {Global.UnixTimeStampToDateTime(Convert.ToUInt64(ghostPing.GetValue("deletedTimestamp")))}"
+                };
+                BsonDocument previousMessage = await messages.Find(new BsonDocument { { "deleted", false }, { "createdTimestamp", new BsonDocument { { "$gte", ghostPing.GetValue("createdTimestamp") } } },
+                        { "guildId", Context.Guild.Id.ToString() }, { "channelId", Context.Channel.Id.ToString() } }).Sort(new BsonDocument { { "createdTimestamp", 1 } }).Limit(1).FirstOrDefaultAsync();
+                IReadOnlyCollection<IMessage> IPrevious = await Context.Channel.GetMessagesAsync(Convert.ToUInt64(previousMessage.GetValue("_id")), Direction.Before, 1).FirstOrDefaultAsync();
+                eb.AddField("_ _", $"[The previous message](https://discord.com/channels/{Context.Guild.Id}/{Context.Channel.Id}/{IPrevious.First().Id})", true);
+
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                {
+                    x.Content = $"{content}\n{URLs}";
+                    x.Embed = eb.Build();
+                });
+            }
+
+            catch (Exception ex)
+            {
+                Global.ConsoleLog(ex.Message);
+            }
         }
     }
 }

@@ -43,6 +43,43 @@ namespace FinBot.Handlers
 
         private async Task OnSlashCommandExecuted(SlashCommandInfo arg1, IInteractionContext arg2, ISlashResult arg3)
         {
+            if(!arg3.IsSuccess)
+            {
+                switch(arg3.Error)
+                {
+                    case InteractionCommandError.UnmetPrecondition:
+                        try
+                        {
+                            if (arg2.Interaction.HasResponded)
+                            {
+                                await arg2.Interaction.FollowupAsync("", embed: Global.EmbedMessage("Error", arg3.ErrorReason, false, Color.Red).Build(), ephemeral: true);
+                            }
+
+                            else
+                            {
+                                await arg2.Interaction.RespondAsync("", embed: Global.EmbedMessage("Error", arg3.ErrorReason, false, Color.Red).Build(), ephemeral: true);
+                            }
+                        }
+
+                        catch
+                        {
+                            if (arg2.Interaction.HasResponded)
+                            {
+                                await arg2.Interaction.FollowupAsync(arg3.ErrorReason, ephemeral: true);
+                            }
+
+                            else
+                            {
+                                await arg2.Interaction.RespondAsync(arg3.ErrorReason, ephemeral: true);
+                            }
+                        }
+
+                        break;
+
+                    default:
+                        break;
+                }
+            }
         }
 
         private async Task HandleInteractionAsync(SocketInteraction arg)

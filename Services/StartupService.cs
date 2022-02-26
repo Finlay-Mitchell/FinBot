@@ -63,6 +63,7 @@ namespace FinBot.Services
             await messages.Indexes.CreateOneAsync("{ deletedTimestamp: 1 } ", options);
             await messages.Indexes.CreateOneAsync(" { createdTimestamp: 1 } ", options);
             await messages.Indexes.CreateOneAsync(" { content: \"text\" } ", options);
+            await messages.Indexes.CreateOneAsync("{guildId: 1}", options);
             Global.ConsoleLog("Initiated MongoDB indexes.");
         }
     }

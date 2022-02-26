@@ -45,6 +45,7 @@ namespace FinBot.Services
                 SocketUserMessage message;
                 SocketGuildChannel sGC = (SocketGuildChannel)_discord.GetChannel(arg2.Id);
                 string messageContent = "";
+                BsonArray messageIDs = new BsonArray();
 
                 foreach (Cacheable<IMessage, ulong> msg in arg1)
                 {
@@ -52,8 +53,7 @@ namespace FinBot.Services
 
                     if(msg.HasValue)
                     {
-                        messages.FindOneAndUpdate(new BsonDocument { { "_id", (decimal)message.Id } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true }, 
-                            { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
+                        messageIDs.Add((decimal)message.Id);
                     }
 
                     if(message == null)
@@ -64,6 +64,9 @@ namespace FinBot.Services
                     messageContent = msg.HasValue ? msg.Value.Content : "Unable to retrieve message";
                     _logger.LogDebug($"[BULK DELETED]User: [{message.Author.Username}]<->[{message.Author.Id}] Discord Server: [{sGC.Guild.Name}/{sGC.Name}] -> [{messageContent}]");
                 }
+
+                await messages.UpdateManyAsync(new BsonDocument { { "_id", new BsonDocument { { "$in", messageIDs } } } }, new BsonDocument { { "$set", new BsonDocument { { "deleted", true },
+                            { "deletedTimestamp", (decimal)Global.ConvertToTimestamp(DateTime.Now) } } } });
 
                 return;
 
@@ -349,6 +352,11 @@ namespace FinBot.Services
 
         public async Task OnMessageReceived(SocketMessage message)
         {
+            if(message.Flags.Value == MessageFlags.Ephemeral)
+            {
+                return;
+            }
+
             SocketGuildChannel sGC = (SocketGuildChannel)message.Channel;
             IMongoCollection<BsonDocument> messages = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("messages");
             IMongoCollection<BsonDocument> users = MongoClient.GetDatabase("finlay").GetCollection<BsonDocument>("users");
@@ -405,7 +413,8 @@ namespace FinBot.Services
 
             messages.InsertOne(new BsonDocument { { "_id", (decimal)message.Id }, {  "deleted", false }, { "discordId",message.Author.Id.ToString() }, { "guildId", sGC.Guild.Id.ToString() }, { "channelId", sGC.Id.ToString() }, 
                 { "createdTimestamp",  (decimal)Global.ConvertToTimestamp(DateTime.Now) }, { "content", string.IsNullOrEmpty(message.Content) ? "" : message.Content}, 
-                { "attachments", attachments }, { "embeds", embeds }, { "replyingTo", reference } });
+                { "attachments", attachments }, { "embeds", embeds }, { "replyingTo", reference }, { "mentions", new BsonArray(from x in message.MentionedUsers select x.Id) }, 
+                { "roleMentions", new BsonArray(from x in message.MentionedRoles select x.Id)}, { "mentionEveryone", message.MentionedEveryone} });
         }
 
         /// <summary>
