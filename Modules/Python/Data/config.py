@@ -34,7 +34,8 @@ dev_uids = [305797476290527235]  # Listed bot developers.
 
 # Other global variables.
 data_path = "../../bin/Debug/netcoreapp3.1/Data/guild_config.json"
-extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs", "chess_game"]
+# extensions = ["audit", "executer", "tts", "lyrics", "minecraft", "music", "misc", "chatbot", "modlogs", "chess_game"]
+extensions = ["executer", "tts", "music"]
 client_commands = False
 debug = False
 

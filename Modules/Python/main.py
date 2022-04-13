@@ -60,7 +60,7 @@ class FinBot(commands.Bot):
         # else:
         #     guild_prefix = guild_document.get("prefix")
         #     return commands.when_mentioned_or(guild_prefix)(bot, message)
-        return commands.when_mentioned_or("dev.")(bot, message)
+        return commands.when_mentioned_or("dev.fbd.")(bot, message)
 
     @staticmethod
     def create_completed_embed(title, text):

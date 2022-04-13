@@ -404,7 +404,6 @@ class Music(commands.Cog):
 
         await asyncio.sleep(0.5)
         guild_document = await self.guild_document_from_guild(voice_client.guild)
-        repeat = guild_document.get("loop")
         guild_queued = guild_document.get("queue", [])
 
         if len(guild_queued) == 0:
@@ -556,7 +555,11 @@ class Music(commands.Cog):
     async def loop(self, ctx):
         guild_document = await self.guild_document_from_guild(ctx.guild)
         if guild_document.get("loop", False):
+            # if ctx.voice_client.source is not None:
+            #     queue = guild_document.get("queue", [])
+            #     queue.pop(0)
             await self.music_db.songs.update_one({"_id": guild_document.get("_id")}, {"$set": {"loop": False}})
+            
             if ctx.guild.voice_client.is_playing():
                 try:
                     await ctx.reply(embed=self.bot.create_completed_embed("Looping disabled!",
@@ -564,7 +567,9 @@ class Music(commands.Cog):
                                                                           f"will no longer be looped."))
                 except AttributeError:
                     await ctx.reply(embed=self.bot.create_completed_embed("Looping disabled!",
-                                                                          "The song will no longer loop!"))
+                                                                          "The currently playing song/next playing song"
+                                                                          " will be looped!"))
+
         else:
             if ctx.voice_client.source is not None:
                 currently_playing_url = ctx.voice_client.source.webpage_url

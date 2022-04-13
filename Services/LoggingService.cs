@@ -352,7 +352,7 @@ namespace FinBot.Services
 
         public async Task OnMessageReceived(SocketMessage message)
         {
-            if(message.Flags.Value == MessageFlags.Ephemeral)
+            if (message.Flags.Value == MessageFlags.Ephemeral)
             {
                 return;
             }
@@ -364,6 +364,7 @@ namespace FinBot.Services
             BsonArray embeds = new BsonArray();
             BsonArray embedFields = new BsonArray();
             BsonArray title = new BsonArray();
+
 
             foreach (Attachment attachment in message.Attachments)
             {

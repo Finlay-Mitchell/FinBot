@@ -26,7 +26,7 @@ namespace FinBot
         /// <param name="args">Startup arguments.</param>
         static void Main(string[] args)
         {
-            Console.Title = "Finbot"; //Set the console title, because why not?
+            Console.Title = "Finbot"; //Set the console title, because why not?;
 
             while (true)
             {
@@ -146,7 +146,7 @@ namespace FinBot
                 if (true)
                 {
                     Global.ConsoleLog($"Registered commands to guild - {811919861537964032}");
-                    await commands.RegisterCommandsToGuildAsync(811919861537964032, true);
+                    await commands.RegisterCommandsToGuildAsync(908115806460739664, true);
                 }
 
                 else
